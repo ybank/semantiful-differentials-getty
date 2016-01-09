@@ -1,6 +1,5 @@
 package edu.ucsd.getty;
 
-import java.util.List;
 import java.util.Map;
 
 import edu.ucsd.getty.diff.GitDiff;

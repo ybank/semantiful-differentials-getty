@@ -28,4 +28,8 @@ public abstract class Delta {
 	public Chunk getRevised() {
 		return this.revised;
 	}
+	
+	public List<String> getDetails() {
+		return this.details;
+	}
 }
