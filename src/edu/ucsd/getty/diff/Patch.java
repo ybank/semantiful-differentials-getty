@@ -45,6 +45,10 @@ public abstract class Patch {
 		this.deltas = new ArrayList<Delta>();
 		this.header = header;
 	}
+	
+	public Header getHeader() {
+		return header;
+	}
 
 	public List<Delta> getDeltas() {
 		return this.deltas;

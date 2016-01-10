@@ -501,7 +501,9 @@ public class InputDiffProcessor implements IInputProcessor {
 						lineNumbers.addAll(original.getRevisedLineNumbers());
 					}
 				}
-				output.put(key, (Integer[]) lineNumbers.toArray());
+				Integer[] nums = new Integer[lineNumbers.size()];
+				lineNumbers.toArray(nums);
+				output.put(key, nums);
 			}
 		}
 		return output;
@@ -520,7 +522,9 @@ public class InputDiffProcessor implements IInputProcessor {
 						lineNumbers.addAll(revised.getRevisedLineNumbers());
 					}
 				}
-				output.put(key, (Integer[]) lineNumbers.toArray());
+				Integer[] nums = new Integer[lineNumbers.size()];
+				lineNumbers.toArray(nums);
+				output.put(key, nums);
 			}
 		}
 		return output;

@@ -4,9 +4,9 @@ import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Map;
 
 import org.junit.Test;
 
@@ -68,6 +68,29 @@ public class InputDiffsProcessorTest {
 			revisedLineTest("\t{", d4.getRevised(), 55);
 			revisedLineTestByOffset("\t", d4.getRevised(), 6);
 			assertEquals(8, d4.getRevised().getLines().size());
+			
+			// test 4 methods in the processor
+			Map<String, Integer> oldRange = processor.oldPatchRange(diff);
+			Map<String, Integer> oldRangeExpected = new HashMap<String, Integer>();
+			oldRangeExpected.put("DeleteDelta.java.file", 82);
+			oldRangeExpected.put("ModifyDelta.java.file", 30);
+			oldRangeExpected.put("TestJavaSource2.java.file", 4);
+			assertEquals(oldRangeExpected, oldRange);
+			
+			Map<String, Integer> newRange = processor.newPatchRange(diff);
+			assertEquals(36, newRange.get("ModifyDelta.java.file").intValue());
+			
+			Map<String, Integer[]> oldLines = processor.oldLinesRevised(diff);
+			Integer[] expectedOldLines = new Integer[] {
+					2, 50, 84, 85, 86, 87, 88, 89
+			};
+			assertArrayEquals(expectedOldLines, oldLines.get("ModifyDelta.java.file"));
+			
+			Map<String, Integer[]> newLines = processor.newLinesRevised(diff);
+			Integer[] expectedNewLines = new Integer[] {
+					46, 47, 51, 52, 91, 92, 93, 94, 95, 96, 97, 99, 100, 101
+			};
+			assertArrayEquals(expectedNewLines, newLines.get("ModifyDelta.java.file"));
 			
 		} catch (Exception e) {
 			e.printStackTrace();

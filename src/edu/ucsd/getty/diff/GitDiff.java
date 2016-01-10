@@ -7,6 +7,7 @@ public class GitDiff {
 
 	private final String commitHash;
 	private final String parentHash;
+
 	private List<Patch> patches;
 	
 	public GitDiff(String parentHash, String commitHash) {
@@ -29,6 +30,10 @@ public class GitDiff {
 
 	public String getCommitHash() {
 		return this.commitHash;
+	}
+	
+	public String getParentHash() {
+		return parentHash;
 	}
 
 	public List<Patch> getPatches() {

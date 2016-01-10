@@ -6,6 +6,7 @@ import java.util.List;
 public class Chunk {
 	
 	private final String filePath;
+
 	private final int position;
 	private final int range;
 	
@@ -150,4 +151,7 @@ public class Chunk {
 		}
 	}
 	
+	public String getFilePath() {
+		return filePath;
+	}
 }
