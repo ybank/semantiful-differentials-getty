@@ -532,23 +532,23 @@ public class InputDiffProcessor implements IInputProcessor {
 	
 	public static void main(String[] args) throws Exception {
 		System.out.println("Git diff input processor -- test only");
-		if (args.length < 1)
-			throw new Exception("no input git-diff string found");
-		System.out.println("File path: " + args[0]);
-		IInputProcessor processor = new InputDiffProcessor();
-		GitDiff diff = processor.parseDiff(args[0]);
-		Delta d1 = diff.getPatches().get(0).getDeltas().get(0);
-		System.out.println(d1);
-		if (d1.getType() != Delta.TYPE.INSERT)
-			System.out.println("First patch's first delta's original chunk revised line numbers: "
-					+ d1.getOriginal().getRevisedLineNumbers());
-		Delta d2 = diff.getLastPatch().getDeltas().get(0);
-		System.out.println(d2);
-		if (d2.getType() != Delta.TYPE.DELETE) {
-			Chunk revisedChunk = d2.getRevised();
-			System.out.println("Last patch's first delta's revised chunk's first revised line: \n"
-					+ revisedChunk.getLineByLineNumber(revisedChunk.getRevisedLineNumbers().get(0)));
-		}
+//		if (args.length < 1)
+//			throw new Exception("no input git-diff string found");
+//		System.out.println("File path: " + args[0]);
+//		IInputProcessor processor = new InputDiffProcessor();
+//		GitDiff diff = processor.parseDiff(args[0]);
+//		Delta d1 = diff.getPatches().get(0).getDeltas().get(0);
+//		System.out.println(d1);
+//		if (d1.getType() != Delta.TYPE.INSERT)
+//			System.out.println("First patch's first delta's original chunk revised line numbers: "
+//					+ d1.getOriginal().getRevisedLineNumbers());
+//		Delta d2 = diff.getLastPatch().getDeltas().get(0);
+//		System.out.println(d2);
+//		if (d2.getType() != Delta.TYPE.DELETE) {
+//			Chunk revisedChunk = d2.getRevised();
+//			System.out.println("Last patch's first delta's revised chunk's first revised line: \n"
+//					+ revisedChunk.getLineByLineNumber(revisedChunk.getRevisedLineNumbers().get(0)));
+//		}
 	}
 	
 }

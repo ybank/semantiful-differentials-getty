@@ -1,6 +1,9 @@
 package edu.ucsd.getty.comp;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.FileInputStream;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -12,7 +15,7 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 
 import edu.ucsd.getty.IMethodRecognizer;
-import edu.ucsd.getty.visitors.MethodDeclarationVisitor;
+import edu.ucsd.getty.visitors.MethodDeclarationSrcVisitor;
 
 public class ASTInspector implements IMethodRecognizer {
 
@@ -49,7 +52,7 @@ public class ASTInspector implements IMethodRecognizer {
 		try {
 			String qualifiedMethodName = null;
 			
-			MethodDeclarationVisitor visitor = new MethodDeclarationVisitor();
+			MethodDeclarationSrcVisitor visitor = new MethodDeclarationSrcVisitor();
 			Node visited = visitor.visit(cu, lineNumber);
 			if (visited == null)
 				return null;
@@ -83,6 +86,20 @@ public class ASTInspector implements IMethodRecognizer {
 
 	public static void main(String[] args) {
 		System.out.println("Inspector of method name by AST");
+		
+//		IMethodRecognizer rec = new ASTInspector();
+//		Map<String, Integer[]> diffs = new HashMap<String, Integer[]>();
+//		diffs.put("/Users/yanyan/Projects/studies/implementation_alt/commons-math/src/main/java/org/apache/commons/math3/analysis/function/Gaussian.java", new Integer[]{155});
+//		Set<String> result = rec.changedMethods(diffs);
+//		for (String k : result)
+//			System.out.println(k);
+//		
+//		IMethodRecognizer rec2 = new ASTInspector();
+//		Map<String, Integer[]> diffs2 = new HashMap<String, Integer[]>();
+//		diffs2.put("/Users/yanyan/Projects/studies/implementation_alt/commons-math/src/main/java/org/apache/commons/math3/analysis/differentiation/SparseGradient.java", new Integer[]{300});
+//		Set<String> result2 = rec.changedMethods(diffs2);
+//		for (String k : result2)
+//			System.out.println(k);
 	}
 
 }

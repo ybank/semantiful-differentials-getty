@@ -11,7 +11,7 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 
-import edu.ucsd.getty.visitors.MethodDeclarationVisitor;
+import edu.ucsd.getty.visitors.MethodDeclarationSrcVisitor;
 
 
 public class MethodVisitorTest {
@@ -26,7 +26,7 @@ public class MethodVisitorTest {
             CompilationUnit cu = JavaParser.parse(in);
 			in.close();
 			
-			MethodDeclarationVisitor visitor = new MethodDeclarationVisitor();
+			MethodDeclarationSrcVisitor visitor = new MethodDeclarationSrcVisitor();
 			MethodDeclaration decl = (MethodDeclaration) visitor.visit(cu, new Integer(39));
 			
 //			System.out.println(decl.toString());
