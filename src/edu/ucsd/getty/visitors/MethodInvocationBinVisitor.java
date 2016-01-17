@@ -1,5 +1,9 @@
 package edu.ucsd.getty.visitors;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.ConstantPushInstruction;
@@ -14,6 +18,8 @@ import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.ReturnInstruction;
 
+import edu.ucsd.getty.callgraph.NameHandler;
+
 /**
  * Print method invocations by their types.
  * 
@@ -24,22 +30,29 @@ public class MethodInvocationBinVisitor extends EmptyVisitor {
     JavaClass visitedClass;
     private MethodGen mg;
     private ConstantPoolGen cpg;
-    private String methodInvokeFormatter;
+//    private String methodInvokeFormatter;
+    
+    private String packagePrefix;
+    
+    private Set<List<String>> staticInvocations;
 
-    public MethodInvocationBinVisitor(MethodGen m, JavaClass jc) {
+    public MethodInvocationBinVisitor(MethodGen m, JavaClass jc, 
+    		String pkgPrefix, Set<List<String>> si) {
         visitedClass = jc;
         mg = m;
         cpg = mg.getConstantPool();
-        methodInvokeFormatter = (
-        		"[MTD] " + visitedClass.getClassName() + ":" + mg.getName() + " " + "(%s) %s:%s"
-        );
+//        methodInvokeFormatter = (
+//        		"[MTD] " + visitedClass.getClassName() + ":" + mg.getName() + " " + "(%s) %s:%s"
+//        );
+        this.packagePrefix = pkgPrefix;
+        staticInvocations = si;
     }
 
     public void start() {
         if (mg.isAbstract() || mg.isNative())
             return;
-        for (InstructionHandle ih = mg.getInstructionList().getStart(); 
-                ih != null; ih = ih.getNext()) {
+        InstructionHandle ih = mg.getInstructionList().getStart();
+        for (; ih != null; ih = ih.getNext()) {
             Instruction i = ih.getInstruction();
             
             if (!visitInstruction(i))
@@ -57,21 +70,69 @@ public class MethodInvocationBinVisitor extends EmptyVisitor {
 
     @Override
     public void visitINVOKEVIRTUAL(INVOKEVIRTUAL i) {
-        System.out.println(String.format(methodInvokeFormatter,"M-VTL",i.getReferenceType(cpg),i.getMethodName(cpg)));
+    	String classname = i.getReferenceType(cpg).toString();
+    	String methodname = i.getMethodName(cpg);
+    	if (classname.startsWith(packagePrefix) 
+    			&& !NameHandler.shallExcludeClass(classname)
+    			&& !NameHandler.shallExcludeMethod(methodname)) {
+    		staticInvocations.add(Arrays.asList(new String[] {
+    				"invokevirtual",
+    				visitedClass.getClassName() + ":" + mg.getName(),
+    				classname + ":" + methodname,
+    		}));
+//    		System.out.println(String.format(methodInvokeFormatter,
+//    				"M-virtual",i.getReferenceType(cpg),i.getMethodName(cpg)));
+    	}
     }
 
     @Override
     public void visitINVOKEINTERFACE(INVOKEINTERFACE i) {
-        System.out.println(String.format(methodInvokeFormatter,"I-ITF",i.getReferenceType(cpg),i.getMethodName(cpg)));
+    	String classname = i.getReferenceType(cpg).toString();
+    	String methodname = i.getMethodName(cpg);
+    	if (classname.startsWith(packagePrefix) 
+    			&& !NameHandler.shallExcludeClass(classname)
+    			&& !NameHandler.shallExcludeMethod(methodname)) {
+    		staticInvocations.add(Arrays.asList(new String[] {
+    				"invokeinterface",
+    				visitedClass.getClassName() + ":" + mg.getName(),
+    				classname + ":" + methodname,
+    		}));
+//    		System.out.println(String.format(methodInvokeFormatter,
+//    				"I-interface",i.getReferenceType(cpg),i.getMethodName(cpg)));
+    	}
     }
 
     @Override
     public void visitINVOKESPECIAL(INVOKESPECIAL i) {
-        System.out.println(String.format(methodInvokeFormatter,"P-SPL",i.getReferenceType(cpg),i.getMethodName(cpg)));
+    	String classname = i.getReferenceType(cpg).toString();
+    	String methodname = i.getMethodName(cpg);
+    	if (classname.startsWith(packagePrefix) 
+    			&& !NameHandler.shallExcludeClass(classname)
+    			&& !NameHandler.shallExcludeMethod(methodname)) {
+    		staticInvocations.add(Arrays.asList(new String[] {
+    				"invokespecial",
+    				visitedClass.getClassName() + ":" + mg.getName(),
+    				classname + ":" + methodname,
+    		}));
+//    		System.out.println(String.format(methodInvokeFormatter,
+//    				"P-special",i.getReferenceType(cpg),i.getMethodName(cpg)));
+    	}
     }
-
+    
     @Override
     public void visitINVOKESTATIC(INVOKESTATIC i) {
-        System.out.println(String.format(methodInvokeFormatter,"S-STT",i.getReferenceType(cpg),i.getMethodName(cpg)));
+    	String classname = i.getReferenceType(cpg).toString();
+    	String methodname = i.getMethodName(cpg);
+    	if (classname.startsWith(packagePrefix) 
+    			&& !NameHandler.shallExcludeClass(classname)
+    			&& !NameHandler.shallExcludeMethod(methodname)) {
+    		staticInvocations.add(Arrays.asList(new String[] {
+    				"invokestatic",
+    				visitedClass.getClassName() + ":" + mg.getName(),
+    				classname + ":" + methodname,
+    		}));
+//    		System.out.println(String.format(methodInvokeFormatter,
+//    				"S-static",i.getReferenceType(cpg),i.getMethodName(cpg)));
+    	}
     }
 }
