@@ -2,115 +2,49 @@ package edu.ucsd.getty.comp;
 
 import static org.junit.Assert.*;
 
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.junit.Test;
-
-import edu.ucsd.getty.callgraph.NameHandler;
 
 public class CandidateGeneratorTest {
 
 	@Test
-	public void test() {
-		assert "somestring".startsWith("");
-		
-		Pattern p = Pattern.compile(".*\\$\\d+.*");
-		Matcher m = p.matcher("a.adfsjl.df:access$1 and something");
-		if (m.matches())
-			System.out.println("good");
-		else
-			fail("Not yet implemented");
-		
-		
-		Pattern pp = Pattern.compile(".*:access\\$\\d+");
-		Matcher mm = pp.matcher("org.apache.commons.math3.analysis.function.Sigmoid:access$000");
-		if (mm.matches())
-			System.out.println("good");
-		else
-			fail("Not yet implemented");
-		
-		if (new String[0].length == 0)
-			System.out.println("right");
-		
-		Set<String[]> arraySet = new HashSet<String[]>();
-		
-		arraySet.add(new String[]{"abc", "def", "ghi"});
-		System.out.println(arraySet.size());
-		
-		arraySet.add(new String[]{"abc", "def", "ghi"});
-		System.out.println(arraySet.size());
-		
-		String abc = "abc";
-		String def = "def";
-		String ghi = "ghi";
-		
-		arraySet.add(new String[]{abc, def, ghi});
-		System.out.println(arraySet.size());
-		
-		String def2 = "def";
-		arraySet.add(new String[]{abc, def2, ghi});
-		System.out.println(arraySet.size());
-		
-		String def3 = def;
-		arraySet.add(new String[]{abc, def3, ghi});
-		System.out.println(arraySet.size());
-		
-		String abc2 = "abc";
-		String[] full = new String[3];
-		full[0] = abc2;
-		full[1] = "def";
-		full[2] = ghi;
-		arraySet.add(full);
-		System.out.println(arraySet.size());
-		
-		String[] full2 = new String[3];
-		full2 = full;
-		arraySet.add(new String[]{abc, def, ghi});
-		System.out.println(arraySet.size());
-		
-		String ghi2 = "ghi";
-		String[] full3 = new String[] {"abc", "def", ghi2};
-		arraySet.add(new String[]{abc, def, ghi});
-		System.out.println(arraySet.size());
-		
-		Set<String> ss = new HashSet<String>();
-		ss.add("abc");
-		ss.add(abc2);
-		ss.add(abc);
-		System.out.println(ss.size());
-		
-		System.out.println("using a new technique");
-		
-		Set<List<String>> listSet = new HashSet<List<String>>();
-		listSet.add(Arrays.asList(abc, def, ghi));
-		listSet.add(Arrays.asList(abc, def2, ghi));
-		listSet.add(Arrays.asList("abc", def, ghi2));
-		listSet.add(Arrays.asList(full));
-		listSet.add(Arrays.asList(full2));
-		System.out.println(listSet.size());
-		
-		System.out.println(Arrays.asList(full).get(1));
-		
-		Pattern methodp = Pattern.compile("(.*):(.*)");
-		Matcher methodm = methodp.matcher("org.apache.commons.math3.geometry.euclidean.threed.OutlineExtractor$BoundaryProjector:addContribution");
-		if (methodm.find()) {
-			System.out.println(methodm.groupCount());
-			System.out.println(methodm.group(1));
-			System.out.println(methodm.group(2));
-		}
-		else
-			fail("Not yet implemented");
-		
-		String methodname = "org.apache.commons.math3.geometry.euclidean.threed.OutlineExtractor$BoundaryProjector:addContribution";
-		System.out.println(NameHandler.extractClassName(methodname));
-		System.out.println(NameHandler.extractMethodName(methodname));
-		
+	public void testTraceGeneratorSingleMethod() {
+		Set<String> dummy = new HashSet<String>();
+		CandidateGenerator generator = new CandidateGenerator(
+				dummy, "test/data/lib/test_email.jar");
+		Set<List<String>> possible_traces = generator.getCandidateTraces(
+				"org.apache.commons.mail.ImageHtmlEmail:replacePattern");
+		List<String> one_expected = new LinkedList<String>();
+		one_expected.add("org.apache.commons.mail.ImageHtmlEmail:replacePattern");
+		one_expected.add("org.apache.commons.mail.ImageHtmlEmail:buildMimeMessage");
+		one_expected.add("org.apache.commons.mail.Email:send");
+		assert possible_traces.contains(one_expected);
 	}
-
+	
+	@Test
+	public void testTraceGeneratorMultipleMethods() {
+		Set<String> methods = new HashSet<String>();
+		String method1 = "org.apache.commons.math3.primes.SmallPrimes:trialDivision";
+		String method2 = "org.apache.commons.math3.analysis.UnivariateVectorFunction:value";
+		String method3 = "org.apache.commons.math3.geometry.partitioning.BoundaryProjector:getProjection";
+		methods.add(method1);
+		methods.add(method2);
+		methods.add(method3);
+		String pkg = "org.apache.commons.math3";
+		CandidateGenerator generator = new CandidateGenerator(methods, "test/data/lib/test_maths.jar", pkg);
+		Map<String, Set<List<String>>> candidate_map = generator.getCandidateTraces();
+		assertEquals(1, candidate_map.get(method1).size());
+		List<String> temp = null;
+		for (List<String> element : candidate_map.get(method1))
+			temp = element;
+		assertEquals(2, temp.size());
+		assertEquals(1, candidate_map.get(method2).size());
+		assert candidate_map.get(method3).size() > 2000;
+	}
+	
 }

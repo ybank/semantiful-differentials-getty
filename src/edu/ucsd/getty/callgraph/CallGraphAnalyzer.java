@@ -94,18 +94,5 @@ public class CallGraphAnalyzer {
 			return null;
 		}
 	}
-
-    public static void main(String[] args) {
-    	CallGraphAnalyzer analyzer = new CallGraphAnalyzer("org.apache.commons");
-    	
-    	CallGraph cg = analyzer.analyze(
-    			"/Users/yanyan/Projects/research/eclipse/Getty/test/data/lib/test_email.jar",
-    			"/Users/yanyan/Projects/studies/implementation_alt/commons-math/target/classes/");
-    	
-//    	for (String mtd : cg.staticCallersOf.keySet())
-//    		System.out.println(cg.staticCallersOf.get(mtd) + " invoke " + mtd);
-    	
-    	for (String mtd : cg.possibleCallersOf.keySet())
-    		System.out.println(cg.possibleCallersOf.get(mtd) + " invoke " + mtd);
-    }
+	
 }

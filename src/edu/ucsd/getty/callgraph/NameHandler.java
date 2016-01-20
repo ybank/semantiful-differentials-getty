@@ -39,5 +39,9 @@ public class NameHandler {
 		} else
 			return null;
 	}
+	
+	public static String internalToQualifiedName(String internalname) {
+		return internalname.replaceAll("\\$", ".").replaceAll(":", ".");
+	}
 
 }

@@ -1,69 +1,144 @@
 package edu.ucsd.getty.comp;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 
-import soot.MethodOrMethodContext;
-import soot.PackManager;
-import soot.Scene;
-import soot.SceneTransformer;
-import soot.SootClass;
-import soot.SootMethod;
-import soot.Transform;
-import soot.jimple.toolkits.callgraph.CHATransformer;
-import soot.jimple.toolkits.callgraph.CallGraph;
-import soot.jimple.toolkits.callgraph.Targets;
-import soot.options.Options;
 import edu.ucsd.getty.ITraceFinder;
+import edu.ucsd.getty.callgraph.CallGraph;
+import edu.ucsd.getty.callgraph.CallGraphAnalyzer;
+//import edu.ucsd.getty.callgraph.NameHandler;
 
 public class CandidateGenerator implements ITraceFinder {
 	
 	private Set<String> changedMethods;
 	private String binaryPath;
+	
+	private CallGraph callgraph;
 
-	public CandidateGenerator(Set<String> changed, String binaryPath) {
+	public CandidateGenerator(
+			Set<String> changed, String binaryPath, String packagePrefix) {
 		this.changedMethods = changed;
 		this.binaryPath = binaryPath;
+		CallGraphAnalyzer analyzer = new CallGraphAnalyzer(packagePrefix);
+		this.callgraph = analyzer.analyze(this.binaryPath);
 	}
+	
+	public CandidateGenerator(
+			Set<String> changed, String binaryPath) {
+		this(changed, binaryPath, "");
+	}
+	
+//	private Set<String> reformat(Set<String> methodnames) {
+//		Set<String> reformatted = new HashSet<String>();
+//		for (String methodname : methodnames)
+//			reformatted.add(NameHandler.internalToQualifiedName(methodname));
+//		return reformatted;
+//	}
+//	
+//	public Set<String> getReformattedCallersFor(String methodName) {
+//		return reformat(getCallersFor(methodName));
+//	}
 
 	@Override
 	public Set<String> getCallersFor(String methodName) {
-		// TODO Auto-generated method stub
-		return null;
+		Set<String> callers = callgraph.getPossibleCallersOf(methodName);
+		if (callers == null)
+			callers = new HashSet<String>();
+		return callers;
 	}
 
 	@Override
 	public Set<String> getAllCallers(Set<String> methodNames) {
-		// TODO Auto-generated method stub
-		return null;
+		Set<String> callers = new HashSet<String>();
+		for (String methodname : methodNames)
+			callers.addAll(getCallersFor(methodname));
+		return callers;
 	}
 	
 	public Set<String> getCallers() {
 		return getAllCallers(this.changedMethods);
 	}
-
+	
 	@Override
-	public Set<String[]> getTraces(String methodName) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Set<String[]> getCandidateTraces(Set<String> methods) {
-		// TODO Auto-generated method stub
-		return null;
+	public Set<List<String>> getCandidateTraces(String methodName) {
+		return getCandidateTraces(methodName, 
+				new HashSet<String>(), new HashMap<String, Set<List<String>>>(), 0);
 	}
 	
-	public Set<String[]> getCandidateTraces() {
+	private final int LIMIT = 8;
+	// Magic number -- don't ask me how I get this. Too many killing experiments.
+	// 6: ~1s, 7: 1.5s, 8: 2.3s, 9: 20s
+	private Set<List<String>> getCandidateTraces(String methodName, 
+			Set<String> already, Map<String, Set<List<String>>> cache,
+			int current_len) {
+		current_len ++;
+		if (current_len >= this.LIMIT) {
+			Set<List<String>> more_end = new HashSet<List<String>>();
+			List<String> end = new LinkedList<String>();
+			end.add("!");
+			more_end.add(end);
+			return more_end;
+		}
+		
+		if (cache.containsKey(methodName)) {
+			return cache.get(methodName);
+		} else {
+			if (already.contains(methodName)) {
+				List<String> recursion = new LinkedList<String>();
+				recursion.add("@" + methodName);
+				Set<List<String>> only = new HashSet<List<String>>();
+				only.add(recursion);
+				return only;
+			} else {
+				already.add(methodName);
+				
+				Set<List<String>> candidates = new HashSet<List<String>>();
+				Set<String> callers = getCallersFor(methodName);
+				
+				if (callers.size() == 0) {
+					List<String> single_chain = new LinkedList<String>();
+					single_chain.add(methodName);
+					candidates.add(single_chain);
+				} else {					
+					for (String caller : callers) {
+						Set<List<String>> tailses = getCandidateTraces(caller, already, cache, current_len);
+						for (List<String> tails : tailses) {
+							List<String> chain = new LinkedList<String>();
+							chain.add(methodName);
+							chain.addAll(tails);
+							candidates.add(chain);
+						}
+					}
+				}
+				
+				already.remove(methodName);
+				return candidates;
+			}
+		}
+	}
+	
+	@Override
+	public Map<String, Set<List<String>>> getCandidateTraces(Set<String> methods) {
+		Map<String, Set<List<String>>> candidateMap = new HashMap<String, Set<List<String>>>();
+		for (String method : methods){
+			Set<List<String>> candidates = new HashSet<List<String>>();
+			candidates.addAll(getCandidateTraces(method));
+			candidateMap.put(method, candidates);
+		}
+		return candidateMap;
+	}
+	
+	public Map<String, Set<List<String>>> getCandidateTraces() {
 		return getCandidateTraces(this.changedMethods);
 	}
 	
 	public static void main(String[] args) {
+		
+		System.out.println("Getty - Candidate Generator");
 		
 		/**
 		 * command to run this main:
@@ -95,113 +170,6 @@ public class CandidateGenerator implements ITraceFinder {
 		 * 		jar cvf $target_jar_folder/target.jar -C $target_calsses_folder .
 		 */
 		
-		// FIXME: this may have to be done at the target project if we use soot
-		
-		final String targetClass = "org.apache.commons.mail.HtmlEmail";
-		final String targetMethod = "buildMimeMessage";
-		
-//		final String targetClass = "org.apache.commons.mail.Email";
-//		final String targetMethod = "send";
-		
-//		final String targetClass = "org.apache.commons.mail.EmailUtils";
-//		final String targetMethod = "notNull";
-		
-		List<String> argsList = new ArrayList<String>(Arrays.asList(args));
-		argsList.addAll(Arrays.asList(new String[] {
-
-				"-i", "org.apache.",
-				"-include", "org.apache.",
-				
-				"-exclude", "java.",
-				"-exclude", "javax.",
-				"-exclude", "soot.",
-				
-				"-w", "-main-class", "edu.ucsd.getty.comp.CandidateGenerator",
-				"edu.ucsd.getty.comp.CandidateGenerator",
-				"org.apache.commons.mail.Email",
-//				"org.apache.commons.mail.HtmlEmail"
-		}));
-		args = argsList.toArray(new String[0]);
-		try{
-			System.out.println("Getty - Candidate Generator");
-			PackManager.v().getPack("wjtp").add(new Transform("wjtp.customentrycall", new SceneTransformer() {
-				@Override
-				protected void internalTransform(String phaseName, Map options) {
-					CHATransformer.v().transform();
-					
-					SootClass tc = Scene.v().getSootClass(targetClass);
-					tc.setResolvingLevel(SootClass.BODIES);
-					
-					System.out.println("Inside of the internal transformation ...");
-					System.out.println("\napplication classes: " + Scene.v().getApplicationClasses() + "\n");
-					
-					CallGraph callGraph = Scene.v().getCallGraph();
-					SootMethod target = tc.getMethodByName(targetMethod);
-					
-					
-					Set<String> callerClassSet = new HashSet<String>();
-					System.out.println("See all methods that have callee(s) in org.apache package:");
-					int numberTargets = 0;
-					Iterator<MethodOrMethodContext> targetMethod = callGraph.sourceMethods();
-					while(targetMethod.hasNext()) {
-						SootMethod tgt = (SootMethod) targetMethod.next();
-						String signature = tgt.getSignature();
-						if (signature.startsWith("<org.apache"))
-							System.out.println("processing a caller: " + tgt.getSignature());
-						int indexColon = signature.indexOf(":");
-						String className = signature.substring(1, indexColon);
-						callerClassSet.add(className);
-						numberTargets ++;
-						Iterator<MethodOrMethodContext> callees = new Targets(callGraph.edgesOutOf(tgt));
-						while (callees.hasNext()) {
-							SootMethod callee = (SootMethod) callees.next();
-							if (signature.startsWith("<org.apache"))
-								System.out.println(tgt + " may call " + callee);
-						}
-						tc.setResolvingLevel(SootClass.BODIES);
-					}
-					Set<String> prefix3Set = new HashSet<String>();
-					for (String sig : callerClassSet) {
-						if (sig.length() > 11)
-							prefix3Set.add(sig.substring(0, 12));
-						else
-							prefix3Set.add(sig);
-					}
-					System.out.println("total number of common package/class/etc prefixes: " + prefix3Set.size());
-					System.out.println("total number of methods having callees: " + numberTargets + "\n");
-					
-					
-					System.out.println("call graph size: " + callGraph.size());
-					System.out.println("target method is: " + target.getSignature());
-					
-					Iterator<MethodOrMethodContext> targetCallers = new Targets(callGraph.edgesInto(target));
-					System.out.println("targetCallers is: " + targetCallers);
-					while (targetCallers.hasNext()) {
-						System.out.println("processing a caller");
-						SootMethod tgt = (SootMethod) targetCallers.next();
-						System.out.println(target + " may be called by " + tgt);
-//						tc.setResolvingLevel(SootClass.BODIES);
-					}
-					
-					Iterator<MethodOrMethodContext> targetCallees = new Targets(callGraph.edgesOutOf(target));
-					System.out.println("targetCallees is: " + targetCallees);
-					while (targetCallees.hasNext()) {
-						System.out.println("processing a callee");
-						SootMethod tgt = (SootMethod) targetCallees.next();
-						System.out.println(target + " may call " + tgt);
-//						tc.setResolvingLevel(SootClass.BODIES);
-					}
-					
-					System.out.println("\n");
-				}
-			}));
-			
-			soot.Main.main(args);
-			
-			System.out.println("Getty - call graph analysis is done.");	
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 	}
 
 }
