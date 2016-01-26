@@ -60,7 +60,6 @@ public class InputDiffProcessor implements IInputProcessor {
 		List<String> diffLines = new ArrayList<String>(diffLinesArray.length);
 		Collections.addAll(diffLines, diffLinesArray);
 		GitDiff diff = modelDiff(diffLines, parentHash, currentHash);
-		// TODO reset status after exception
 		return diff;
 	}
 	
@@ -75,7 +74,6 @@ public class InputDiffProcessor implements IInputProcessor {
 			throw new Exception("the processor is not ready");
 		List<String> diffLines = fileToLines(diffPath);
 		GitDiff diff = modelDiff(diffLines, parentHash, currentHash);
-		// TODO reset status after exception
 		return diff;
 	}
 

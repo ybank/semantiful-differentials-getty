@@ -132,6 +132,7 @@ public class CandidateGenerator implements ITraceFinder {
 		return candidateMap;
 	}
 	
+	@Override
 	public Map<String, Set<List<String>>> getCandidateTraces() {
 		return getCandidateTraces(this.changedMethods);
 	}

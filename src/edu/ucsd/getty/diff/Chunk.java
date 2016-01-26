@@ -15,10 +15,10 @@ public class Chunk {
 	}
 	public VERSION version;
 	
-	// TODO the actual lines in this image
+	// the actual lines in this image
 	private List<String> lines;
 	
-	// TODO only the actual line numbers where changes took place
+	// only the actual line numbers where changes took place
 	private List<Integer> revisedLineNumbers;
 	
 	public Chunk(String path, int pos, int rng) {
@@ -78,7 +78,7 @@ public class Chunk {
 						case "@":
 							break;
 						default:
-							throw new Exception("original chunk creation unable to handle this line: " + deltaLine);
+							throw new Exception("revised chunk creation unable to handle this line: " + deltaLine);
 					}
 				}
 				break;

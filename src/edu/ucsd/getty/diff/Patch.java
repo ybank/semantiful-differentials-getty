@@ -9,7 +9,7 @@ public abstract class Patch {
 	private final String postimagePath;
 	private List<Delta> deltas;
 	
-	// TODO actual header content
+	// actual header content
 	public static class Header {
 		private List<String> headerLines;
 		
