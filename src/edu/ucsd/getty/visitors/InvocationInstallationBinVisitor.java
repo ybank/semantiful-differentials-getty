@@ -21,15 +21,16 @@ public class InvocationInstallationBinVisitor extends EmptyVisitor {
 //    private String classReferenceFormatter;
     
     private String packagePrefix;
+    private Set<String> allMethods;
     private Map<String, JavaClass> classTable;
 	private Set<List<String>> staticInvocations;
     
     public InvocationInstallationBinVisitor(JavaClass jc, 
-    		String pkgPrefix,
-    		Map<String, JavaClass> ct, 
-    		Set<List<String>> si) {
+    		String pkgPrefix, Set<String> am,
+    		Map<String, JavaClass> ct, Set<List<String>> si) {
         this.clazz = jc;
         this.packagePrefix = pkgPrefix;
+        this.allMethods = am;
         this.classTable = ct;
         this.staticInvocations = si;
         this.constants = new ConstantPoolGen(clazz.getConstantPool());
@@ -70,7 +71,16 @@ public class InvocationInstallationBinVisitor extends EmptyVisitor {
 
     @Override
     public void visitMethod(Method method) {
-        MethodGen mg = new MethodGen(method, clazz.getClassName(), constants);
+    	String clsname = clazz.getClassName();
+        
+    	MethodGen mg = new MethodGen(method, clazz.getClassName(), constants);
+        String mtdname = mg.getName();
+        
+        if (clsname.startsWith(packagePrefix) 
+        		&& !NameHandler.shallExcludeClass(clsname)
+        		&& !NameHandler.shallExcludeMethod(mtdname))
+        	this.allMethods.add(clsname + ":" + mtdname);
+        
         MethodInvocationBinVisitor visitor = new MethodInvocationBinVisitor(mg, clazz, packagePrefix, staticInvocations);
         visitor.start(); 
     }

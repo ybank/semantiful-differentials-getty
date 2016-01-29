@@ -11,5 +11,6 @@ public interface ITraceFinder {
 	public Set<List<String>> getCandidateTraces(String methodName);
 	public Map<String, Set<List<String>>> getCandidateTraces(Set<String> methods);
 	public Map<String, Set<List<String>>> getCandidateTraces();
+	public Set<String> getAllProjectMethods();
 	
 }

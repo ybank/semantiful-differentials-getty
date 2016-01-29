@@ -18,11 +18,13 @@ import edu.ucsd.getty.visitors.InvocationInstallationBinVisitor;
  */
 
 public class CallGraphAnalyzer {
-	//
-	private String packagePrefix;
 	
+	private String packagePrefix;
+	private Set<String> allProjectMethods;
+
 	public CallGraphAnalyzer(String pkgPrefix) {
 		this.packagePrefix = pkgPrefix;
+		this.allProjectMethods = new HashSet<String>();
 	}
 	
 	public CallGraphAnalyzer() {
@@ -44,6 +46,7 @@ public class CallGraphAnalyzer {
 	}
 	
 	public CallGraph analyze(String... paths) {
+		this.allProjectMethods.clear();
 		CallGraph callgraph = null;
 		try {
 			List<JavaClass> allClasses = ClassLocator.loadFrom(paths);
@@ -52,7 +55,7 @@ public class CallGraphAnalyzer {
 			for (JavaClass clazz : allClasses) {
 				InvocationInstallationBinVisitor visitor = 
 						new InvocationInstallationBinVisitor(
-								clazz, this.packagePrefix,
+								clazz, this.packagePrefix, this.allProjectMethods,
 								classTable, staticInvocations);
 				visitor.start();
 			}
@@ -93,6 +96,10 @@ public class CallGraphAnalyzer {
 			e.printStackTrace();
 			return null;
 		}
+	}
+	
+	public Set<String> getAllProjectMethods() {
+		return allProjectMethods;
 	}
 	
 }

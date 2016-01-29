@@ -15,6 +15,7 @@ import edu.ucsd.getty.callgraph.CallGraphAnalyzer;
 public class CandidateGenerator implements ITraceFinder {
 	
 	private Set<String> changedMethods;
+	private Set<String> allProjectMethods;
 	private String binaryPath;
 	
 	private CallGraph callgraph;
@@ -25,11 +26,17 @@ public class CandidateGenerator implements ITraceFinder {
 		this.binaryPath = binaryPath;
 		CallGraphAnalyzer analyzer = new CallGraphAnalyzer(packagePrefix);
 		this.callgraph = analyzer.analyze(this.binaryPath);
+		this.allProjectMethods = analyzer.getAllProjectMethods();
 	}
 	
 	public CandidateGenerator(
 			Set<String> changed, String binaryPath) {
 		this(changed, binaryPath, "");
+	}
+	
+	@Override
+	public Set<String> getAllProjectMethods() {
+		return this.allProjectMethods;
 	}
 	
 //	private Set<String> reformat(Set<String> methodnames) {

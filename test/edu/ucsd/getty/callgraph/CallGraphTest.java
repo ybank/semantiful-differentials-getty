@@ -41,5 +41,25 @@ public class CallGraphTest {
 		assert !staticCallers.contains(one);
 		assert possibleCallers.contains(one);
 	}
+	
+	@Test
+	public void test_test() {
+		String empty = "[]";
+		String[] e = empty.substring(1, empty.length()-1).split(", ");
+		System.out.println(e.length);
+		System.out.println(e[0]);
+		
+		String one = "[\"first.class:method\", ]";
+		String[] o = one.substring(1, one.length()-1).split(", ");
+		System.out.println(o.length);
+		System.out.println(o[0]);
+		
+		String many = "[\"first.class:method\", \"second.class$inner:method\", \"third.class:method\", ]";
+		String[] m = many.substring(1, many.length()-1).split(", ");
+		System.out.println(m.length);
+		System.out.println(m[0]);
+		System.out.println(m[1]);
+		System.out.println(m[2]);
+	}
 
 }
