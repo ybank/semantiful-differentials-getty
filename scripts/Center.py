@@ -86,9 +86,9 @@ sys_call("git diff {0} {1} > {2}".format(prev_hash, post_hash, diff_out))
 
 sys_call("mvn test")
 
-run_villa = "java -jar {0} -s {1} {2} {3} {4} {5} {6}".format(villa_path, 
-                                                              diff_out, bin_path, test_src_rel_path, 
-                                                              pkg_prefix, prev_hash, post_hash)
+run_villa = "java -jar {0} -sn {1} {2} {3} {4} {5} {6}".format(villa_path,
+                                                               diff_out, bin_path, test_src_rel_path,
+                                                               pkg_prefix, prev_hash, post_hash)
 print "\n\nstart to run Villa ... \n" + run_villa
 sys_call(run_villa)
 

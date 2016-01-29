@@ -56,28 +56,31 @@ public class Villa {
 		switch(args[0]) {
 		
 		/**
-		 * simgen=old (so)
-		 * simgen=new (sn, s)
+		 * simgen=old (DEFAULT, so, s)
+		 * simgen=new (sn)
 		 * 
 		 * The simple mode to generate changed method set*, candidate call chains, 
 		 * and all callers in the chains 
 		 * 
 		 * * In this mode, we consider only the current version
 		 */
+			case "-s":
 			case "-so":
-			case "--simgen=old":
-			case "-s": 
+			case "--simgen":
+			case "--simgen=old": 
 			case "-sn":
 			case "--simgen=new":
 				try {
+					/**********************************/
 					Map<String, Integer[]> file_revision_lines = get_revised_file_lines_map(diff_path, prev_commit, curr_commit);
 					
 					Set<String> revised_methods = get_changed_methods(test_path, file_revision_lines);
 //					System.out.println("changed methods: " + revised_methods + "\n");
 					String chgmtd_out_path = output_dir + "_getty_chgmtd_src_";
-					if (args[0].equals("-so") || args[0].equals("--simgen=old"))
+					if (args[0].equals("-s") || args[0].equals("-so") 
+							|| args[0].equals("--simgen") || args[0].equals("--simgen=old"))
 						chgmtd_out_path += "old" + "_" + prev_commit + "_.ex";
-					else
+					else  // args[0].equals("-sn") || args[0].equals("--simgen=new")
 						chgmtd_out_path += "new" + "_" + curr_commit + "_.ex";
 					System.out.println(
 							"number of changed methods: " + revised_methods.size() + "\n"
@@ -85,6 +88,7 @@ public class Villa {
 					output_to(chgmtd_out_path, revised_methods);
 
 					
+					/**********************************/
 					ITraceFinder chain_generator = get_generator(target_path, package_prefix, revised_methods);
 					
 					Map<String, Set<List<String>>> candidates = chain_generator.getCandidateTraces();
@@ -110,6 +114,7 @@ public class Villa {
 					output_to(apm_out_path, all_project_methods);
 					
 					
+					/**********************************/
 					Set<String> all_callers = get_all_callers(candidates);
 //					System.out.println(all_callers);
 					String clr_out_path = output_dir + "_getty_clr_" + curr_commit + "_.ex";
@@ -125,19 +130,17 @@ public class Villa {
 				break;
 			
 			/**
-			 * comgen=forward (cf, c)
-			 * comgen=backward (cb)
+			 * comgen (c)
 			 * 
 			 * The complex mode to generate changed method set*, candidate call chains, 
 			 * all callers in the chains, and all considered methods
 			 * 
 			 * * In this mode we consider not only the current version for precision
+			 * 
+			 * So far this mode only support forward analysis, i.e., from older version to newer.
 			 */
 			case "-c":
-			case "-cf":
-			case "--comgen=forward":
-			case "-cb":
-			case "--comgen=backward":
+			case "--comgen":
 				try {
 					// FIXME: more accurate changed methods
 					
@@ -160,19 +163,15 @@ public class Villa {
 				+ "java -jar Getty.Villa.jar --help|-h"
 				+ "\n\t  "
 				+ "java -jar Getty.Villa.jar "
-				+ "--simgen=new|-sn|-s diffpath targetpath testsrcrelpath pkgprefix|- prevcommit currcommit "
+				+ "--simgen=old|--simgen|-so|-s diffpath targetpath testsrcrelpath pkgprefix|- prevcommit currcommit "
 				+ "[--output|-o outputworkdir]"
 				+ "\n\t  "
 				+ "java -jar Getty.Villa.jar "
-				+ "--simgen=old|-so diffpath targetpath testsrcrelpath pkgprefix|- prevcommit currcommit "
+				+ "--simgen=new|-sn diffpath targetpath testsrcrelpath pkgprefix|- prevcommit currcommit "
 				+ "[--output|-o outputworkdir]"
 				+ "\n\t  "
 				+ "java -jar Getty.Villa.jar "
-				+ "--comgen=forward|-cf|-c diffpath targetpath testsrcrelpath pkgprefix|- prevcommit currcommit "
-				+ "[--output|-o outputworkdir]"
-				+ "\n\t  "
-				+ "java -jar Getty.Villa.jar "
-				+ "--comgen=backward|-cb diffpath targetpath testsrcrelpath pkgprefix|- prevcommit currcommit "
+				+ "--comgen|-c diffpath targetpath testsrcrelpath pkgprefix|- prevcommit currcommit "
 				+ "[--output|-o outputworkdir]"
 				+ "\n");
 	}
