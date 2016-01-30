@@ -4,10 +4,9 @@ import os
 import re
 import sys
 from inspect import getsourcefile
-from sets import Set
 
 import center
-from utils import *
+from utils import from_sys_call, get_parent_hash
 
 
 def help():
@@ -54,7 +53,7 @@ if __name__ == "__main__":
     ## args checking & setting
     if len(sys.argv) == 1:
         rbs = from_sys_call("git branch -r").strip()
-        all_remote_branches = Set()
+        all_remote_branches = set()
         for rb in rbs.split("\n"):
             rb = rb.strip().split(" ")[0]
             all_remote_branches.add(rb)
