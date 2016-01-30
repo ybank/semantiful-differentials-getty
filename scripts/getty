@@ -1,0 +1,96 @@
+#!/usr/bin/env python
+
+import os
+import re
+import sys
+from inspect import getsourcefile
+from sets import Set
+
+import center
+from utils import *
+
+
+def help():
+    print "\nUsage:\n"
+    print "\tGet help"
+    print "\t\tgetty -h | --help\n"
+    print "\tUse default compare: origin/HEAD or origin/master or origin/trunk vs. HEAD"
+    print "\t\tgetty\n"
+    print "\tCompare HEAD with the given commit, or with the parent commit if passing -1"
+    print "\t\tgetty compare_commit | -1\n"
+    print "\tCompare between the given commits: preimage_commit vs. postimage_commit"
+    print "\t\tgetty preimage_commit postimage_commit\n"
+
+
+if __name__ == "__main__":
+    ## env config
+    # Villa's jar path
+    this_script_path = os.path.abspath(getsourcefile(lambda:0))
+    if this_script_path[-1] == "/":
+        this_script_path = this_script_path[:-1]
+    this_script_dir = this_script_path[:this_script_path.rfind("/")+1]
+    villa_path = this_script_dir + "Getty.Villa.jar"  # jar is at the same dir
+    if os.path.exists(villa_path):
+        print "\nGetty.Villa.jar path: " + villa_path
+    else:
+        raise EnvironmentError("could not find Getty.Villa.jar in script dir " + this_script_dir)
+    
+    # present working directory - it should be the project's root with "/" at the end
+    pwd = from_sys_call("pwd").strip()
+    if pwd[-1] != "/":
+        pwd += "/"
+    
+    # getty output directory - /tmp/__getty_output__/ or ../projectname__getty_output__/
+    if pwd == "/":
+        go = "/tmp/__getty_output__/"
+    else:
+        go = pwd[:-1] + ".__getty_output__/"
+    if os.path.exists(go):
+        if not os.path.isdir(go):
+            raise EnvironmentError(go + " already exists but is not a directory")
+    else:
+        os.makedirs(go)
+    
+    ## args checking & setting
+    if len(sys.argv) == 1:
+        rbs = from_sys_call("git branch -r").strip()
+        all_remote_branches = Set()
+        for rb in rbs.split("\n"):
+            rb = rb.strip().split(" ")[0]
+            all_remote_branches.add(rb)
+        if "origin/HEAD" in all_remote_branches:
+            remote_head = "origin/HEAD"
+        elif "origin/master" in all_remote_branches:
+            remote_head = "origin/master"
+        elif "origin/trunk" in all_remote_branches:
+            remote_head = "origin/trunk"
+        else:
+            raise ValueError("expecting remote branches to contain HEAD, master, or trunk")
+        prev_hash = from_sys_call("git rev-parse " + remote_head).strip()
+        post_hash = from_sys_call("git rev-parse HEAD").strip()
+    elif len(sys.argv) == 2:
+        if sys.argv[1] == "-h" or sys.argv[1] == "--help":
+            help()
+            exit(0)
+        elif sys.argv[1] == "-1":
+            prev_hash = get_parent_hash()
+            post_hash = from_sys_call("git rev-parse HEAD").strip()
+        elif not re.compile("[a-z0-9]{5,}").match(sys.argv[1]):
+            help()
+            raise ValueError("invalid argument passed: " + sys.argv[1])
+        else:
+            prev_hash = sys.argv[1]
+            post_hash = from_sys_call("git rev-parse HEAD").strip()
+    elif len(sys.argv) == 3:
+        if re.compile("[a-z0-9]{5,}").match(sys.argv[1]) and re.compile("[a-z0-9]{5,}").match(sys.argv[2]):
+            prev_hash = sys.argv[1]
+            post_hash = sys.argv[2]
+        else:
+            help()
+            raise ValueError("invalid arguments passed: " + sys.argv[1] + " and " + sys.argv[2])
+    else:
+        raise ValueError("number of arguments should be 0, 1, or 2")
+    # consider using `git rev-parse --short HEAD` if shorter names are preferred
+    
+    center.main(villa_path, pwd, go,
+                prev_hash, post_hash)
