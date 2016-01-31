@@ -1,18 +1,13 @@
 from utils import *
 
 
-def main(villa_path, pwd, go, prev_hash, post_hash):
+def main(villa_path, pwd, go, prev_hash, post_hash, pkg_prefix="-"):
     
     print("\n*************************************************************");
     print("Getty Center: Semantiful Differential Analyzer");
     print("*************************************************************\n");
     
     print "current working directory: " + pwd + "\n"
-    
-    # TODO: better package prefix, maybe interactive with user or extracted by code analysis
-    # however, from the given output directory there should be no more packages to worry for now
-    pkg_prefix = "-"
-    # pkg_prefix = "org.apache.commons"
     
     diff_out = go + "text.diff"
     sys_call("git diff {0} {1} > {2}".format(prev_hash, post_hash, diff_out))
@@ -81,12 +76,14 @@ def main(villa_path, pwd, go, prev_hash, post_hash):
     
     new_changed_methods = read_str_from(go + "_getty_chgmtd_src_new_{0}_.ex".format(post_hash))
     new_improved_changed_methods = read_str_from(go + "_getty_chgmtd_src_{0}_{1}_.ex".format(prev_hash, post_hash))
+    new_removed_changed_methods = read_str_from(go + "_getty_chgmtd_src_gone_{0}_{1}_.ex".format(prev_hash, post_hash))
     new_all_callers = read_str_from(go + "_getty_clr_{0}_.ex".format(post_hash))
     new_all_cccs = read_str_from(go + "_getty_ccc_{0}_.ex".format(post_hash))
     new_all_methods = read_str_from(go + "_getty_allmtd_src_{0}_.ex".format(post_hash))
     
     print new_changed_methods
     print new_improved_changed_methods
+    print new_removed_changed_methods
     print new_all_callers
     print new_all_cccs
     print new_all_methods

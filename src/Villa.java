@@ -184,12 +184,22 @@ public class Villa {
 					Set<String> revised_methods_old = DataStructureBuilder.loadSetFrom(
 							output_dir + "_getty_chgmtd_src_" + "old" + "_" + prev_commit + "_.ex");
 					Set<String> possible_ignored_revised_methods = SetOperations.intersection(revised_methods_old, all_project_methods);
+					
+					// improved revised_methods
 					revised_methods = SetOperations.union(revised_methods, possible_ignored_revised_methods);
 					String improved_chgmtd_out_path = output_dir + "_getty_chgmtd_src_" + prev_commit + "_" + curr_commit + "_.ex";
 					System.out.println(
 							"<complex mode>: IMPROVED, number of changed methods: " + revised_methods.size() + "\n"
 									+ "  output to file --> " + improved_chgmtd_out_path + " ...\n");
 					output_to(improved_chgmtd_out_path, revised_methods);
+					
+					// removed methods
+					Set<String> removed_methods = SetOperations.difference(revised_methods_old, all_project_methods);
+					String removed_chgmtd_out_path = output_dir + "_getty_chgmtd_src_gone_" + prev_commit + "_" + curr_commit + "_.ex";
+					System.out.println(
+							"<complex mode>: IMPROVED, number of removed methods: " + removed_methods.size() + "\n"
+									+ "  output to file --> " + removed_chgmtd_out_path + " ...\n");
+					output_to(removed_chgmtd_out_path, removed_methods);
 					/************************************************/
 					ITraceFinder chain_generator_improved = get_generator(target_path, package_prefix, revised_methods);
 					
