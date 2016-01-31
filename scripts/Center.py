@@ -1,7 +1,7 @@
 from utils import *
 
 
-def main(villa_path, pwd, go, prev_hash, post_hash, pkg_prefix="-"):
+def visit(villa_path, pwd, go, prev_hash, post_hash, pkg_prefix="-"):
     
     print("\n*************************************************************");
     print("Getty Center: Semantiful Differential Analyzer");
@@ -16,7 +16,7 @@ def main(villa_path, pwd, go, prev_hash, post_hash, pkg_prefix="-"):
         0-th: backup current branch work in stash for the last pass to restore
     '''
     working_branch = get_current_head_branch()
-    backup_and_stash_first()
+    should_further_recover = backup_and_stash_first()
     
     '''
         1-st pass: checkout prev_commit as detached head, and get all sets and etc, in simple mode (-so)
@@ -44,11 +44,11 @@ def main(villa_path, pwd, go, prev_hash, post_hash, pkg_prefix="-"):
     old_all_callers = read_str_from(go + "_getty_clr_{0}_.ex".format(prev_hash))
     old_all_cccs = read_str_from(go + "_getty_ccc_{0}_.ex".format(prev_hash))
     old_all_methods = read_str_from(go + "_getty_allmtd_src_{0}_.ex".format(prev_hash))
-    
-    print old_changed_methods
-    print old_all_callers
-    print old_all_cccs
-    print old_all_methods
+#     # DEBUG ONLY
+#     print old_changed_methods
+#     print old_all_callers
+#     print old_all_cccs
+#     print old_all_methods
     
     clear_temp_checkout(prev_hash)
     
@@ -80,17 +80,22 @@ def main(villa_path, pwd, go, prev_hash, post_hash, pkg_prefix="-"):
     new_all_callers = read_str_from(go + "_getty_clr_{0}_.ex".format(post_hash))
     new_all_cccs = read_str_from(go + "_getty_ccc_{0}_.ex".format(post_hash))
     new_all_methods = read_str_from(go + "_getty_allmtd_src_{0}_.ex".format(post_hash))
-    
-    print new_changed_methods
-    print new_improved_changed_methods
-    print new_removed_changed_methods
-    print new_all_callers
-    print new_all_cccs
-    print new_all_methods
+#     # DEBUG ONLY
+#     print new_changed_methods
+#     print new_improved_changed_methods
+#     print new_removed_changed_methods
+#     print new_all_callers
+#     print new_all_cccs
+#     print new_all_methods
     
     clear_temp_checkout(post_hash)
     
     '''
         last: restore original branch and all its pending work
     '''
-    restore_and_pop_last(working_branch)
+    restore_and_pop_last(working_branch, should_further_recover)
+    
+    print 'Villa analysis is completed.'
+    return old_changed_methods, old_all_callers, old_all_cccs, old_all_methods, \
+        new_changed_methods, new_improved_changed_methods, new_removed_changed_methods, \
+        new_all_callers, new_all_cccs, new_all_methods

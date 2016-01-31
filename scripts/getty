@@ -21,8 +21,7 @@ def help():
     print "\t\tgetty preimage_commit postimage_commit\n"
 
 
-if __name__ == "__main__":
-    ## env config
+def config_env():
     # Villa's jar path
     this_script_path = os.path.abspath(getsourcefile(lambda:0))
     if this_script_path[-1] == "/":
@@ -50,7 +49,10 @@ if __name__ == "__main__":
     else:
         os.makedirs(go)
     
-    ## args checking & setting
+    return villa_path, pwd, go
+
+
+def set_args():
     if len(sys.argv) == 1:
         rbs = from_sys_call("git branch -r").strip()
         all_remote_branches = set()
@@ -91,5 +93,31 @@ if __name__ == "__main__":
         raise ValueError("number of arguments should be 0, 1, or 2")
     # consider using `git rev-parse --short HEAD` if shorter names are preferred
     
-    center.main(villa_path, pwd, go,
-                prev_hash, post_hash)
+    return prev_hash, post_hash
+
+
+if __name__ == "__main__":
+    ## env config
+    villa_path, pwd, go = config_env()
+    
+    ## args checking & setting
+    prev_hash, post_hash = set_args()
+    
+    old_changed_methods, old_all_callers, old_all_cccs, old_all_methods, \
+        new_changed_methods, new_improved_changed_methods, new_removed_changed_methods, \
+        new_all_callers, new_all_cccs, new_all_methods = \
+            center.visit(villa_path, pwd, go, prev_hash, post_hash)
+#     # DEBUG ONLY
+#     print "Debug info: "
+#     print old_changed_methods
+#     print "size of old_all_callers: {0}".format(len(old_all_callers))
+#     print "number of keys in old_all_cccs: {0}".format(len(old_all_cccs))
+#     print "size of old_all_methods: {0}".format(len(old_all_methods))
+#     print new_changed_methods
+#     print new_improved_changed_methods
+#     print new_removed_changed_methods
+#     print "size of new_all_callers: {0}".format(len(new_all_callers))
+#     print "number of keys in new_all_cccs: {0}".format(len(new_all_cccs))
+#     print "size of new_all_methods: {0}".format(len(new_all_methods))
+    
+    

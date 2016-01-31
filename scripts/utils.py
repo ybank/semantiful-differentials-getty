@@ -72,13 +72,19 @@ def get_current_head_branch():
 # use with restore_and_pop_last, with care
 def backup_and_stash_first():
     sys_call("git reset HEAD .")
-    sys_call("git stash save --keep-index --include-untracked")
+    resp = from_sys_call("git stash save --keep-index --include-untracked").strip()
+    if resp == "No local changes to save":
+        return False
+    else:
+        return True
 
 
-# use with restore_and_pop_last, with care
-def restore_and_pop_last(head_branch):
+# use with backup_and_stash_first, with care
+# should_further_recover is the return value of backup_and_stash_first
+def restore_and_pop_last(head_branch, should_further_recover):
     sys_call("git checkout " + head_branch)
-    sys_call("git stash pop", ignore_bad_exit=True)
+    if should_further_recover:
+        sys_call("git stash pop", ignore_bad_exit=True)
 
 
 def clear_temp_checkout(current_commit):
