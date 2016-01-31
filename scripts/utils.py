@@ -5,11 +5,16 @@ import subprocess
 
 # system calls
 
-def sys_call(cmd):
+def sys_call(cmd, ignore_bad_exit=False):
     ret = subprocess.call(cmd, shell=True)
     if ret != 0:
-        print "Error in command: " + cmd
-        raise SystemExit("system exit: " + str(ret))
+        print "\n-- << non-zero exit status code >> --"
+        if ignore_bad_exit:
+            print "Exit from command: \n\t" + cmd
+            print "But we can safely ignore such non-zero exit status code this time.\n"
+        else:
+            print "Error in command: \n\t" + cmd + "\n"
+            raise SystemExit("system exit: " + str(ret))
 
 
 def from_sys_call(cmd):
@@ -73,7 +78,7 @@ def backup_and_stash_first():
 # use with restore_and_pop_last, with care
 def restore_and_pop_last(head_branch):
     sys_call("git checkout " + head_branch)
-    sys_call("git stash pop")
+    sys_call("git stash pop", ignore_bad_exit=True)
 
 
 def clear_temp_checkout(current_commit):
