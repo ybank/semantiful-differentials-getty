@@ -13,12 +13,6 @@ def visit(villa_path, pwd, go, prev_hash, post_hash, pkg_prefix="-"):
     sys_call("git diff {0} {1} > {2}".format(prev_hash, post_hash, diff_out))
     
     '''
-        0-th: backup current branch work in stash for the last pass to restore
-    '''
-    working_branch = get_current_head_branch()
-    should_further_recover = backup_and_stash_first()
-    
-    '''
         1-st pass: checkout prev_commit as detached head, and get all sets and etc, in simple mode (-so)
             remember to clear after this pass
     '''
@@ -33,7 +27,7 @@ def visit(villa_path, pwd, go, prev_hash, post_hash, pkg_prefix="-"):
         raise ValueError("pwd is not a prefix of test src path")
     print "current test src path (relative): " + test_src_rel_path + "\n"
     
-    sys_call("mvn test")
+    sys_call("mvn test -DskipTests")
     
     run_villa = "java -jar {0} -so {1} {2} {3} {4} {5} {6} -o {7}".format(
         villa_path, diff_out, bin_path, test_src_rel_path, pkg_prefix, prev_hash, post_hash, go)
@@ -67,7 +61,7 @@ def visit(villa_path, pwd, go, prev_hash, post_hash, pkg_prefix="-"):
         raise ValueError("pwd is not a prefix of test src path")
     print "current test src path (relative): " + test_src_rel_path + "\n"
     
-    sys_call("mvn test")
+    sys_call("mvn test -DskipTests")
     
     run_villa = "java -jar {0} -c {1} {2} {3} {4} {5} {6} -o {7}".format(
         villa_path, diff_out, bin_path, test_src_rel_path, pkg_prefix, prev_hash, post_hash, go)
@@ -89,11 +83,6 @@ def visit(villa_path, pwd, go, prev_hash, post_hash, pkg_prefix="-"):
 #     print new_all_methods
     
     clear_temp_checkout(post_hash)
-    
-    '''
-        last: restore original branch and all its pending work
-    '''
-    restore_and_pop_last(working_branch, should_further_recover)
     
     print 'Villa analysis is completed.'
     return old_changed_methods, old_all_callers, old_all_cccs, old_all_methods, \

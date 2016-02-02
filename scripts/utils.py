@@ -23,12 +23,40 @@ def from_sys_call(cmd):
 
 # maven calls
 
+# FIXME: does not support multi-module project
 def path_from_mvn_call(env):
     if env not in ["sourceDirectory", "scriptSourceDirectory", "testSourceDirectory", 
                    "outputDirectory", "testOutputDirectory", "directory"]:
         raise ValueError("incorrect env var: " + env)
     mvn_cmd = "mvn help:evaluate -Dexpression=project.build." + env + " | grep ^/"
     return subprocess.check_output(mvn_cmd, shell=True).strip()
+
+
+# IMPROVE: supported multi-module project, but make it module-specific when needed
+def classpath_from_mvn_call():
+    mvn_cmd = "mvn dependency:build-classpath | grep ^\/"
+    output = subprocess.check_output(mvn_cmd, shell=True).strip()
+    all_paths = []
+    classpaths = output.split("\n")
+    for clspt in classpaths:
+        classpath = clspt.strip()
+        for one_path in classpath.split(":"):
+            if one_path not in all_paths:
+                all_paths.append(one_path)
+    merged = "."
+    for path in all_paths:
+        merged += (":" + path)
+    return merged
+
+
+# without considering target folders
+def full_env_classpath():
+    return classpath_from_mvn_call() + ":$CLASSPATH"
+
+
+# include target folders
+def full_classpath(bin_output, test_output):
+    return full_env_classpath() + ":" + bin_output + ":" + test_output
 
 
 # exchange parser

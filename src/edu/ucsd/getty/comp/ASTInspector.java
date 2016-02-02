@@ -43,6 +43,7 @@ public class ASTInspector implements IMethodRecognizer {
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
+				System.exit(21);
 			}
 		}
 		return allChanged;
@@ -70,6 +71,7 @@ public class ASTInspector implements IMethodRecognizer {
 			return qualifiedMethodName;
 		} catch (Exception e) {
 			e.printStackTrace();
+			System.exit(21);
 			return null;
 		}
 	}
@@ -119,9 +121,10 @@ public class ASTInspector implements IMethodRecognizer {
 			}
 			else if (className.equals("com.github.javaparser.ast.CompilationUnit"))
 				constructorName = ((CompilationUnit) parent).getPackage().getName().toString() + "." + constructorName;
-			else
-				// throw new Exception("unprocessed type: " + className);
-				System.out.println("[C] unprocessed type: " + className);
+			else {
+//				System.out.println("[C] unprocessed type: " + className);
+				throw new Exception("[C] unprocessed type: " + className);
+			}
 			parent = parent.getParentNode();
 		}
 		return constructorName;
@@ -163,9 +166,10 @@ public class ASTInspector implements IMethodRecognizer {
 			else if (className.equals("com.github.javaparser.ast.CompilationUnit")) {				
 				methodName = ((CompilationUnit) parent).getPackage().getName().toString() + "." + methodName;
 			}
-			else
-				// throw new Exception("unprocessed type: " + className);
-				System.out.println("[M] unprocessed type: " + className);
+			else {				
+//				System.out.println("[M] unprocessed type: " + className);
+				throw new Exception("[M] unprocessed type: " + className);
+			}
 			parent = parent.getParentNode();
 		}
 		return methodName;

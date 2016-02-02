@@ -5,8 +5,15 @@ import re
 import sys
 from inspect import getsourcefile
 
+import villa
 import center
-from utils import from_sys_call, get_parent_hash
+from utils import (
+    from_sys_call,
+    get_parent_hash,
+    get_current_head_branch,
+    backup_and_stash_first,
+    restore_and_pop_last
+)
 
 
 def help():
@@ -103,10 +110,19 @@ if __name__ == "__main__":
     ## args checking & setting
     prev_hash, post_hash = set_args()
     
+    '''
+        0-th: backup current branch work in stash for the last pass to restore
+    '''
+    working_branch = get_current_head_branch()
+    should_further_recover = backup_and_stash_first()
+    
+    '''
+        multi-stage analysis: Villa, Daikon, Getty
+    '''
     old_changed_methods, old_all_callers, old_all_cccs, old_all_methods, \
         new_changed_methods, new_improved_changed_methods, new_removed_changed_methods, \
         new_all_callers, new_all_cccs, new_all_methods = \
-            center.visit(villa_path, pwd, go, prev_hash, post_hash)
+            villa.visit(villa_path, pwd, go, prev_hash, post_hash)
 #     # DEBUG ONLY
 #     print "Debug info: "
 #     print old_changed_methods
@@ -120,4 +136,15 @@ if __name__ == "__main__":
 #     print "number of keys in new_all_cccs: {0}".format(len(new_all_cccs))
 #     print "size of new_all_methods: {0}".format(len(new_all_methods))
     
+    center.visit(
+        prev_hash, post_hash, \
+        old_changed_methods, old_all_callers, old_all_cccs, old_all_methods, \
+        new_changed_methods, new_improved_changed_methods, new_removed_changed_methods, \
+        new_all_callers, new_all_cccs, new_all_methods
+    )
     
+    '''
+        last: restore original branch and all its pending work
+    '''
+    restore_and_pop_last(working_branch, should_further_recover)
+    print 'Quit Getty.'

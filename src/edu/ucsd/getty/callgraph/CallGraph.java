@@ -37,6 +37,7 @@ public class CallGraph {
 				processInvocation(invocation);
 			} catch (Exception e) {
 				e.printStackTrace();
+				System.exit(22);
 			}
 		}
 	}

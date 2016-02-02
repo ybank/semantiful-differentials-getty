@@ -448,6 +448,7 @@ public class InputDiffProcessor implements IInputProcessor {
     		input.close();
     	} catch (IOException e) {
     		e.printStackTrace();
+    		System.exit(20);
     	}
     	return lines;
     }
