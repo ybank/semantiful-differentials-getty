@@ -59,5 +59,10 @@ def formalize(prefixes):
 
 
 # formalize one method so it is recognizable by Daikon filter
-def reformat(method):
+def dfformat(method):
     return method.replace(":", ".").replace(".", "\.") + "\("
+
+
+# formalize one method so it is recognizable by Daikon filter
+def fsformat(method):
+    return method.replace(":", "_").replace("$", "_").replace(".", "_")

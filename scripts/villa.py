@@ -4,7 +4,7 @@ from utils import *
 def visit(villa_path, pwd, go, prev_hash, post_hash, pkg_prefix="-"):
     
     print("\n*************************************************************");
-    print("Getty Center: Semantiful Differential Analyzer");
+    print("Getty Villa: Semantiful Differential Analyzer");
     print("*************************************************************\n");
     
     print "current working directory: " + pwd + "\n"

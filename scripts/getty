@@ -7,7 +7,9 @@ from inspect import getsourcefile
 
 import villa
 import center
+import hdiff
 from utils import (
+    sys_call,
     from_sys_call,
     get_parent_hash,
     get_current_head_branch,
@@ -137,11 +139,16 @@ if __name__ == "__main__":
 #     print "size of new_all_methods: {0}".format(len(new_all_methods))
     
     center.visit(
-        prev_hash, post_hash, \
+        go, prev_hash, post_hash, \
         old_changed_methods, old_all_callers, old_all_cccs, old_all_methods, \
         new_changed_methods, new_improved_changed_methods, new_removed_changed_methods, \
         new_all_callers, new_all_cccs, new_all_methods
     )
+    
+    diff_in = pwd[:-1] + ".__getty_output__/text.diff"
+    html_out = pwd[:-1] + ".__getty_output__/sema.diff.html"
+    hdiff.diff_to_html(diff_in, html_out)
+    sys_call("open " + html_out)
     
     '''
         last: restore original branch and all its pending work
