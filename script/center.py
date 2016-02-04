@@ -15,12 +15,12 @@ def rel_go(go):
 
 # one pass template
 # FIXME: Daikon is very failure-prone; work around with it
-def one_pass(go, this_hash, target_set):
+def one_pass(junit_path, go, this_hash, target_set):
     sys_call("git checkout " + this_hash)
     
     bin_path = path_from_mvn_call("outputDirectory")
     test_bin_path = path_from_mvn_call("testOutputDirectory")
-    cp = full_classpath(bin_path, test_bin_path)
+    cp = full_classpath(junit_path, bin_path, test_bin_path)
     print "\n===full classpath===\n" + cp + "\n"
     
     sys_call("mvn test -DskipTests")
@@ -62,7 +62,8 @@ def one_pass(go, this_hash, target_set):
 
 
 # the main entrance
-def visit(go, prev_hash, post_hash, \
+def visit(junit_path, \
+          go, prev_hash, post_hash, \
           old_changed_methods, \
           old_all_callers, old_all_cccs, old_all_methods, \
           new_changed_methods, new_improved_changed_methods, new_removed_changed_methods, \
@@ -81,11 +82,11 @@ def visit(go, prev_hash, post_hash, \
     '''
         1-st pass: checkout prev_commit as detached head, and get invariants for all interesting target
     '''
-#     one_pass(go, prev_hash, old_changed_methods)
+#     one_pass(junit_path, go, prev_hash, old_changed_methods)
     
     '''
         2-nd pass: checkout post_commit as detached head, and get invariants for all interesting target
     '''
-#     one_pass(go, post_hash, new_improved_changed_methods)
+#     one_pass(junit_path, go, post_hash, new_improved_changed_methods)
     
     print 'Center analysis is completed.'

@@ -37,10 +37,14 @@ def config_env():
         this_script_path = this_script_path[:-1]
     this_script_dir = this_script_path[:this_script_path.rfind("/")+1]
     villa_path = this_script_dir + "Getty.Villa.jar"  # jar is at the same dir
-    if os.path.exists(villa_path):
+    junit_path = this_script_dir + "getty-junit-4.12.jar"  # jar (revised junit) is at the same dir
+    if os.path.exists(villa_path) and os.path.exists(junit_path):
         print "\nGetty.Villa.jar path: " + villa_path
-    else:
+        print "\ngetty-junit-4.12.jar path: " + junit_path
+    elif not os.path.exists(villa_path):
         raise EnvironmentError("could not find Getty.Villa.jar in script dir " + this_script_dir)
+    elif not os.path.exists(junit_path):
+        raise EnvironmentError("could not find getty-junit-4.12.jar in script dir " + this_script_dir)
     
     # present working directory - it should be the project's root with "/" at the end
     pwd = from_sys_call("pwd").strip()
@@ -58,7 +62,7 @@ def config_env():
     else:
         os.makedirs(go)
     
-    return villa_path, pwd, go
+    return villa_path, junit_path, pwd, go
 
 
 def set_args():
@@ -107,7 +111,7 @@ def set_args():
 
 if __name__ == "__main__":
     ## env config
-    villa_path, pwd, go = config_env()
+    villa_path, junit_path, pwd, go = config_env()
     
     ## args checking & setting
     prev_hash, post_hash = set_args()
@@ -139,7 +143,7 @@ if __name__ == "__main__":
 #     print "size of new_all_methods: {0}".format(len(new_all_methods))
     
     center.visit(
-        go, prev_hash, post_hash, \
+        junit_path, go, prev_hash, post_hash, \
         old_changed_methods, old_all_callers, old_all_cccs, old_all_methods, \
         new_changed_methods, new_improved_changed_methods, new_removed_changed_methods, \
         new_all_callers, new_all_cccs, new_all_methods

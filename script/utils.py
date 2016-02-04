@@ -64,8 +64,8 @@ def full_env_classpath():
 
 
 # include target folders
-def full_classpath(bin_output, test_output):
-    return full_env_classpath() + ":" + bin_output + ":" + test_output
+def full_classpath(junit_path, bin_output, test_output):
+    return junit_path + ":" + full_env_classpath() + ":" + bin_output + ":" + test_output
 
 
 # get junit version, runner, and test classes
@@ -77,7 +77,7 @@ def junit_torun_str():
     merged_run = {}
     for junit_torun in output:
         junit_torun = junit_torun.strip()
-        vsn = junit_torun[17:23]
+#         vsn = junit_torun[17:23]
         to_run_list = junit_torun[26:].split(" ")
         runner = to_run_list[0]
         test_classes = set(to_run_list[1:])
@@ -91,7 +91,7 @@ def junit_torun_str():
         junit_runner = merged_run.keys()[0]
         return " ".join([junit_runner] + list(merged_run[junit_runner]))
     else:
-        raise NotImplementedError("multiple test tools are used in this project")
+        raise NotImplementedError("multiple unhandled test tools are used in this project")
 
 
 # exchange parser

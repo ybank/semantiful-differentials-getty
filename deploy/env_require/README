@@ -7,7 +7,9 @@
 4. simplediff
 	-- `pip install simplediff`
 5. Randoop and JUnit 4 (and 3)
-	-- put the following jars in front of $CLASSPATH, or first entries in $CLASSPATH
+	-- put the following jars on $CLASSPATH
 		-- randoop-2.1.2.jar
  		-- hamcrest-all-1.3.jar
- 
+6. JUnit
+	-- put JUnit (4.12-getty or revised) lib in front of all java classpaths
+		-- getty-junit-4.12.jar (configured automatically by tool)

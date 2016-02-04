@@ -4,10 +4,11 @@
 	<classpathentry kind="src" path="test"/>
 	<classpathentry kind="src" path="script"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="lib" path="/Users/yanyan/Projects/research/eclipse/Getty/lib/bcel-5.2.jar" sourcepath="/Users/yanyan/Tools/src/bcel-5.2-src.zip"/>
 	<classpathentry kind="lib" path="/Users/yanyan/Projects/research/eclipse/Getty/lib/daikon.jar" sourcepath="/Users/yanyan/Downloads/daikon-5.2.20.zip"/>
 	<classpathentry kind="lib" path="/Users/yanyan/Projects/research/eclipse/Getty/lib/soot-2.5.0.jar" sourcepath="/Users/yanyan/Tools/src/sootsources-trunk.jar"/>
 	<classpathentry kind="lib" path="/Users/yanyan/Projects/research/eclipse/Getty/lib/javaparser-core-2.3.1-SNAPSHOT.jar" sourcepath="/Users/yanyan/Tools/src/javaparser-javaparser-parent-2.3.0.zip"/>
+	<classpathentry kind="lib" path="lib/junit-4.12.jar"/>
+	<classpathentry kind="lib" path="lib/hamcrest-all-1.3.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
