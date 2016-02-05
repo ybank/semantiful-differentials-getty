@@ -2,7 +2,6 @@
 
 from misc import *
 from utils import *
-from lib2to3.tests.support import reformat
 
 
 # relative path of getty output path (go), when pwd is root dir of project
@@ -28,14 +27,14 @@ def one_pass(junit_path, go, this_hash, target_set):
     print "\n===junit torun===\n" + junit_torun + "\n"
     
     java_cmd = "java -cp " + cp
-    select_pattern = formalize(common_prefixes(target_set))
+    select_pattern = reformat_all(common_prefixes(target_set))
     print "\n===select pattern===\n" + select_pattern + "\n"
     
     # run Chicory for trace
     run_chicory = \
         " ".join([java_cmd, "daikon.Chicory", \
                   "--dtrace-file="+rel_go(go)+"_getty_trace_"+this_hash+"_.dtrace.gz", \
-                  "--ppt-select-pattern=\'^"+select_pattern+"\'", \
+                  "--ppt-select-pattern=\'"+select_pattern+"\'", \
                   junit_torun])
     print "=== Daikon:Chicory command to run: \n" + run_chicory
     sys_call(run_chicory, ignore_bad_exit=True)
@@ -45,7 +44,7 @@ def one_pass(junit_path, go, this_hash, target_set):
         run_daikon = \
             " ".join([java_cmd, "daikon.Daikon", 
                       go+"_getty_trace_"+this_hash+"_.dtrace.gz", \
-                      "--ppt-select-pattern=\'^"+dfformat(tgt)+"\'", \
+                      "--ppt-select-pattern=\'"+dfformat(tgt)+"\'", \
                       "-o", go+"_getty_inv__"+fsformat(tgt)+"__"+this_hash+"_.inv.gz"])
         print "=== Daikon:Daikon command to run: \n" + run_daikon
         sys_call(run_daikon, ignore_bad_exit=True)
@@ -71,9 +70,9 @@ def visit(junit_path, \
     
 #     # DEBUG ONLY
 #     print common_prefixes(old_all_methods)
-#     print formalize(common_prefixes(old_all_methods))
+#     print reformat_all(common_prefixes(old_all_methods))
 #     print common_prefixes(new_all_methods)
-#     print formalize(common_prefixes(new_all_methods))
+#     print reformat_all(common_prefixes(new_all_methods))
     
     print("\n*************************************************************");
     print("Getty Center: Semantiful Differential Analyzer");
@@ -82,7 +81,7 @@ def visit(junit_path, \
     '''
         1-st pass: checkout prev_commit as detached head, and get invariants for all interesting target
     '''
-#     one_pass(junit_path, go, prev_hash, old_changed_methods)
+    one_pass(junit_path, go, prev_hash, old_changed_methods)
     
     '''
         2-nd pass: checkout post_commit as detached head, and get invariants for all interesting target

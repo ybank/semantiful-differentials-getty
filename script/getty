@@ -152,10 +152,18 @@ if __name__ == "__main__":
     diff_in = pwd[:-1] + ".__getty_output__/text.diff"
     html_out = pwd[:-1] + ".__getty_output__/sema.diff.html"
     hdiff.diff_to_html(diff_in, html_out)
-    sys_call("open " + html_out)
     
     '''
         last: restore original branch and all its pending work
     '''
     restore_and_pop_last(working_branch, should_further_recover)
+    
+    '''
+        view results
+    '''
+    # open with Safari on Mac OS
+    sys_call("open -a /Applications/Safari.app/Contents/MacOS/Safari " + html_out)
+#     # open with default app
+#     sys_call("open " + html_out)
+    
     print 'Quit Getty.'
