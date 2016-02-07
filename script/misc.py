@@ -4,34 +4,29 @@
 # Recognize constructor and reformat it
 # pachage.class:method -> package.class:method
 # package.class:<init> -> pachage.class:class
-# package.class:<clinit> -> package.class$
+# package.class:<clinit> -> package.class
 # package.outerclass$innerclass:<init> -> package.outerclass$innerclass:innerclass
-def method_name(method):
-    colon_index = method.rfind(":")
-    if method[colon_index+1:] == "<init>":
-        prd_i = method.rfind(".")
-        dlr_i = method.rfind("$")
+def real_name(target):
+    colon_index = target.rfind(":")
+    if colon_index == -1:
+        # not a target, but a class name, for example
+        return target
+    elif target[colon_index+1:] == "<init>":
+        prd_i = target.rfind(".")
+        dlr_i = target.rfind("$")
         chop_i = max(prd_i, dlr_i)
-        if chop_i == -1:
-            chop_i = 0
-        methodname = method[chop_i+1:colon_index]
-        return method[:colon_index] + ":" + methodname
-    elif method[colon_index+1:] == "<clinit>":
-        prd_i = method.rfind(".")
-        dlr_i = method.rfind("$")
-        chop_i = max(prd_i, dlr_i)
-        if chop_i == -1:
-            chop_i = 0
-        methodname = method[chop_i+1:colon_index]
-        return method[:colon_index] + "$"
+        methodname = target[chop_i+1:colon_index]
+        return target[:colon_index+1] + methodname
+    elif target[colon_index+1:] == "<clinit>":
+        return target[:colon_index]
     else:
-        return method
+        return target
 
 
-def method_names(methods):
+def real_names(targets):
     reformated = []
-    for m in methods:
-        reformated.append(method_name(m))
+    for m in targets:
+        reformated.append(real_name(m))
     return reformated
 
 
@@ -39,7 +34,7 @@ def method_names(methods):
 def __common_prefix(m):
     if not m:
         raise ValueError('list of strings should not be empty')
-    reformated = method_names(m)
+    reformated = real_names(m)
     min_s = min(reformated)
     max_s = max(reformated)
     for i, c in enumerate(min_s):
@@ -54,7 +49,7 @@ def common_prefixes(m, min_len=__min_common_prefix_length, daikon_style=True):
     if not m:
         raise ValueError('list of strings should not be empty')
     if daikon_style:
-        m = method_names(m)
+        m = real_names(m)
     result = set()
     current_prefix = ''
     working = []
@@ -87,33 +82,35 @@ def common_prefixes(m, min_len=__min_common_prefix_length, daikon_style=True):
 
 
 # reformat method (etc.) prefixes so they are recognizable by Daikon filter
-def reformat_all(prefixes):
+def reformat_all(prefixes, more_ppts=False):
     result = []
     for prefix in prefixes:
+        if more_ppts:
+            colon_index = prefix.rfind(":")
+            if colon_index != -1:
+                prefix = prefix[:colon_index]  # includes class$, class.*, and more (class*)
         prefix = "^" + prefix.replace(":", ".").replace(".", "\.")
         result.append(prefix)
     return "|".join(result)
 
 
 # reformat one method so it is recognizable by Daikon filter
-def dfformat(method, for_daikon=True):
-    if for_daikon:
-        method = "^" + method_name(method)
-        if method.endswith("$"):
-            return method.replace(":", ".").replace(".", "\.")
-        else:
-            return method.replace(":", ".").replace(".", "\.") + "\("
+def dfformat(target, more_ppts=False):
+    target = real_name(target)
+    colon_index = target.rfind(":")
+    if colon_index == -1:
+          # includes class$, class.*, and more (class*)
+        return "^" + target.replace(":", ".").replace(".", "\.")
     else:
-        return method.replace(":", ".").replace(".", "\.") + "\("
+        if more_ppts:
+              # includes class$, class.*, and more (class*)
+            return "^" + target[:colon_index].replace(":", ".").replace(".", "\.")
+        else:
+            return "^" + target.replace(":", ".").replace(".", "\.") + "\("
 
 
-# reformat one method so it is recognizable by Daikon filter
-def fsformat(method, for_daikon=True):
+# reformat one target so it is recognizable by Daikon filter
+def fsformat(target, for_daikon=True):
     if for_daikon:
-        method = method_name(method)
-        if method.endswith("$"):
-            return method[:-1].replace(":", "_").replace("$", "_").replace(".", "_")
-        else:
-            return method.replace(":", "_").replace("$", "_").replace(".", "_")
-    else:
-        return method.replace(":", "_").replace("$", "_").replace(".", "_")
+        target = real_name(target)
+    return target.replace(":", "_").replace("$", "_").replace(".", "_")

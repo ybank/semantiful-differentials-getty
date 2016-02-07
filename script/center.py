@@ -27,7 +27,7 @@ def one_pass(junit_path, go, this_hash, target_set):
     print "\n===junit torun===\n" + junit_torun + "\n"
     
     java_cmd = "java -cp " + cp
-    select_pattern = reformat_all(common_prefixes(target_set))
+    select_pattern = reformat_all(common_prefixes(target_set), more_ppts=True)
     print "\n===select pattern===\n" + select_pattern + "\n"
     
     # run Chicory for trace
@@ -44,7 +44,8 @@ def one_pass(junit_path, go, this_hash, target_set):
         run_daikon = \
             " ".join([java_cmd, "daikon.Daikon", 
                       go+"_getty_trace_"+this_hash+"_.dtrace.gz", \
-                      "--ppt-select-pattern=\'"+dfformat(tgt)+"\'", \
+                      "--ppt-select-pattern=\'"+dfformat(tgt, more_ppts=True)+"\'", \
+                      "--no_text_output --show_progress", \
                       "-o", go+"_getty_inv__"+fsformat(tgt)+"__"+this_hash+"_.inv.gz"])
         print "=== Daikon:Daikon command to run: \n" + run_daikon
         sys_call(run_daikon, ignore_bad_exit=True)
@@ -53,6 +54,7 @@ def one_pass(junit_path, go, this_hash, target_set):
     for tgt in target_set:
         run_printinv = \
             " ".join([java_cmd, "daikon.PrintInvariants", \
+                      "--ppt-select-pattern=\'"+dfformat(tgt)+"\'", \
                       go+"_getty_inv__"+fsformat(tgt)+"__"+this_hash+"_.inv.gz"])
         print "=== Daikon:PrintInvs command to run: \n" + run_printinv
         sys_call(run_printinv, ignore_bad_exit=True)
