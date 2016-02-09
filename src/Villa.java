@@ -29,7 +29,7 @@ public class Villa {
 	 */
 	public static void main(String[] args) {
 		System.out.println("\n*************************************************************");
-		System.out.println("Getty Villa: read diff and target files and get method chains");
+		System.out.println("Getty Villa: understand project differentials for method sets");
 		System.out.println("*************************************************************\n");
 		
 		check_args(args);
@@ -41,6 +41,7 @@ public class Villa {
 		 * simgen=new (sn)
 		 */
 			case "-s":
+			case "--simgen=bare":
 			case "-so":
 			case "--simgen":
 			case "--simgen=old": 
@@ -56,7 +57,15 @@ public class Villa {
 			case "--comgen":
 				execute_tour_complex_mode(args);
 				break;
-			
+				
+		/**
+		 * comgen (c)
+		 */
+			case "-r":
+			case "--recgen":
+				execute_tour_recovery_mode(args);
+				break;
+						
 		/**
 		 * unrecognizable execution mode
 		 */
@@ -75,10 +84,11 @@ public class Villa {
 			System.exit(1);
 		} else if (args.length == 7 || args.length == 9) {
 			// tour mode argument check
-			if (!(args[0].equals("--simgen=old") || args[0].equals("--simgen=new") 
-					|| args[0].equals("--simgen") 
+			if (!(args[0].equals("--simgen=bare") || args[0].equals("--simgen=old") 
+					|| args[0].equals("--simgen=new") || args[0].equals("--simgen") 
 					|| args[0].equals("-s") || args[0].equals("-so")
-					|| args[0].equals("-c") || args[0].equals("--comgen"))) {
+					|| args[0].equals("-c") || args[0].equals("--comgen") 
+					|| args[0].equals("-r") || args[0].equals("--recgen"))) {
 				System.out.println("Incorrect execution mode: " + args[0]);
 				print_help_info();
 				System.exit(1);
@@ -101,25 +111,34 @@ public class Villa {
 	private static void print_help_info() {
 		System.out.println("Usage:"
 				+ "\n\t  "
-				+ "java -jar Getty.Villa.jar --help|-h"
+				+ "java -jar Getty.Villa.jar <--help | -h>"
 				+ "\n\t  "
 				+ "java -jar Getty.Villa.jar "
-				+ "--simgen=old | --simgen | -so | -s diffpath targetpath testsrcrelpath pkgprefix | - prevcommit currcommit "
-				+ "[--output | -o outputworkdir]"
+				+ "<--simgen=bare | -s> <diffpath> <targetpath> <testsrcrelpath> <pkgprefix | -> <prevcommit> <currcommit> "
+				+ "[<--output | -o> <outputworkdir>]"
 				+ "\n\t  "
 				+ "java -jar Getty.Villa.jar "
-				+ "--simgen=new | -sn diffpath targetpath testsrcrelpath pkgprefix | - prevcommit currcommit "
-				+ "[--output | -o outputworkdir]"
+				+ "<--simgen=old | --simgen | -so> <diffpath> <targetpath> <testsrcrelpath> <pkgprefix | -> <prevcommit> <currcommit> "
+				+ "[<--output | -o> <outputworkdir>]"
 				+ "\n\t  "
 				+ "java -jar Getty.Villa.jar "
-				+ "--comgen | -c diffpath targetpath testsrcrelpath pkgprefix | - prevcommit currcommit "
-				+ "[--output | -o outputworkdir]"
+				+ "<--simgen=new | -sn> <diffpath> <targetpath> <testsrcrelpath> <pkgprefix | -> <prevcommit> <currcommit> "
+				+ "[<--output | -o> <outputworkdir>]"
+				+ "\n\t  "
+				+ "java -jar Getty.Villa.jar "
+				+ "<--comgen | -c> <diffpath> <targetpath> <testsrcrelpath> <pkgprefix | -> <prevcommit> <currcommit> "
+				+ "[<--output | -o> <outputworkdir>]"
+				+ "\n\t  "
+				+ "java -jar Getty.Villa.jar "
+				+ "<--recgen | -r> <diffpath> <targetpath> <testsrcrelpath> <pkgprefix | -> <prevcommit> <currcommit> "
+				+ "[<--output | -o> <outputworkdir>]"
 				+ "\n");
 	}
 	
 	/**
-	 * simgen=old (DEFAULT, so, s)
+	 * simgen=old (DEFAULT, so)
 	 * simgen=new (sn)
+	 * simgen=bare (s)
 	 * 
 	 * The simple mode to generate changed method set*, candidate call chains, 
 	 * and all callers in the chains 
@@ -145,7 +164,9 @@ public class Villa {
 			/**********************************/
 			Map<String, Integer[]> file_revision_lines;
 			if (args[0].equals("-s") || args[0].equals("-so") 
-					|| args[0].equals("--simgen") || args[0].equals("--simgen=old"))
+					|| args[0].equals("--simgen=bare") 
+					|| args[0].equals("--simgen") 
+					|| args[0].equals("--simgen=old"))
 				file_revision_lines = get_original_file_lines_map(diff_path, prev_commit, curr_commit);
 			else  // args[0].equals("-sn") || args[0].equals("--simgen=new")
 				file_revision_lines = get_revised_file_lines_map(diff_path, prev_commit, curr_commit);
@@ -167,7 +188,7 @@ public class Villa {
 			/**********************************/
 			String this_commit;
 			if (args[0].equals("-s") || args[0].equals("-so") 
-					|| args[0].equals("--simgen") || args[0].equals("--simgen=old"))
+					|| args[0].equals("--simgen") || args[0].equals("--simgen=old") || args[0].equals("--simgen=bare"))
 				this_commit = prev_commit;
 			else  // args[0].equals("-sn") || args[0].equals("--simgen=new")
 				this_commit = curr_commit;
@@ -182,29 +203,36 @@ public class Villa {
 							+ "  output to file --> " + apm_out_path + " ...\n");
 			output_to(apm_out_path, all_project_methods);
 			
-			Map<String, Set<List<String>>> candidates = chain_generator.getCandidateTraces();
+			////
+			// get ccc and clr only if it is not bare mode
+			////
+			if (!(args[0].equals("-s") || args[0].equals("--simgen=bare"))) {
+				
+				Map<String, Set<List<String>>> candidates = chain_generator.getCandidateTraces();
 //					System.out.println(candidates);
-			String ccc_out_path = output_dir + "_getty_ccc_" + this_commit + "_.ex";
-			int max_chain_len = 0;
-			for (String method : candidates.keySet()) {
-				int c_len = candidates.get(method).size();
-				if (c_len > max_chain_len)
-					max_chain_len = c_len;
-			}
-			System.out.println(
-					"<simple mode>: max size of ccc map: " + candidates.size() + "(methods) x " + max_chain_len + "(chains)\n"
-					+ "  output to file --> " + ccc_out_path + " ...\n");
-			output_to(ccc_out_path, candidates);
-			
-			
-			/**********************************/
-			Set<String> all_callers = get_all_callers(candidates);
+				String ccc_out_path = output_dir + "_getty_ccc_" + this_commit + "_.ex";
+				int max_chain_len = 0;
+				for (String method : candidates.keySet()) {
+					int c_len = candidates.get(method).size();
+					if (c_len > max_chain_len)
+						max_chain_len = c_len;
+				}
+				System.out.println(
+						"<simple mode>: max size of ccc map: " + candidates.size() + "(methods) x " + max_chain_len + "(chains)\n"
+								+ "  output to file --> " + ccc_out_path + " ...\n");
+				output_to(ccc_out_path, candidates);
+				
+				
+				/**********************************/
+				Set<String> all_callers = get_all_callers(candidates);
 //					System.out.println(all_callers);
-			String clr_out_path = output_dir + "_getty_clr_" + this_commit + "_.ex";
-			System.out.println(
-					"<simple mode>: number of possible callers: " + all_callers.size() + "\n"
-					+ "  output to file --> " + clr_out_path + " ...\n");
-			output_to(clr_out_path, all_callers);
+				String clr_out_path = output_dir + "_getty_clr_" + this_commit + "_.ex";
+				System.out.println(
+						"<simple mode>: number of possible callers: " + all_callers.size() + "\n"
+								+ "  output to file --> " + clr_out_path + " ...\n");
+				output_to(clr_out_path, all_callers);
+				
+			}
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -219,6 +247,7 @@ public class Villa {
 	 * all callers in the chains, and all considered methods
 	 * 
 	 * * In this mode we consider not only the current version for precision
+	 * * Assume simple mode has run
 	 * 
 	 * So far this mode only support forward analysis, i.e., from older version to newer.
 	 */
@@ -306,6 +335,88 @@ public class Villa {
 			String clr_out_path = output_dir + "_getty_clr_" + curr_commit + "_.ex";
 			System.out.println(
 					"<complex mode>: number of possible callers: " + all_callers.size() + "\n"
+							+ "  output to file --> " + clr_out_path + " ...\n");
+			output_to(clr_out_path, all_callers);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(2);
+		}
+	}
+	
+	/**
+	 * recgen (c)
+	 * 
+	 * The recovery mode to generate candidate call chains and all callers in the chains
+	 * 
+	 * * In this mode we consider not only the old version for precision
+	 * * Assume both simple mode and complex mode have run
+	 * 
+	 * So far this mode only support backward analysis, i.e., from newer version to older.
+	 */
+	protected static void execute_tour_recovery_mode(String[] args) {
+		String target_path = args[2];
+		String package_prefix = args[4].equals("-") ? "" : args[4];
+		String prev_commit = args[5];
+		String curr_commit = args[6];
+		
+		String output_dir = "/tmp/getty/";
+		if (args.length == 9 && (args[7].equals("-o") || args[7].equals("--output"))) {
+			output_dir = args[8];
+			if(!output_dir.endsWith("/"))
+				output_dir += "/";
+		}
+		
+		try {
+			/********more precise revised method set********/
+			Set<String> revised_methods_old = DataStructureBuilder.loadSetFrom(
+					output_dir + "_getty_chgmtd_src_" + "old" + "_" + prev_commit + "_.ex");
+			Set<String> revised_methods_new = DataStructureBuilder.loadSetFrom(
+					output_dir + "_getty_chgmtd_src_" + "new" + "_" + curr_commit + "_.ex");
+			Set<String> all_project_methods = DataStructureBuilder.loadSetFrom(
+					output_dir + "_getty_allmtd_src_" + prev_commit + "_.ex");
+			Set<String> possible_ignored_revised_methods = SetOperations.intersection(revised_methods_new, all_project_methods);
+			
+			// improved revised_methods
+			Set<String> revised_methods = SetOperations.union(revised_methods_old, possible_ignored_revised_methods);
+			String improved_chgmtd_out_path = output_dir + "_getty_chgmtd_src_" + curr_commit + "_" + prev_commit + "_.ex";
+			System.out.println(
+					"<recovery mode>: IMPROVED, number of changed methods: " + revised_methods.size() + "\n"
+							+ "  output to file --> " + improved_chgmtd_out_path + " ...\n");
+			output_to(improved_chgmtd_out_path, revised_methods);
+			
+			// added methods
+			Set<String> added_methods = SetOperations.difference(revised_methods_new, all_project_methods);
+			String added_chgmtd_out_path = output_dir + "_getty_chgmtd_src_gain_" + prev_commit + "_" + curr_commit + "_.ex";
+			System.out.println(
+					"<recovery mode>: IMPROVED, number of added methods: " + added_methods.size() + "\n"
+							+ "  output to file --> " + added_chgmtd_out_path + " ...\n");
+			output_to(added_chgmtd_out_path, added_methods);
+			
+			/************************************************/
+			ITraceFinder chain_generator_improved = get_generator(target_path, package_prefix, revised_methods);
+			
+			Map<String, Set<List<String>>> candidates = chain_generator_improved.getCandidateTraces();
+//					System.out.println(candidates);
+			String ccc_out_path = output_dir + "_getty_ccc_" + prev_commit + "_.ex";
+			int max_chain_len = 0;
+			for (String method : candidates.keySet()) {
+				int c_len = candidates.get(method).size();
+				if (c_len > max_chain_len)
+					max_chain_len = c_len;
+			}
+			System.out.println(
+					"<recovery mode>: max size of ccc map: " + candidates.size() + "(methods) x " + max_chain_len + "(chains)\n"
+							+ "  output to file --> " + ccc_out_path + " ...\n");
+			output_to(ccc_out_path, candidates);
+			
+			
+			/**********************************/
+			Set<String> all_callers = get_all_callers(candidates);
+//					System.out.println(all_callers);
+			String clr_out_path = output_dir + "_getty_clr_" + prev_commit + "_.ex";
+			System.out.println(
+					"<recovery mode>: number of possible callers: " + all_callers.size() + "\n"
 							+ "  output to file --> " + clr_out_path + " ...\n");
 			output_to(clr_out_path, all_callers);
 			

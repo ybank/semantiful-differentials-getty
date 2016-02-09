@@ -42,6 +42,10 @@ except ImportError:
     raise EnvironmentError(
         "simplediff module is not installed - find it here: https://github.com/paulgb/simplediff\n")
 
+import misc
+import utils
+
+
 # minimum line size, we add a zero-sized breakable space every
 # LINESIZE characters
 linesize = 20
@@ -459,6 +463,7 @@ def parse_input(input_file, output_file, input_file_name, output_file_name,
     empty_buffer(output_file)
     output_file.write(table_footer.encode(encoding))
     if not exclude_headers:
+        output_file.write("<br>{{{__getty_invariants_diff__}}}<br>")
         output_file.write(html_footer.format("", dtnow.strftime("%b. %d, %Y")).encode(encoding))
 
 
@@ -553,9 +558,29 @@ def parse_from_memory(txt, exclude_headers, show_hunk_infos):
     return output_stream.getvalue()
 
 
-def diff_to_html(input_diff_file, output_html_file):
+def diff_to_html(input_diff_file, output_html_file, exclude_headers=False):
     with open(input_diff_file, 'r') as input, open(output_html_file, 'w') as output:
-        parse_input(input, output, '', '', False, True)
+        parse_input(input, output, '', '', exclude_headers, True)
+
+
+def getty_append_invdiff(template_file, targets, go, prev_hash, curr_hash):
+    html_string = ""
+    if not go.endswith("/"):
+        go = go + "/"
+    with open(template_file, 'r') as rf:
+        html_string = rf.read()
+    for target in sorted(targets, reverse=True):
+        tfs = misc.fsformat(target)
+        prev_invs_file = go + "_getty_inv__" + tfs + "__" + prev_hash + "_.inv.txt"
+        curr_invs_file = go + "_getty_inv__" + tfs + "__" + curr_hash + "_.inv.txt"
+        dstring = utils.from_sys_call(" ".join(["git diff", prev_invs_file, curr_invs_file]))
+        dtable = parse_from_memory(dstring, True, True)
+        anchor = "<br>{{{__getty_invariants_diff__}}}<br>"
+        inv_title = "<br>inviants of " + target + "<br>"
+        replacement = anchor + "\n" + inv_title + "\n" + dtable
+        html_string = html_string.replace(anchor, replacement)
+    with open(template_file, 'w') as wf:
+        wf.write(html_string)
 
 
 if __name__ == "__main__":

@@ -125,7 +125,8 @@ if __name__ == "__main__":
     '''
         multi-stage analysis: Villa, Daikon, Getty
     '''
-    old_changed_methods, old_all_callers, old_all_cccs, old_all_methods, \
+    old_changed_methods, old_improved_changed_methods, old_added_changed_methods, \
+        old_all_callers, old_all_cccs, old_all_methods, \
         new_changed_methods, new_improved_changed_methods, new_removed_changed_methods, \
         new_all_callers, new_all_cccs, new_all_methods = \
             villa.visit(villa_path, pwd, go, prev_hash, post_hash)
@@ -144,14 +145,17 @@ if __name__ == "__main__":
     
     center.visit(
         junit_path, go, prev_hash, post_hash, \
-        old_changed_methods, old_all_callers, old_all_cccs, old_all_methods, \
+        old_changed_methods, old_improved_changed_methods, old_added_changed_methods, \
+        old_all_callers, old_all_cccs, old_all_methods, \
         new_changed_methods, new_improved_changed_methods, new_removed_changed_methods, \
         new_all_callers, new_all_cccs, new_all_methods
     )
     
     diff_in = pwd[:-1] + ".__getty_output__/text.diff"
     html_out = pwd[:-1] + ".__getty_output__/sema.diff.html"
-    hdiff.diff_to_html(diff_in, html_out)
+    hdiff.diff_to_html(diff_in, html_out, exclude_headers=False)
+    hdiff.getty_append_invdiff(html_out, set(old_improved_changed_methods + old_all_callers), \
+                               go, prev_hash, post_hash)
     
     '''
         last: restore original branch and all its pending work

@@ -1,5 +1,7 @@
 # all Daikon's usage for invariant analysis
 
+import re
+
 from misc import *
 from utils import *
 
@@ -10,6 +12,31 @@ def rel_go(go):
         go = go[:-1]
     lsi = go.rfind("/")
     return ".." + go[lsi:] + "/"
+
+
+# sort invariants in the output invariant text file
+def sort_txt_inv(out_file):
+    inv_map = {}
+    current_key = None
+    with open(out_file, 'r') as f:
+        lines = f.read().strip().split("\n")
+        if lines != ['']:
+            for line in lines:
+                line = line.strip()
+                if line.startswith("================"):
+                    current_key = None
+                elif re.match(".*:::(ENTER|EXIT|CLASS|OBJECT).*", line):
+                    current_key = line
+                    inv_map[current_key] = []
+                else:
+                    inv_map[current_key].append(line)
+    with open(out_file, 'w') as f:
+        if lines != [''] and len(inv_map):
+            for title in sorted(inv_map):
+                f.write("\n================\n")
+                f.write(title + "\n")
+                for inv in sorted(inv_map[title]):
+                    f.write(inv + "\n")
 
 
 # one pass template
@@ -52,12 +79,15 @@ def one_pass(junit_path, go, this_hash, target_set):
     
     # run PrintInvariants for analysis
     for tgt in target_set:
+        target_ff = fsformat(tgt)
         run_printinv = \
             " ".join([java_cmd, "daikon.PrintInvariants", \
                       "--ppt-select-pattern=\'"+dfformat(tgt)+"\'", \
-                      go+"_getty_inv__"+fsformat(tgt)+"__"+this_hash+"_.inv.gz"])
+                      go+"_getty_inv__"+target_ff+"__"+this_hash+"_.inv.gz"])
+        out_file = go+"_getty_inv__"+target_ff+"__"+this_hash+"_.inv.txt"
         print "\n=== Daikon:PrintInvs command to run: \n" + run_printinv
-        sys_call(run_printinv, ignore_bad_exit=True)
+        sys_call(run_printinv + " > " + out_file, ignore_bad_exit=True)
+        sort_txt_inv(out_file)
     
     clear_temp_checkout(this_hash)
 
@@ -65,7 +95,7 @@ def one_pass(junit_path, go, this_hash, target_set):
 # the main entrance
 def visit(junit_path, \
           go, prev_hash, post_hash, \
-          old_changed_methods, \
+          old_changed_methods, old_improved_changed_methods, old_added_changed_methods, \
           old_all_callers, old_all_cccs, old_all_methods, \
           new_changed_methods, new_improved_changed_methods, new_removed_changed_methods, \
           new_all_callers, new_all_cccs, new_all_methods):
@@ -81,12 +111,12 @@ def visit(junit_path, \
     print("*************************************************************\n");
     
     '''
-        1-st pass: checkout prev_commit as detached head, and get invariants for all interesting target
+        1-st pass: checkout prev_commit as detached head, and get invariants for all interesting targets
     '''
-    one_pass(junit_path, go, prev_hash, set(old_changed_methods + old_all_callers))
+    one_pass(junit_path, go, prev_hash, set(old_improved_changed_methods + old_all_callers))
     
     '''
-        2-nd pass: checkout post_commit as detached head, and get invariants for all interesting target
+        2-nd pass: checkout post_commit as detached head, and get invariants for all interesting targets
     '''
     one_pass(junit_path, go, post_hash, set(new_improved_changed_methods + new_all_callers))
     
