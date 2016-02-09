@@ -81,8 +81,8 @@ def common_prefixes(m, min_len=__min_common_prefix_length, daikon_style=True):
     return result
 
 
-# reformat method (etc.) prefixes so they are recognizable by Daikon filter
-def reformat_all(prefixes, more_ppts=False):
+# reformat method (etc.) prefixes so they are recognizable by Daikon frontend (Chicory) filter
+def reformat_all_prefixes(prefixes, more_ppts=False):
     result = []
     for prefix in prefixes:
         if more_ppts:
@@ -94,19 +94,59 @@ def reformat_all(prefixes, more_ppts=False):
     return "|".join(result)
 
 
-# reformat one method so it is recognizable by Daikon filter
+# reformat methods (etc.) so they are recognizable by Daikon frontend (Chicory) filter
+def reformat_all(targets, more_ppts=False):
+    classes = set()  # class names, all class/object invariant ppt (to add ":" in post processing)
+    all_methods = set()  # class names, all all-methods ppt (to add "." in post processing)
+    single_methods = set()  # method names, all single-method ppt (to add "(" in post processing)
+    for target in targets:
+        target = real_name(target)
+        colon_index = target.rfind(":")
+        if colon_index == -1:
+            classes.add(target)
+            if more_ppts:
+                all_methods.add(target)
+        else:
+            single_methods.add(target)
+            if more_ppts:
+                classes.add(target[:colon_index])
+    filtered_single_methods = set()
+    for method in single_methods:
+        colon_idx = method.rfind(":")
+        if colon_idx == -1:
+            raise ValueError("method set expects all elements with colon")
+        else:
+            all_its_class_methods = method[:colon_idx]
+            if not all_its_class_methods in all_methods:
+                filtered_single_methods.add(method)
+    all_to_go = []
+    for clz in classes:
+        all_to_go.append("^" + clz.replace(":", ".").replace(".", "\.").replace("$", "\$") + ":")
+    for amtd in all_methods:
+        all_to_go.append("^" + amtd.replace(":", ".").replace(".", "\.").replace("$", "\$") + "\.")
+    for fsmtd in filtered_single_methods:
+        all_to_go.append("^" + fsmtd.replace(":", ".").replace(".", "\.").replace("$", "\$") + "\(")
+    return "|".join(all_to_go)
+
+
+# reformat one method (etc.) so it is recognizable by Daikon filter
 def dfformat(target, more_ppts=False):
     target = real_name(target)
     colon_index = target.rfind(":")
     if colon_index == -1:
-          # includes class$, class.*, and more (class*)
-        return "^" + target.replace(":", ".").replace(".", "\.")
+        if more_ppts:
+            # includes class and class.*
+            return "^" + target.replace(":", ".").replace(".", "\.").replace("$", "\$") + "(:|\.)"
+        else:
+            return "^" + target.replace(":", ".").replace(".", "\.").replace("$", "\$") + ":"
     else:
         if more_ppts:
-              # includes class$, class.*, and more (class*)
-            return "^" + target[:colon_index].replace(":", ".").replace(".", "\.")
+            # include possible parents and the method itself
+            possible_parents = target[:colon_index].replace(":", ".")
+            itself = target.replace(":", ".")
+            return ("^" + possible_parents + ":|^" + itself + "\(").replace(".", "\.").replace("$", "\$")
         else:
-            return "^" + target.replace(":", ".").replace(".", "\.") + "\("
+            return "^" + target.replace(":", ".").replace(".", "\.").replace("$", "\$") + "\("
 
 
 # reformat one target so it is recognizable by Daikon filter

@@ -27,7 +27,7 @@ def one_pass(junit_path, go, this_hash, target_set):
     print "\n===junit torun===\n" + junit_torun + "\n"
     
     java_cmd = "java -cp " + cp
-    select_pattern = reformat_all(common_prefixes(target_set), more_ppts=True)
+    select_pattern = reformat_all(target_set, more_ppts=True)
     print "\n===select pattern===\n" + select_pattern + "\n"
     
     # run Chicory for trace
@@ -36,7 +36,7 @@ def one_pass(junit_path, go, this_hash, target_set):
                   "--dtrace-file="+rel_go(go)+"_getty_trace_"+this_hash+"_.dtrace.gz", \
                   "--ppt-select-pattern=\'"+select_pattern+"\'", \
                   junit_torun])
-    print "=== Daikon:Chicory command to run: \n" + run_chicory
+    print "\n=== Daikon:Chicory command to run: \n" + run_chicory
     sys_call(run_chicory, ignore_bad_exit=True)
     
     # run Daikon for invariants
@@ -47,7 +47,7 @@ def one_pass(junit_path, go, this_hash, target_set):
                       "--ppt-select-pattern=\'"+dfformat(tgt, more_ppts=True)+"\'", \
                       "--no_text_output --show_progress", \
                       "-o", go+"_getty_inv__"+fsformat(tgt)+"__"+this_hash+"_.inv.gz"])
-        print "=== Daikon:Daikon command to run: \n" + run_daikon
+        print "\n=== Daikon:Daikon command to run: \n" + run_daikon
         sys_call(run_daikon, ignore_bad_exit=True)
     
     # run PrintInvariants for analysis
@@ -56,7 +56,7 @@ def one_pass(junit_path, go, this_hash, target_set):
             " ".join([java_cmd, "daikon.PrintInvariants", \
                       "--ppt-select-pattern=\'"+dfformat(tgt)+"\'", \
                       go+"_getty_inv__"+fsformat(tgt)+"__"+this_hash+"_.inv.gz"])
-        print "=== Daikon:PrintInvs command to run: \n" + run_printinv
+        print "\n=== Daikon:PrintInvs command to run: \n" + run_printinv
         sys_call(run_printinv, ignore_bad_exit=True)
     
     clear_temp_checkout(this_hash)
@@ -83,11 +83,11 @@ def visit(junit_path, \
     '''
         1-st pass: checkout prev_commit as detached head, and get invariants for all interesting target
     '''
-    one_pass(junit_path, go, prev_hash, old_changed_methods)
+    one_pass(junit_path, go, prev_hash, set(old_changed_methods + old_all_callers))
     
     '''
         2-nd pass: checkout post_commit as detached head, and get invariants for all interesting target
     '''
-#     one_pass(junit_path, go, post_hash, new_improved_changed_methods)
+    one_pass(junit_path, go, post_hash, set(new_improved_changed_methods + new_all_callers))
     
     print 'Center analysis is completed.'
