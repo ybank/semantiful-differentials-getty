@@ -2,8 +2,7 @@
 
 import re
 
-from misc import *
-from utils import *
+from tools import daikon, git, mvn, os
 
 
 # relative path of getty output path (go), when pwd is root dir of project
@@ -37,24 +36,29 @@ def sort_txt_inv(out_file):
                 f.write(title + "\n")
                 for inv in sorted(inv_map[title]):
                     f.write(inv + "\n")
+        else:
+            f.write('<NO INVARIANTS INFERRED>')
+#         # DEMO ONLY
+#         import random
+#         f.write(str(random.random()))
 
 
 # one pass template
 # FIXME: Daikon is very failure-prone; work around with it
 def one_pass(junit_path, go, this_hash, target_set):
-    sys_call("git checkout " + this_hash)
+    os.sys_call("git checkout " + this_hash)
     
-    bin_path = path_from_mvn_call("outputDirectory")
-    test_bin_path = path_from_mvn_call("testOutputDirectory")
-    cp = full_classpath(junit_path, bin_path, test_bin_path)
+    bin_path = mvn.path_from_mvn_call("outputDirectory")
+    test_bin_path = mvn.path_from_mvn_call("testOutputDirectory")
+    cp = mvn.full_classpath(junit_path, bin_path, test_bin_path)
     print "\n===full classpath===\n" + cp + "\n"
     
-    sys_call("mvn test -DskipTests")
-    junit_torun = junit_torun_str()
+    os.sys_call("mvn test -DskipTests")
+    junit_torun = mvn.junit_torun_str()
     print "\n===junit torun===\n" + junit_torun + "\n"
     
     java_cmd = "java -cp " + cp
-    select_pattern = reformat_all(target_set, more_ppts=True)
+    select_pattern = daikon.reformat_all(target_set, more_ppts=True)
     print "\n===select pattern===\n" + select_pattern + "\n"
     
     # run Chicory for trace
@@ -64,32 +68,32 @@ def one_pass(junit_path, go, this_hash, target_set):
                   "--ppt-select-pattern=\'"+select_pattern+"\'", \
                   junit_torun])
     print "\n=== Daikon:Chicory command to run: \n" + run_chicory
-    sys_call(run_chicory, ignore_bad_exit=True)
+    os.sys_call(run_chicory, ignore_bad_exit=True)
     
     # run Daikon for invariants
     for tgt in target_set:
         run_daikon = \
             " ".join([java_cmd, "daikon.Daikon", 
                       go+"_getty_trace_"+this_hash+"_.dtrace.gz", \
-                      "--ppt-select-pattern=\'"+dfformat(tgt, more_ppts=True)+"\'", \
+                      "--ppt-select-pattern=\'"+daikon.dfformat(tgt, more_ppts=True)+"\'", \
                       "--no_text_output --show_progress", \
-                      "-o", go+"_getty_inv__"+fsformat(tgt)+"__"+this_hash+"_.inv.gz"])
+                      "-o", go+"_getty_inv__"+daikon.fsformat(tgt)+"__"+this_hash+"_.inv.gz"])
         print "\n=== Daikon:Daikon command to run: \n" + run_daikon
-        sys_call(run_daikon, ignore_bad_exit=True)
+        os.sys_call(run_daikon, ignore_bad_exit=True)
     
     # run PrintInvariants for analysis
     for tgt in target_set:
-        target_ff = fsformat(tgt)
+        target_ff = daikon.fsformat(tgt)
         run_printinv = \
             " ".join([java_cmd, "daikon.PrintInvariants", \
-                      "--ppt-select-pattern=\'"+dfformat(tgt)+"\'", \
+                      "--ppt-select-pattern=\'"+daikon.dfformat(tgt)+"\'", \
                       go+"_getty_inv__"+target_ff+"__"+this_hash+"_.inv.gz"])
         out_file = go+"_getty_inv__"+target_ff+"__"+this_hash+"_.inv.txt"
         print "\n=== Daikon:PrintInvs command to run: \n" + run_printinv
-        sys_call(run_printinv + " > " + out_file, ignore_bad_exit=True)
+        os.sys_call(run_printinv + " > " + out_file, ignore_bad_exit=True)
         sort_txt_inv(out_file)
     
-    clear_temp_checkout(this_hash)
+    git.clear_temp_checkout(this_hash)
 
 
 # the main entrance
@@ -106,9 +110,9 @@ def visit(junit_path, \
 #     print common_prefixes(new_all_methods)
 #     print reformat_all(common_prefixes(new_all_methods))
     
-    print("\n*************************************************************");
-    print("Getty Center: Semantiful Differential Analyzer");
-    print("*************************************************************\n");
+    print("\n****************************************************************");
+    print("        Getty Center: Semantiful Differential Analyzer");
+    print("****************************************************************\n");
     
     '''
         1-st pass: checkout prev_commit as detached head, and get invariants for all interesting targets

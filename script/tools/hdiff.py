@@ -42,8 +42,8 @@ except ImportError:
     raise EnvironmentError(
         "simplediff module is not installed - find it here: https://github.com/paulgb/simplediff\n")
 
-import misc
-import utils
+from tools.daikon import fsformat
+from tools.os import from_sys_call_enforce
 
 
 # minimum line size, we add a zero-sized breakable space every
@@ -94,7 +94,7 @@ html_hdr = """<!DOCTYPE html>
 
 html_footer = """
 <footer>
-    <p>Modified at {1}. Getty - Semantiful Differentials.    </p>
+    <p><br>--------<br>Modified at {1}. Getty - Semantiful Differentials.    </p>
 </footer>
 </body></html>
 """
@@ -563,6 +563,29 @@ def diff_to_html(input_diff_file, output_html_file, exclude_headers=False):
         parse_input(input, output, '', '', exclude_headers, True)
 
 
+def __denoise(dstring):
+    """taken off noise of 'git diff' for invariant diffs
+    """
+    lines = dstring.split("\n")
+    rawlines = []
+    for line in lines:
+        if line.startswith("diff --git"):
+            rawlines.append("diff --invariants a/BEFORE b/AFTER")
+        elif re.match("^---\ .*", line):
+            rawlines.append("--- BEFORE")
+        elif re.match("^\+\+\+\ .*", line):
+            rawlines.append("+++ AFTER")
+        elif re.match("^(\+|-|\ |@@ ).*", line):
+            rawlines.append(line)
+        else:
+            pass
+    return "\n".join(rawlines)
+
+
+def __escape(target):
+    return target.replace("<", "&lt;").replace(">", "&gt;")
+
+
 def getty_append_invdiff(template_file, targets, go, prev_hash, curr_hash):
     html_string = ""
     if not go.endswith("/"):
@@ -570,13 +593,14 @@ def getty_append_invdiff(template_file, targets, go, prev_hash, curr_hash):
     with open(template_file, 'r') as rf:
         html_string = rf.read()
     for target in sorted(targets, reverse=True):
-        tfs = misc.fsformat(target)
+        tfs = fsformat(target)
         prev_invs_file = go + "_getty_inv__" + tfs + "__" + prev_hash + "_.inv.txt"
         curr_invs_file = go + "_getty_inv__" + tfs + "__" + curr_hash + "_.inv.txt"
-        dstring = utils.from_sys_call(" ".join(["git diff", prev_invs_file, curr_invs_file]))
+        dstring = from_sys_call_enforce(" ".join(["git diff", prev_invs_file, curr_invs_file]))
+        dstring = __denoise(dstring)
         dtable = parse_from_memory(dstring, True, True)
         anchor = "<br>{{{__getty_invariants_diff__}}}<br>"
-        inv_title = "<br>inviants of " + target + "<br>"
+        inv_title = "<br>inviants of { <b>" + __escape(target) + "</b> }<br>"
         replacement = anchor + "\n" + inv_title + "\n" + dtable
         html_string = html_string.replace(anchor, replacement)
     with open(template_file, 'w') as wf:

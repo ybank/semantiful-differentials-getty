@@ -28,9 +28,9 @@ public class Villa {
 	 * FIXME: now it only handles new or revised lines, but deleted lines.
 	 */
 	public static void main(String[] args) {
-		System.out.println("\n*************************************************************");
+		System.out.println("\n****************************************************************");
 		System.out.println("Getty Villa: understand project differentials for method sets");
-		System.out.println("*************************************************************\n");
+		System.out.println("****************************************************************\n");
 		
 		check_args(args);
 		

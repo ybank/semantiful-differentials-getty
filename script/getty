@@ -5,17 +5,11 @@ import re
 import sys
 from inspect import getsourcefile
 
-import villa
 import center
-import hdiff
-from utils import (
-    sys_call,
-    from_sys_call,
-    get_parent_hash,
-    get_current_head_branch,
-    backup_and_stash_first,
-    restore_and_pop_last
-)
+import gallery
+import villa
+from tools.git import backup_and_stash_first, get_current_head_branch, get_parent_hash, restore_and_pop_last
+from tools.os import from_sys_call
 
 
 def help():
@@ -123,7 +117,7 @@ if __name__ == "__main__":
     should_further_recover = backup_and_stash_first()
     
     '''
-        multi-stage analysis: Villa, Daikon, Getty
+        multi-stage analysis: Villa (code) and Center (invariants) 
     '''
     old_changed_methods, old_improved_changed_methods, old_added_changed_methods, \
         old_all_callers, old_all_cccs, old_all_methods, \
@@ -151,23 +145,15 @@ if __name__ == "__main__":
         new_all_callers, new_all_cccs, new_all_methods
     )
     
-    diff_in = pwd[:-1] + ".__getty_output__/text.diff"
-    html_out = pwd[:-1] + ".__getty_output__/sema.diff.html"
-    hdiff.diff_to_html(diff_in, html_out, exclude_headers=False)
-    hdiff.getty_append_invdiff(html_out, set(old_improved_changed_methods + old_all_callers), \
-                               go, prev_hash, post_hash)
-    
     '''
         last: restore original branch and all its pending work
     '''
     restore_and_pop_last(working_branch, should_further_recover)
     
     '''
-        view results
+        optional: view results
     '''
-    # open with Safari on Mac OS
-    sys_call("open -a /Applications/Safari.app/Contents/MacOS/Safari " + html_out)
-#     # open with default app
-#     sys_call("open " + html_out)
+    gallery.view(pwd, go, prev_hash, post_hash, \
+        set(old_improved_changed_methods + old_all_callers) & set(new_improved_changed_methods + new_all_callers))
     
     print 'Quit Getty.'
