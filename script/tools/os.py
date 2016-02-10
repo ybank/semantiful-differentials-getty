@@ -30,6 +30,11 @@ def from_sys_call_enforce(cmd):
             return ex.output
 
 
+# get pwd
+def cwd():
+    return from_sys_call("pwd").strip()
+
+
 # define project name to be the (default) folder name
 def project_name(pwd):
     pwd = pwd.strip()
