@@ -20,15 +20,15 @@ from tools.os import cwd
 
 
 def help():
-    print "\nUsage:\n"
-    print "\tGet help"
-    print "\t\tgetty <-h | --help>\n"
-    print "\tUse default compare: origin/HEAD or origin/master or origin/trunk vs. HEAD"
-    print "\t\tgetty\n"
-    print "\tCompare HEAD with the given commit, or with the parent commit if passing -<ancestor_index>"
-    print "\t\tgetty <compare_commit | -<ancestor_index>>\n"
-    print "\tCompare between the given commits: preimage_commit vs. postimage_commit"
-    print "\t\tgetty <preimage_commit> <postimage_commit>\n"
+    print "\n== Usage ==\n"
+    print "\tGet help:"
+    print "\t  getty <-h | --help>\n"
+    print "\tDefault compare: origin/HEAD or origin/master or origin/trunk vs. HEAD:"
+    print "\t  getty\n"
+    print "\tCompare HEAD with the given commit, or with the commit of given ancestor index:"
+    print "\t  getty < compare_commit | -<num_ancestor_index> >\n"
+    print "\tCompare between the given commits: preimage_commit vs. postimage_commit:"
+    print "\t  getty <preimage_commit> <postimage_commit>\n"
 
 
 def config_env():
@@ -38,10 +38,10 @@ def config_env():
         this_script_path = this_script_path[:-1]
     this_script_dir = this_script_path[:this_script_path.rfind("/")+1]
     villa_path = this_script_dir + "Getty.Villa.jar"  # jar is at the same dir
-    junit_path = this_script_dir + "getty-junit-4.12.jar"  # jar (revised junit) is at the same dir
+    junit_path = this_script_dir + "junit-4.12-getty.jar"  # jar (revised junit) is at the same dir
     if os.path.exists(villa_path) and os.path.exists(junit_path):
         print "\nGetty.Villa.jar path: " + villa_path
-        print "\ngetty-junit-4.12.jar path: " + junit_path
+        print "\njunit-4.12-getty.jar path: " + junit_path
     elif not os.path.exists(villa_path):
         raise EnvironmentError("could not find Getty.Villa.jar in script dir " + this_script_dir)
     elif not os.path.exists(junit_path):
