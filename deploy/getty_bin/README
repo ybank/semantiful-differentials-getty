@@ -1,0 +1,6 @@
+scripts, .pyc, and .jar
+
+getty
+*.pyc
+lib/Getty.Villa.jar
+lib/getty-junit-4.12.jar (4.12 so far)

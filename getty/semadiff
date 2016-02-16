@@ -1,0 +1,155 @@
+#!/usr/bin/env python
+
+import os
+import re
+import sys
+from inspect import getsourcefile
+
+import center
+import gallery
+import villa
+from tools.git import (
+    backup_and_stash_first,
+    get_current_head_branch,
+    get_ancestor_hash,
+    get_hash_for,
+    get_remote_head,
+    restore_and_pop_last
+)
+from tools.os import cwd
+
+
+def help():
+    print "\n== Usage ==\n"
+    print "\tGet help:"
+    print "\t  semadiff <-h | --help>\n"
+    print "\tDefault compare: origin/HEAD or origin/master or origin/trunk vs. HEAD:"
+    print "\t  semadiff\n"
+    print "\tCompare HEAD with the given commit, or with the commit of given ancestor index:"
+    print "\t  semadiff < compare_commit | -<num_ancestor_index> >\n"
+    print "\tCompare between the given commits: preimage_commit vs. postimage_commit:"
+    print "\t  semadiff <preimage_commit> <postimage_commit>\n"
+
+
+def config_env():
+    # Villa's jar path
+    this_script_path = os.path.abspath(getsourcefile(lambda:0))
+    if this_script_path[-1] == "/":
+        this_script_path = this_script_path[:-1]
+    this_script_dir = this_script_path[:this_script_path.rfind("/")+1]
+    villa_path = this_script_dir + "lib/villa.jar"  # jar is at the same dir
+    junit_path = this_script_dir + "lib/junit-4.12-getty.jar"  # jar (revised junit) is at the same dir
+    if os.path.exists(villa_path) and os.path.exists(junit_path):
+        print "\nvilla.jar path: " + villa_path
+        print "\njunit-4.12-getty.jar path: " + junit_path
+    elif not os.path.exists(villa_path):
+        raise EnvironmentError("could not find villa.jar in script dir " + this_script_dir)
+    elif not os.path.exists(junit_path):
+        raise EnvironmentError("could not find getty-junit-4.12.jar in script dir " + this_script_dir)
+    
+    # present working directory - it should be the project's root with "/" at the end
+    pwd = cwd()
+    if pwd[-1] != "/":
+        pwd += "/"
+    
+    # getty output directory - /tmp/__getty_output__/ or ../projectname__getty_output__/
+    if pwd == "/":
+        go = "/tmp/__getty_output__/"
+    else:
+        go = pwd[:-1] + ".__getty_output__/"
+    if os.path.exists(go):
+        if not os.path.isdir(go):
+            raise EnvironmentError(go + " already exists but is not a directory")
+    else:
+        os.makedirs(go)
+    
+    return villa_path, junit_path, pwd, go
+
+
+def set_args():
+    if len(sys.argv) == 1:
+        remote_head = get_remote_head()
+        prev_hash = get_hash_for(remote_head)
+        post_hash = get_hash_for("HEAD")
+    elif len(sys.argv) == 2:
+        if sys.argv[1] == "-h" or sys.argv[1] == "--help":
+            help()
+            exit(0)
+        elif re.match("^-\d+", sys.argv[1]):
+            index = re.match("^-(\d+)", sys.argv[1]).group(1)
+            prev_hash = get_ancestor_hash(index)
+            post_hash = get_hash_for("HEAD")
+        elif not re.compile("[a-z0-9]{5,}").match(sys.argv[1]):
+            help()
+            raise ValueError("invalid argument passed: " + sys.argv[1])
+        else:
+            prev_hash = sys.argv[1]
+            post_hash = get_hash_for("HEAD")
+    elif len(sys.argv) == 3:
+        if re.compile("[a-z0-9]{5,}").match(sys.argv[1]) and re.compile("[a-z0-9]{5,}").match(sys.argv[2]):
+            prev_hash = sys.argv[1]
+            post_hash = sys.argv[2]
+        else:
+            help()
+            raise ValueError("invalid arguments passed: " + sys.argv[1] + " and " + sys.argv[2])
+    else:
+        raise ValueError("number of arguments should be 0, 1, or 2")
+    # consider using `git rev-parse --short HEAD` if shorter names are preferred
+    
+    return prev_hash, post_hash
+
+
+if __name__ == "__main__":
+    ## env config
+    villa_path, junit_path, pwd, go = config_env()
+    
+    ## args checking & setting
+    prev_hash, post_hash = set_args()
+    
+    '''
+        0-th: backup current branch work in stash for the last pass to restore
+    '''
+    working_branch = get_current_head_branch()
+    should_further_recover = backup_and_stash_first()
+    
+    '''
+        multi-stage analysis: Villa (code) and Center (invariants) 
+    '''
+    old_changed_methods, old_improved_changed_methods, old_added_changed_methods, \
+        old_all_callers, old_all_cccs, old_all_methods, \
+        new_changed_methods, new_improved_changed_methods, new_removed_changed_methods, \
+        new_all_callers, new_all_cccs, new_all_methods = \
+            villa.visit(villa_path, pwd, go, prev_hash, post_hash)
+#     # DEBUG ONLY
+#     print "Debug info: "
+#     print old_changed_methods
+#     print "size of old_all_callers: {0}".format(len(old_all_callers))
+#     print "number of keys in old_all_cccs: {0}".format(len(old_all_cccs))
+#     print "size of old_all_methods: {0}".format(len(old_all_methods))
+#     print new_changed_methods
+#     print new_improved_changed_methods
+#     print new_removed_changed_methods
+#     print "size of new_all_callers: {0}".format(len(new_all_callers))
+#     print "number of keys in new_all_cccs: {0}".format(len(new_all_cccs))
+#     print "size of new_all_methods: {0}".format(len(new_all_methods))
+    
+    center.visit(
+        junit_path, go, prev_hash, post_hash, \
+        old_changed_methods, old_improved_changed_methods, old_added_changed_methods, \
+        old_all_callers, old_all_cccs, old_all_methods, \
+        new_changed_methods, new_improved_changed_methods, new_removed_changed_methods, \
+        new_all_callers, new_all_cccs, new_all_methods
+    )
+    
+    '''
+        last: restore original branch and all its pending work
+    '''
+    restore_and_pop_last(working_branch, should_further_recover)
+    
+    '''
+        optional: view results
+    '''
+    gallery.view(pwd, go, prev_hash, post_hash, \
+        set(old_improved_changed_methods + old_all_callers) & set(new_improved_changed_methods + new_all_callers))
+    
+    print 'Quit Getty.'
