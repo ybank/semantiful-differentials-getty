@@ -66,7 +66,7 @@ html_hdr = """<!DOCTYPE html>
     <meta charset="{1}" />
     <meta name="generator" content="diff2html.py (http://git.droids-corp.org/gitweb/?p=diff2html)" />
     <!--meta name="author" content="Fill in" /-->
-    <title>HTML Diff{0}</title>
+    <title>Semantiful Differentials{0}</title>
     <link rel="shortcut icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAgMAAABinRfyAAAACVBMVEXAAAAAgAD///+K/HwIAAAAJUlEQVQI12NYBQQM2IgGBQ4mCIEQW7oyK4phampkGIQAc1G1AQCRxCNbyW92oQAAAABJRU5ErkJggg==" type="image/png" />
     <meta property="dc:language" content="{5}" />
     <!--meta property="dc:date" content="{3}" /-->
@@ -86,6 +86,16 @@ html_hdr = """<!DOCTYPE html>
         span.diffponct {{ color: #B08080 }}
         tr.diffmisc td {{}}
         tr.diffseparator td {{}}
+        .tooltip {{
+            position: absolute;
+            padding: 8px 15px;
+            z-index: 2;
+            color: #303030;
+            background-color: #6FF1EB;
+            border: 3px dashed #EC2D8E;
+            font-family: sans-serif;
+            font-size: 14px;
+        }}
     </style>
 </head>
 <body>
@@ -96,7 +106,8 @@ html_footer = """
 <footer>
     <p><br>--------<br>Modified at {1}. Getty - Semantiful Differentials.    </p>
 </footer>
-</body></html>
+</body>
+</html>
 """
 
 table_hdr = """
@@ -463,7 +474,9 @@ def parse_input(input_file, output_file, input_file_name, output_file_name,
     empty_buffer(output_file)
     output_file.write(table_footer.encode(encoding))
     if not exclude_headers:
-        output_file.write("<br>{{{__getty_invariants_diff__}}}<br>")
+        output_file.write("<br>{{{__getty_invariant_diff__}}}<br>")
+        output_file.write("<br>{{{__getty_invariants__}}}<br>")
+        output_file.write("<br>{{{__getty_source_code__}}}<br>")
         output_file.write(html_footer.format("", dtnow.strftime("%b. %d, %Y")).encode(encoding))
 
 
@@ -586,12 +599,7 @@ def __escape(target):
     return target.replace("<", "&lt;").replace(">", "&gt;")
 
 
-def getty_append_invdiff(template_file, targets, go, prev_hash, curr_hash):
-    html_string = ""
-    if not go.endswith("/"):
-        go = go + "/"
-    with open(template_file, 'r') as rf:
-        html_string = rf.read()
+def _getty_append_invdiff(html_string, targets, go, prev_hash, curr_hash):
     for target in sorted(targets, reverse=True):
         tfs = fsformat(target)
         prev_invs_file = go + "_getty_inv__" + tfs + "__" + prev_hash + "_.inv.txt"
@@ -599,10 +607,64 @@ def getty_append_invdiff(template_file, targets, go, prev_hash, curr_hash):
         dstring = from_sys_call_enforce(" ".join(["git diff", prev_invs_file, curr_invs_file]))
         dstring = __denoise(dstring)
         dtable = parse_from_memory(dstring, True, True)
-        anchor = "<br>{{{__getty_invariants_diff__}}}<br>"
-        inv_title = "<br>inviants of { <b>" + __escape(target) + "</b> }<br>"
-        replacement = anchor + "\n" + inv_title + "\n" + dtable
+        anchor = "<br>{{{__getty_invariant_diff__}}}<br>"
+        inv_title = "<br>compare inviants for { <b>" + __escape(target) + "</b> }<br>"
+        replacement = anchor + "\n" + inv_title + "\n" + dtable + "\n"
         html_string = html_string.replace(anchor, replacement)
+    return html_string
+
+
+def _import_js(html_string, js_path):
+    import_script = "<script type=\"text/javascript\" src=\"{0}\"></script>"
+    import_jquery = import_script.format(js_path + "jquery-1.2.6.js")
+    import_simpletip = import_script.format(js_path + "jquery.simpletip-1.3.1.js")
+    import_getty = import_script.format(js_path + "getty.js")
+    last_import = import_jquery + "\n" + import_simpletip + "\n" + import_getty + "\n" + "</body>"
+    return html_string.replace("</body>", last_import)
+
+
+def __add_inv_js_line(html_string, tfs, prev_hash, prev_invs, curr_hash, curr_invs):
+    prev_script_line = "    $('invariants#" + tfs + "').data('" + prev_hash + "', '" + \
+        prev_invs.replace("'", "\\'").replace("\n", "\\n") + "')\n"
+    curr_script_line = "    $('invariants#" + tfs + "').data('" + curr_hash + "', '" + \
+        curr_invs.replace("'", "\\'").replace("\n", "\\n") + "')\n"
+    replacement = prev_script_line + curr_script_line + "</script>\n</body>"
+    html_string = html_string.replace("</script>\n</body>", replacement)
+    return html_string
+
+
+def _getty_append_invariants(html_string, targets, go, prev_hash, curr_hash):
+    for target in sorted(targets):
+        tfs = fsformat(target)
+        prev_invs_file = go + "_getty_inv__" + tfs + "__" + prev_hash + "_.inv.txt"
+        with open(prev_invs_file, 'r') as prevf:
+            prev_invs = prevf.read()
+        curr_invs_file = go + "_getty_inv__" + tfs + "__" + curr_hash + "_.inv.txt"
+        with open(curr_invs_file, 'r') as currf:
+            curr_invs = currf.read()
+        # html replacement
+        anchor_html = "<br>{{{__getty_invariants__}}}<br>"
+        invs_html = "<invariants id='" + tfs + "'></invariants>"
+        rpmt_html = anchor_html + "\n" + invs_html + "\n"
+        html_string = html_string.replace(anchor_html, rpmt_html)
+        # javascript replacement
+        html_string = html_string.replace("</body>", "<script>\n</script>\n</body>")
+        html_string = __add_inv_js_line(html_string, tfs, prev_hash, prev_invs, curr_hash, curr_invs)
+    return html_string
+
+
+def getty_append_semainfo(template_file, targets, go, js_path, prev_hash, curr_hash):
+    html_string = ""
+    if not go.endswith("/"):
+        go = go + "/"
+    
+    with open(template_file, 'r') as rf:
+        html_string = rf.read()
+    
+    html_string = _getty_append_invdiff(html_string, targets, go, prev_hash, curr_hash)
+    html_string = _import_js(html_string, js_path)
+    html_string = _getty_append_invariants(html_string, targets, go, prev_hash, curr_hash)
+    
     with open(template_file, 'w') as wf:
         wf.write(html_string)
 

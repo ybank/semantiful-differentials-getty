@@ -24,8 +24,6 @@ public class Villa {
 	 * 		  package (prefix) range, previous and current commit hashes
 	 * Output: print candidate call chains
 	 * @param args
-	 * 
-	 * FIXME: now it only handles new or revised lines, but deleted lines.
 	 */
 	public static void main(String[] args) {
 		System.out.println("\n****************************************************************");
@@ -162,16 +160,21 @@ public class Villa {
 		
 		try {
 			/**********************************/
+			String this_commit;
 			Map<String, Integer[]> file_revision_lines;
+			/**********************************/
 			if (args[0].equals("-s") || args[0].equals("-so") 
 					|| args[0].equals("--simgen=bare") 
 					|| args[0].equals("--simgen") 
-					|| args[0].equals("--simgen=old"))
+					|| args[0].equals("--simgen=old")) {				
+				this_commit = prev_commit;
 				file_revision_lines = get_original_file_lines_map(diff_path, prev_commit, curr_commit);
-			else  // args[0].equals("-sn") || args[0].equals("--simgen=new")
+			} else {  // args[0].equals("-sn") || args[0].equals("--simgen=new")
+				this_commit = curr_commit;
 				file_revision_lines = get_revised_file_lines_map(diff_path, prev_commit, curr_commit);
+			}
 			
-			Set<String> revised_methods = get_changed_methods(test_path, file_revision_lines);
+			Set<String> revised_methods = get_changed_methods(test_path, file_revision_lines, this_commit, output_dir);
 //					System.out.println("changed methods: " + revised_methods + "\n");
 			String chgmtd_out_path = output_dir + "_getty_chgmtd_src_";
 			if (args[0].equals("-s") || args[0].equals("-so") 
@@ -185,13 +188,6 @@ public class Villa {
 			output_to(chgmtd_out_path, revised_methods);
 
 			
-			/**********************************/
-			String this_commit;
-			if (args[0].equals("-s") || args[0].equals("-so") 
-					|| args[0].equals("--simgen") || args[0].equals("--simgen=old") || args[0].equals("--simgen=bare"))
-				this_commit = prev_commit;
-			else  // args[0].equals("-sn") || args[0].equals("--simgen=new")
-				this_commit = curr_commit;
 			/**********************************/
 			ITraceFinder chain_generator = get_generator(target_path, package_prefix, revised_methods);
 			
@@ -270,7 +266,7 @@ public class Villa {
 			/**********************************/
 			Map<String, Integer[]> file_revision_lines = get_revised_file_lines_map(diff_path, prev_commit, curr_commit);
 			
-			Set<String> revised_methods = get_changed_methods(test_path, file_revision_lines);
+			Set<String> revised_methods = get_changed_methods(test_path, file_revision_lines, curr_commit, output_dir);
 //					System.out.println("changed methods: " + revised_methods + "\n");
 			String chgmtd_out_path = output_dir + "_getty_chgmtd_src_" + "new" + "_" + curr_commit + "_.ex";
 			System.out.println(
@@ -478,7 +474,8 @@ public class Villa {
 		return chain_generator;
 	}
 
-	private static Set<String> get_changed_methods(String test_path, Map<String, Integer[]> file_revision_lines) {
+	private static Set<String> get_changed_methods(
+			String test_path, Map<String, Integer[]> file_revision_lines, String commit_hash, String output_dir) {
 		System.out.println("\nGetting changed methods (in .java files only, excluding tests) ...\n");
 		IMethodRecognizer ast_inspector = new ASTInspector();
 		Set<String> exclusion = new HashSet<String>();
@@ -489,7 +486,61 @@ public class Villa {
 			file_revision_lines.remove(ext);
 			
 		Set<String> revised_methods = ast_inspector.changedMethods(file_revision_lines);
+		Map<String, String> l2m = ast_inspector.l2m();
+//		System.out.println(l2m);
+		Map<String, Set<String>> m2l = ast_inspector.m2l();
+//		System.out.println(m2l);
+		output_m2l_l2m(output_dir, l2m, m2l, commit_hash);
+		
 		return revised_methods;
+	}
+	
+	private static void output_m2l_l2m(
+			String output_dir, Map<String, String> l2m, Map<String, Set<String>> m2l, String commit_hash) {
+		try {			
+			// output l2m (line number to method) information
+			String l2m_out_path = output_dir + "_getty_fl2m_" + commit_hash + "_.ex";
+			System.out.println(
+					"<one-time l2m>: number of line number to method entries: " + l2m.size() + "\n"
+					+ "  output to file --> " + l2m_out_path + " ...\n");
+			PrintWriter l2m_out_file = new PrintWriter(
+					new BufferedWriter(new FileWriter(l2m_out_path, false)));
+			String l2m_content = "{";
+			for (String fl : l2m.keySet()) {
+				String[] file_line = fl.split(",");
+				String key = "(\"" + file_line[0] + "\", " + file_line[1] + ")";
+				String value = "\"" + l2m.get(fl) + "\"";
+				l2m_content += (key + ": " + value + ", ");
+			}
+			l2m_content += "}";
+			l2m_out_file.print(l2m_content);
+			l2m_out_file.close();
+			
+			// output m2l (method to line numbers) information
+			String m2l_out_path = output_dir + "_getty_fm2l_" + commit_hash + "_.ex";
+			System.out.println(
+					"<one-time m2l>: number of method to line number entries: " + m2l.size() + "\n"
+					+ "  output to file --> " + m2l_out_path + " ...\n");
+			PrintWriter m2l_out_file = new PrintWriter(
+					new BufferedWriter(new FileWriter(m2l_out_path, false)));
+			String m2l_content = "{";
+			for (String m : m2l.keySet()) {
+				String key = "\"" + m + "\"";
+				m2l_content += (key + ": [");
+				for (String fl : m2l.get(m)) {
+					String[] file_line = fl.split(",");
+					String value = "(\"" + file_line[0] + "\", " + file_line[1] + ")";
+					m2l_content += (value + ", ");
+				}
+				m2l_content += "], ";
+			}
+			m2l_content += "}";
+			m2l_out_file.print(m2l_content);
+			m2l_out_file.close();
+		} catch (IOException ioe) {
+			ioe.printStackTrace();
+			System.exit(2);
+		}
 	}
 
 	private static Map<String, Integer[]> get_revised_file_lines_map(String diff_path, String prev_commit, String curr_commit)

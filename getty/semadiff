@@ -63,7 +63,10 @@ def config_env():
     else:
         os.makedirs(go)
     
-    return villa_path, junit_path, pwd, go
+    # javascript path
+    js_path = this_script_dir + "js/"
+    
+    return villa_path, junit_path, pwd, go, js_path
 
 
 def set_args():
@@ -101,7 +104,7 @@ def set_args():
 
 if __name__ == "__main__":
     ## env config
-    villa_path, junit_path, pwd, go = config_env()
+    villa_path, junit_path, pwd, go, js_path = config_env()
     
     ## args checking & setting
     prev_hash, post_hash = set_args()
@@ -117,8 +120,10 @@ if __name__ == "__main__":
     '''
     old_changed_methods, old_improved_changed_methods, old_added_changed_methods, \
         old_all_callers, old_all_cccs, old_all_methods, \
+        old_l2m, old_m2l, \
         new_changed_methods, new_improved_changed_methods, new_removed_changed_methods, \
-        new_all_callers, new_all_cccs, new_all_methods = \
+        new_all_callers, new_all_cccs, new_all_methods, \
+        new_l2m, new_m2l = \
             villa.visit(villa_path, pwd, go, prev_hash, post_hash)
 #     # DEBUG ONLY
 #     print "Debug info: "
@@ -149,7 +154,7 @@ if __name__ == "__main__":
     '''
         optional: view results
     '''
-    gallery.view(pwd, go, prev_hash, post_hash, \
+    gallery.view(pwd, go, js_path, prev_hash, post_hash, \
         set(old_improved_changed_methods + old_all_callers) & set(new_improved_changed_methods + new_all_callers))
     
     print 'Quit Getty.'

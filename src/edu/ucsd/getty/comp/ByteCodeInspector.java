@@ -21,4 +21,16 @@ public class ByteCodeInspector implements IMethodRecognizer {
 		return null;
 	}
 
+	@Override
+	public Map<String, String> l2m() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Map<String, Set<String>> m2l() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

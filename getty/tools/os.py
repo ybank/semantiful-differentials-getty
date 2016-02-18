@@ -30,6 +30,11 @@ def from_sys_call_enforce(cmd):
             return ex.output
 
 
+# copy
+def copy_file(from_path, to_path):
+    sys_call(" ".join(["cp", from_path, to_path]))
+
+
 # get pwd
 def cwd():
     return from_sys_call("pwd").strip()

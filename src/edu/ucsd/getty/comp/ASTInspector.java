@@ -18,6 +18,19 @@ import edu.ucsd.getty.IMethodRecognizer;
 import edu.ucsd.getty.visitors.MethodDeclarationSrcVisitor;
 
 public class ASTInspector implements IMethodRecognizer {
+	
+	Map<String, String> fileline2method = new HashMap<String, String>();
+	Map<String, Set<String>> method2filelines = new HashMap<String, Set<String>>();
+	
+	@Override
+	public Map<String, String> l2m() {
+		return this.fileline2method;
+	}
+	
+	@Override
+	public Map<String, Set<String>> m2l() {
+		return this.method2filelines;
+	}
 
 	@Override
 	public Set<String> changedMethods(String targetFolder, Map<String, Integer[]> diffs) {
@@ -38,8 +51,10 @@ public class ASTInspector implements IMethodRecognizer {
 				Integer[] lines = diffs.get(source);
 				for (int line : lines) {
 					String possibleMethod = this.changedMethod(cu, line);
-					if (possibleMethod != null)
+					if (possibleMethod != null) {
 						allChanged.add(possibleMethod);
+						updatelm(source, line, possibleMethod);
+					}
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -47,6 +62,15 @@ public class ASTInspector implements IMethodRecognizer {
 			}
 		}
 		return allChanged;
+	}
+	
+	private void updatelm(String source, int line, String method) {
+		String fileloc = source+","+line;
+		if (!this.fileline2method.containsKey(fileloc))
+			this.fileline2method.put(fileloc, method);
+		if (!this.method2filelines.containsKey(method))
+			this.method2filelines.put(method, new HashSet<String>());
+		this.method2filelines.get(method).add(fileloc);
 	}
 	
 	protected String changedMethod(CompilationUnit cu, int lineNumber) {
