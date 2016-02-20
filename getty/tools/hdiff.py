@@ -43,6 +43,7 @@ except ImportError:
         "simplediff module is not installed - find it here: https://github.com/paulgb/simplediff\n")
 
 from tools.daikon import fsformat
+from tools.ex import read_str_from
 from tools.os import from_sys_call_enforce
 
 
@@ -311,7 +312,33 @@ def add_comment(s, output_file):
         output_file.write(('<tr class="diffmisc"><td colspan="4">%s</td></tr>\n'%convert(s)).encode(encoding))
 
 
+def __path_to_image(fpath):
+    return "--" + re.sub("\W", "--", fpath) + "--"
+
+
+preimage = ""
+postimage = ""
+image2filename = {}
+def __filepath_to_image(pathname):
+    if pathname.startswith("/"):
+        return "_dev_null_"
+    elif pathname.startswith("a/") or pathname.startswith("b/"):
+        filepath = re.match("^(a|b)/(.*)", pathname).group(2)
+        imagename = __path_to_image(filepath)
+        image2filename[imagename] = filepath 
+        return imagename
+    elif pathname == "BEFORE" or pathname == "AFTER":
+        return ""
+    else:
+        return None
+
+
 def add_filename(f1, f2, output_file):
+    global preimage
+    global postimage
+    global image2filename
+    preimage = __filepath_to_image(f1)
+    postimage = __filepath_to_image(f2)
     output_file.write(("<tr><th colspan='2'>%s</th>"%convert(f1, linesize=linesize)).encode(encoding))
     output_file.write(("<th colspan='2'>%s</th></tr>\n"%convert(f2, linesize=linesize)).encode(encoding))
 
@@ -335,20 +362,20 @@ def add_line(s1, s2, output_file):
     if s1 == None and s2 == None:
         type_name = "unmodified"
     elif s1 == None or s1 == "":
-        type_name = "added"
+        type_name = "added " + postimage
     elif s2 == None or s1 == "":
-        type_name = "deleted"
+        type_name = "deleted " + preimage
     elif s1 == s2:
         type_name = "unmodified"
     else:
-        type_name = "changed"
+        type_name = "changed " + postimage
         if algorithm == 1:
             s1, s2 = diff_changed_words_ts(orig1, orig2)
         elif algorithm == 2:
             s1, s2 = diff_changed_ts(orig1, orig2)
         else: # default
             s1, s2 = linediff(orig1, orig2)
-
+    
     output_file.write(('<tr class="diff%s">' % type_name).encode(encoding))
     if s1 != None and s1 != "":
         output_file.write(('<td class="diffline">%d </td>' % line1).encode(encoding))
@@ -625,15 +652,16 @@ def _import_js(html_string, js_path):
 
 def __add_inv_js_line(html_string, tfs, prev_hash, prev_invs, curr_hash, curr_invs):
     prev_script_line = "    $('invariants#" + tfs + "').data('" + prev_hash + "', '" + \
-        prev_invs.replace("'", "\\'").replace("\n", "\\n") + "')\n"
+        prev_invs.replace("'", "\\'").replace("\n", "\\n") + "');\n"
     curr_script_line = "    $('invariants#" + tfs + "').data('" + curr_hash + "', '" + \
-        curr_invs.replace("'", "\\'").replace("\n", "\\n") + "')\n"
+        curr_invs.replace("'", "\\'").replace("\n", "\\n") + "');\n"
     replacement = prev_script_line + curr_script_line + "</script>\n</body>"
     html_string = html_string.replace("</script>\n</body>", replacement)
     return html_string
 
 
 def _getty_append_invariants(html_string, targets, go, prev_hash, curr_hash):
+    html_string = html_string.replace("</body>", "<script>\n</script>\n</body>")
     for target in sorted(targets):
         tfs = fsformat(target)
         prev_invs_file = go + "_getty_inv__" + tfs + "__" + prev_hash + "_.inv.txt"
@@ -648,22 +676,47 @@ def _getty_append_invariants(html_string, targets, go, prev_hash, curr_hash):
         rpmt_html = anchor_html + "\n" + invs_html + "\n"
         html_string = html_string.replace(anchor_html, rpmt_html)
         # javascript replacement
-        html_string = html_string.replace("</body>", "<script>\n</script>\n</body>")
         html_string = __add_inv_js_line(html_string, tfs, prev_hash, prev_invs, curr_hash, curr_invs)
     return html_string
 
 
+def _getty_install_invtips(html_string, prev_hash, curr_hash, go):
+    newl2m = read_str_from(go + "_getty_fl2m_" + curr_hash + "_.ex")
+    newarray = ["\"" + curr_hash + "\""]
+    for pair in newl2m:
+        newarray.append("\"" + __path_to_image(pair[0]) + "\"")
+        newarray.append("\"" + str(pair[1]) + "\"")
+        newarray.append("\"" + fsformat(newl2m[pair]) + "\"")
+    newarray_str = "[" + ", ".join(t for t in newarray) + "]"
+    
+    oldl2m = read_str_from(go + "_getty_fl2m_" + prev_hash + "_.ex")
+    oldarray = ["\"" + prev_hash + "\""]
+    for pair in oldl2m:
+        oldarray.append("\"" + __path_to_image(pair[0]) + "\"")
+        oldarray.append("\"" + str(pair[1]) + "\"")
+        oldarray.append("\"" + fsformat(oldl2m[pair]) + "\"")
+    oldarray_str = "[" + ", ".join(t for t in oldarray) + "]"
+    
+    install_line = \
+        "<script>\n" + \
+        "    installInvTips(" + newarray_str + ", " + oldarray_str + ");\n</script>\n</body>" + \
+        "</script>\n</body>"
+    html_string = html_string.replace("</body>", install_line)
+    return html_string
+
+
 def getty_append_semainfo(template_file, targets, go, js_path, prev_hash, curr_hash):
-    html_string = ""
     if not go.endswith("/"):
         go = go + "/"
     
+    html_string = ""
     with open(template_file, 'r') as rf:
         html_string = rf.read()
     
     html_string = _getty_append_invdiff(html_string, targets, go, prev_hash, curr_hash)
     html_string = _import_js(html_string, js_path)
     html_string = _getty_append_invariants(html_string, targets, go, prev_hash, curr_hash)
+    html_string = _getty_install_invtips(html_string, prev_hash, curr_hash, go)
     
     with open(template_file, 'w') as wf:
         wf.write(html_string)

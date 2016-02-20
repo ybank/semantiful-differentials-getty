@@ -38,9 +38,6 @@ def sort_txt_inv(out_file):
                     f.write(inv + "\n")
         else:
             f.write('<NO INVARIANTS INFERRED>')
-#         # DEMO ONLY
-#         import random
-#         f.write(str(random.random()))
 
 
 # one pass template
