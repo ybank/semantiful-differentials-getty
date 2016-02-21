@@ -78,11 +78,11 @@ html_hdr = """<!DOCTYPE html>
         table {{ border:0px; border-collapse:collapse; width: 100%; font-size:0.75em; font-family: Lucida Console, monospace }}
         td.line {{ color:#8080a0 }}
         th {{ background: black; color: white }}
-        tr.diffunmodified td {{ background: #D0D0E0 }}
-        tr.diffhunk td {{ background: #A0A0A0 }}
-        tr.diffadded td {{ background: #CCFFCC }}
-        tr.diffdeleted td {{ background: #FFCCCC }}
-        tr.diffchanged td {{ background: #FFFFA0 }}
+        tr.diffunmodified > td {{ background: #D0D0E0 }}
+        tr.diffhunk > td {{ background: #A0A0A0 }}
+        tr.diffadded > td {{ background: #CCFFCC }}
+        tr.diffdeleted > td {{ background: #FFCCCC }}
+        tr.diffchanged > td {{ background: #FFFFA0 }}
         span.diffchanged2 {{ background: #E0C880 }}
         span.diffponct {{ color: #B08080 }}
         tr.diffmisc td {{}}
@@ -130,6 +130,10 @@ hunk_off1, hunk_size1, hunk_off2, hunk_size2 = 0, 0, 0, 0
 
 # Characters we're willing to word wrap on
 WORDBREAK = " \t;.,/):-"
+
+
+def is_empty(table):
+    return len(table) == 40
 
 
 def sane(x):
@@ -636,7 +640,11 @@ def _getty_append_invdiff(html_string, targets, go, prev_hash, curr_hash):
         dtable = parse_from_memory(dstring, True, True)
         anchor = "<br>{{{__getty_invariant_diff__}}}<br>"
         inv_title = "<br>compare inviants for { <b>" + __escape(target) + "</b> }<br>"
-        replacement = anchor + "\n" + inv_title + "\n" + dtable + "\n"
+        replacement = anchor + "\n" + \
+            "<div id='vsinvs-" + fsformat(target) + "' style='min-width:960px'>" + \
+            inv_title + "\n" + dtable + \
+            ("NO DIFFERENCE" if is_empty(dtable) else "") + \
+            "\n</div>\n"
         html_string = html_string.replace(anchor, replacement)
     return html_string
 

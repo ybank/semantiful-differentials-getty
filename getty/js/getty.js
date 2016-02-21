@@ -2,21 +2,45 @@
  * the javascript file to import for semantiful differential html page
  */
 
-function str2html(str) {
-	console.log(str);
-	return str.replace("<", "&lt;", "g").replace(">", "&gt;", "g").replace(/(?:\r\n|\r|\n)/g, '<br />');
+function invstr2html(str, pos) {
+	style = "width:48%;max-height:400px;overflow:auto;padding:5px 5px 5px 5px;";
+	if (pos == "left")
+		style += "display:inline-block;position:relative;" + 
+			"border:2px dotted #A8BBA8;background:#5A5F5A;color:white;";
+	else if (pos == "right")
+		style += "display:inline-block;position:absolute;right:15px;" + 
+			"border:2px dotted #A8BBA8;background:#5A5F5A;color:white;";
+	else
+		console.error('incorrect pos arg passed to invstr2html(): it should be either "left" or "right"');
+	start = "<p style='" + style + "'>\n";
+	body = str.replace("&", "&amp;", "g").replace("<", "&lt;", "g").replace(">", "&gt;", "g");
+	body = withLineNumbers(body, 1);
+	body = body.replace(/(?:\r\n|\r|\n)/g, '<br />');
+	end = "\n</p>";
+	return start + body + end;
 }
 
 function methodInvsCompare(theMtd, prev, post) {
-//	compareInvs = $("div#" + theMtd)[0]
-//	console.log(compareInvs);
+	compareInvs = $("div#vsinvs-" + theMtd)[0].outerHTML;
 	preInvs = $("invariants#" + theMtd).data(prev);
-	console.log(preInvs);
 	postInvs = $("invariants#" + theMtd).data(post);
-	console.log(postInvs);
-//	htmlContent = compareInvs + "<br>" + str2html(preInvs) + "<br>" + str2html(postInvs);
-	htmlContent = str2html(preInvs) + "<br>" + str2html(postInvs);
-	return htmlContent;
+	htmlContent = compareInvs + invstr2html(preInvs, "left") + invstr2html(postInvs, "right");
+	return "<body>" + htmlContent + "</body>";
+}
+
+// style for source code if needed
+// style = "max-width:400px;max-height:400px;overflow:auto;padding:5px 5px 5px 5px";
+
+function withLineNumbers(content, start) {
+	var content_with_ln = "";
+	var lines = content.split(/(?:\r\n|\r|\n)/);
+	for (j = 0, i = start; j < lines.length; j ++, i ++) {
+		ln = "" + i;
+		if (ln.length < 3)
+			ln = "&nbsp;".repeat(3 - ln.length) + ln;
+		content_with_ln += ("<span>" + ln +"&nbsp;|&nbsp;&nbsp;&nbsp;</span>" + lines[j]) + "\n";
+	}
+	return content_with_ln;
 }
 
 function installInvTips(newl2m, oldl2m) {
