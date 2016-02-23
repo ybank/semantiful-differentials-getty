@@ -63,7 +63,7 @@ def visit(villa_path, pwd, go, prev_hash, post_hash, pkg_prefix="-"):
     new_changed_methods = ex.read_str_from(go + "_getty_chgmtd_src_new_{0}_.ex".format(post_hash))
     new_improved_changed_methods = ex.read_str_from(go + "_getty_chgmtd_src_{0}_{1}_.ex".format(prev_hash, post_hash))
     new_removed_changed_methods = ex.read_str_from(go + "_getty_chgmtd_src_gone_{0}_{1}_.ex".format(prev_hash, post_hash))
-    new_all_callers = ex.read_str_from(go + "_getty_clr_{0}_.ex".format(post_hash))
+    new_all_ccc_related = ex.read_str_from(go + "_getty_cccmtd_{0}_.ex".format(post_hash))
     new_all_cccs = ex.read_str_from(go + "_getty_ccc_{0}_.ex".format(post_hash))
     new_all_methods = ex.read_str_from(go + "_getty_allmtd_src_{0}_.ex".format(post_hash))
     new_l2m = ex.read_str_from(go + "_getty_fl2m_{0}_.ex".format(post_hash))
@@ -93,7 +93,7 @@ def visit(villa_path, pwd, go, prev_hash, post_hash, pkg_prefix="-"):
     
     old_improved_changed_methods = ex.read_str_from(go + "_getty_chgmtd_src_{1}_{0}_.ex".format(prev_hash, post_hash))
     old_added_changed_methods = ex.read_str_from(go + "_getty_chgmtd_src_gain_{0}_{1}_.ex".format(prev_hash, post_hash))
-    old_all_callers = ex.read_str_from(go + "_getty_clr_{0}_.ex".format(prev_hash))
+    old_all_ccc_related = ex.read_str_from(go + "_getty_cccmtd_{0}_.ex".format(prev_hash))
     old_all_cccs = ex.read_str_from(go + "_getty_ccc_{0}_.ex".format(prev_hash))
 #     # DEBUG ONLY
 #     print old_changed_methods
@@ -107,8 +107,8 @@ def visit(villa_path, pwd, go, prev_hash, post_hash, pkg_prefix="-"):
     
     print 'Villa analysis is completed.'
     return old_changed_methods, old_improved_changed_methods, old_added_changed_methods, \
-        old_all_callers, old_all_cccs, old_all_methods, \
+        old_all_ccc_related, old_all_cccs, old_all_methods, \
         old_l2m, old_m2l, \
         new_changed_methods, new_improved_changed_methods, new_removed_changed_methods, \
-        new_all_callers, new_all_cccs, new_all_methods, \
+        new_all_ccc_related, new_all_cccs, new_all_methods, \
         new_l2m, new_m2l

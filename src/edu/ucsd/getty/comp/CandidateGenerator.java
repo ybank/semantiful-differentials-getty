@@ -59,7 +59,7 @@ public class CandidateGenerator implements ITraceFinder {
 	}
 
 	@Override
-	public Set<String> getAllCallers(Set<String> methodNames) {
+	public Set<String> getCallersFor(Set<String> methodNames) {
 		Set<String> callers = new HashSet<String>();
 		for (String methodname : methodNames)
 			callers.addAll(getCallersFor(methodname));
@@ -67,7 +67,58 @@ public class CandidateGenerator implements ITraceFinder {
 	}
 	
 	public Set<String> getCallers() {
-		return getAllCallers(this.changedMethods);
+		return getCallersFor(this.changedMethods);
+	}
+	
+	@Override
+	public Set<String> getCalleesFor(String methodName) {
+		Set<String> callees = callgraph.getPossibleCalleesOf(methodName);
+		if (callees == null)
+			callees = new HashSet<String>();
+		return callees;
+	}
+	
+	@Override
+	public Set<String> getCalleesFor(Set<String> methodNames) {
+		Set<String> callees = new HashSet<String>();
+		for (String methodname : methodNames)
+			callees.addAll(getCalleesFor(methodname));
+		return callees;
+	}
+	
+	public Set<String> getCallees() {
+		return getCalleesFor(this.changedMethods);
+	}
+	
+	@Override
+	public Map<String, Map<String, Set<String>>> possibleOuterStreams() {
+		if (this.changedMethods == null || this.changedMethods.isEmpty())
+			return new HashMap<String, Map<String, Set<String>>>();
+		else {
+			Map<String, Map<String, Set<String>>> outerstreams = new HashMap<String, Map<String, Set<String>>>();
+			for (String method : this.changedMethods) {
+				Map<String, Set<String>> oses = new HashMap<String, Set<String>>();
+				for (String caller : getCallersFor(method)) {
+					Set<String> othercallees = getCalleesFor(caller);
+					othercallees.remove(method);
+					oses.put(caller, othercallees);
+				}
+				outerstreams.put(method, oses);
+			}
+			return outerstreams;
+		}
+	}
+	
+	@Override
+	public Map<String, Set<String>> possibleInnerStreams() {
+		if (this.changedMethods == null || this.changedMethods.isEmpty())
+			return new HashMap<String, Set<String>>();
+		else {
+			Map<String, Set<String>> innerstreams = new HashMap<String, Set<String>>();
+			for (String method : this.changedMethods)
+				innerstreams.put(method, getCalleesFor(method));
+			return innerstreams;
+		}
 	}
 	
 	@Override

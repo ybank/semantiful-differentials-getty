@@ -1,3 +1,5 @@
+package edu.ucsd.getty;
+
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -7,9 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import edu.ucsd.getty.IInputProcessor;
-import edu.ucsd.getty.IMethodRecognizer;
-import edu.ucsd.getty.ITraceFinder;
 import edu.ucsd.getty.comp.ASTInspector;
 import edu.ucsd.getty.comp.CandidateGenerator;
 import edu.ucsd.getty.comp.InputDiffProcessor;
@@ -220,13 +219,16 @@ public class Villa {
 				
 				
 				/**********************************/
-				Set<String> all_callers = get_all_callers(candidates);
-//					System.out.println(all_callers);
-				String clr_out_path = output_dir + "_getty_clr_" + this_commit + "_.ex";
+				Set<String> all_ccc_related = get_all_ccc_related(candidates);
+//					System.out.println(all_ccc_related);
+				String cccmtd_out_path = output_dir + "_getty_cccmtd_" + this_commit + "_.ex";
 				System.out.println(
-						"<simple mode>: number of possible callers: " + all_callers.size() + "\n"
-								+ "  output to file --> " + clr_out_path + " ...\n");
-				output_to(clr_out_path, all_callers);
+						"<simple mode>: number of related ccc methods: " + all_ccc_related.size() + "\n"
+								+ "  output to file --> " + cccmtd_out_path + " ...\n");
+				output_to(cccmtd_out_path, all_ccc_related);
+				
+				/**********************************/
+				output_dataflow_approx(output_dir, chain_generator, this_commit);
 				
 			}
 			
@@ -326,13 +328,16 @@ public class Villa {
 			
 			
 			/**********************************/
-			Set<String> all_callers = get_all_callers(candidates);
-//					System.out.println(all_callers);
-			String clr_out_path = output_dir + "_getty_clr_" + curr_commit + "_.ex";
+			Set<String> all_ccc_related = get_all_ccc_related(candidates);
+//					System.out.println(all_ccc_related);
+			String cccmtd_out_path = output_dir + "_getty_cccmtd_" + curr_commit + "_.ex";
 			System.out.println(
-					"<complex mode>: number of possible callers: " + all_callers.size() + "\n"
-							+ "  output to file --> " + clr_out_path + " ...\n");
-			output_to(clr_out_path, all_callers);
+					"<complex mode>: number of related ccc methods: " + all_ccc_related.size() + "\n"
+							+ "  output to file --> " + cccmtd_out_path + " ...\n");
+			output_to(cccmtd_out_path, all_ccc_related);
+			
+			/**********************************/
+			output_dataflow_approx(output_dir, chain_generator_improved, curr_commit);
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -408,18 +413,74 @@ public class Villa {
 			
 			
 			/**********************************/
-			Set<String> all_callers = get_all_callers(candidates);
-//					System.out.println(all_callers);
-			String clr_out_path = output_dir + "_getty_clr_" + prev_commit + "_.ex";
+			Set<String> all_ccc_related = get_all_ccc_related(candidates);
+//					System.out.println(all_ccc_related);
+			String cccmtd_out_path = output_dir + "_getty_cccmtd_" + prev_commit + "_.ex";
 			System.out.println(
-					"<recovery mode>: number of possible callers: " + all_callers.size() + "\n"
-							+ "  output to file --> " + clr_out_path + " ...\n");
-			output_to(clr_out_path, all_callers);
+					"<recovery mode>: number of related ccc methods: " + all_ccc_related.size() + "\n"
+							+ "  output to file --> " + cccmtd_out_path + " ...\n");
+			output_to(cccmtd_out_path, all_ccc_related);
+			
+			/**********************************/
+			output_dataflow_approx(output_dir, chain_generator_improved, prev_commit);
 			
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.exit(2);
 		}
+	}
+	
+	private static void output_dataflow_approx(String output_dir, ITraceFinder generator, String commit_hash) {
+		try {
+			// output inner flow candidates
+			Map<String, Set<String>> inner_streams = generator.possibleInnerStreams();
+			String is_str = "{";
+			for (String method : inner_streams.keySet()) {
+				is_str += ("\"" + method + "\": [");
+				for (String inner_callee : inner_streams.get(method)) {
+					is_str += ("\"" + inner_callee + "\", ");
+				}
+				is_str += "], ";
+			}
+			is_str += "}";
+			String is_out_path = output_dir + "_getty_dfinner_" + commit_hash + "_.ex";
+			System.out.println(
+					"<dataflow approximate>: number of methods considered for inner flows: " + inner_streams.size() + "\n"
+							+ "  output to file --> " + is_out_path + " ...\n");
+			PrintWriter is_out = new PrintWriter(
+					new BufferedWriter(new FileWriter(is_out_path, false)));
+			is_out.print(is_str);
+			is_out.close();
+			
+			// output outer flow candidates
+			Map<String, Map<String, Set<String>>> outer_streams = generator.possibleOuterStreams();
+			String os_str = "{";
+			for (String method : outer_streams.keySet()) {
+				os_str += ("\"" + method + "\": {");
+				Map<String, Set<String>> caller_callees = outer_streams.get(method);
+				for (String caller : caller_callees.keySet()) {
+					os_str += ("\"" + caller + "\": [");
+					for (String other_callee : caller_callees.get(caller))
+						os_str += ("\"" + other_callee + "\", ");
+					os_str += "], ";
+				}
+				os_str += "}, ";
+			}
+			os_str += "}";
+			String os_out_path = output_dir + "_getty_dfouter_" + commit_hash + "_.ex";
+			System.out.println(
+					"<dataflow approximate>: number of methods considered for outer flows: " + outer_streams.size() + "\n"
+							+ "  output to file --> " + os_out_path + " ...\n");
+			PrintWriter os_out = new PrintWriter(
+					new BufferedWriter(new FileWriter(os_out_path, false)));
+			os_out.print(os_str);
+			os_out.close();
+			
+		} catch (IOException ioe) {
+			ioe.printStackTrace();
+			System.exit(2);
+		}
+		
 	}
 	
 	private static void output_to(String out_path, Set<String> set_content) throws IOException {
@@ -454,18 +515,18 @@ public class Villa {
 		out_file.close();
 	}
 
-	private static Set<String> get_all_callers(Map<String, Set<List<String>>> candidates) {
-		System.out.println("\nGetting all callers of changed methods from ccc ...\n");
-		Set<String> all_callers = new HashSet<String>();
+	private static Set<String> get_all_ccc_related(Map<String, Set<List<String>>> candidates) {
+		System.out.println("\nGetting all related methods of changed methods from ccc ...\n");
+		Set<String> all_related = new HashSet<String>();
 		for (String method : candidates.keySet()) {
 			for (List<String> chain : candidates.get(method)) {
 				for (String mtd : chain) {
 					if (!mtd.equals("!") && !mtd.startsWith("@"))
-						all_callers.add(mtd);
+						all_related.add(mtd);
 				}
 			}
 		}
-		return all_callers;
+		return all_related;
 	}
 	
 	private static ITraceFinder get_generator(String target_path, String package_prefix, Set<String> revised_methods) {

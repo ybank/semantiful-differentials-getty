@@ -119,10 +119,10 @@ if __name__ == "__main__":
         multi-stage analysis: Villa (code) and Center (invariants) 
     '''
     old_changed_methods, old_improved_changed_methods, old_added_changed_methods, \
-        old_all_callers, old_all_cccs, old_all_methods, \
+        old_all_ccc_related, old_all_cccs, old_all_methods, \
         old_l2m, old_m2l, \
         new_changed_methods, new_improved_changed_methods, new_removed_changed_methods, \
-        new_all_callers, new_all_cccs, new_all_methods, \
+        new_all_ccc_related, new_all_cccs, new_all_methods, \
         new_l2m, new_m2l = \
             villa.visit(villa_path, pwd, go, prev_hash, post_hash)
 #     # DEBUG ONLY
@@ -141,9 +141,9 @@ if __name__ == "__main__":
     center.visit(
         junit_path, go, prev_hash, post_hash, \
         old_changed_methods, old_improved_changed_methods, old_added_changed_methods, \
-        old_all_callers, old_all_cccs, old_all_methods, \
+        old_all_ccc_related, old_all_cccs, old_all_methods, \
         new_changed_methods, new_improved_changed_methods, new_removed_changed_methods, \
-        new_all_callers, new_all_cccs, new_all_methods
+        new_all_ccc_related, new_all_cccs, new_all_methods
     )
     
     '''
@@ -155,6 +155,6 @@ if __name__ == "__main__":
         optional: view results
     '''
     gallery.view(pwd, go, js_path, prev_hash, post_hash, \
-        set(old_improved_changed_methods + old_all_callers) & set(new_improved_changed_methods + new_all_callers))
+        (set(old_all_ccc_related) & set(new_all_ccc_related)))
     
     print 'Quit Getty.'

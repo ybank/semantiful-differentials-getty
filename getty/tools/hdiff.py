@@ -707,7 +707,7 @@ def _getty_install_invtips(html_string, prev_hash, curr_hash, go):
     
     install_line = \
         "<script>\n" + \
-        "    installInvTips(" + newarray_str + ", " + oldarray_str + ");\n</script>\n</body>" + \
+        "    installInvTips(" + newarray_str + ", " + oldarray_str + ");\n" + \
         "</script>\n</body>"
     html_string = html_string.replace("</body>", install_line)
     return html_string

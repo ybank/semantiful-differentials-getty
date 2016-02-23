@@ -58,6 +58,22 @@ public class CallGraph {
 			return possibleCallers;
 	}
 	
+	public Set<String> getStaticCalleesOf(String fullMethodName) {
+		Set<String> staticCallees = this.staticCalleesOf.get(fullMethodName);
+		if (staticCallees == null)
+			return new HashSet<String>();
+		else
+			return staticCallees;
+	}
+	
+	public Set<String> getPossibleCalleesOf(String fullMethodName) {
+		Set<String> possibleCallees = this.possibleCalleesOf.get(fullMethodName);
+		if (possibleCallees == null)
+			return new HashSet<String>();
+		else
+			return possibleCallees;
+	}
+	
 	private void processInvocation(List<String> invocation) throws Exception {
 		String invokeType = invocation.get(0);
 		
