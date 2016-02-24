@@ -94,14 +94,7 @@ def one_pass(junit_path, go, this_hash, target_set):
 
 
 # the main entrance
-def visit(junit_path, \
-          go, prev_hash, post_hash, \
-          old_changed_methods, old_improved_changed_methods, old_added_changed_methods, \
-          old_all_ccc_related, old_all_cccs, old_all_methods, \
-          old_inner_dataflow_methods, old_outer_dataflow_methods, \
-          new_changed_methods, new_improved_changed_methods, new_removed_changed_methods, \
-          new_all_ccc_related, new_all_cccs, new_all_methods, \
-          new_inner_dataflow_methods, new_outer_dataflow_methods):
+def visit(junit_path, go, prev_hash, post_hash, targets):
     
 #     # DEBUG ONLY
 #     print common_prefixes(old_all_methods)
@@ -116,11 +109,11 @@ def visit(junit_path, \
     '''
         1-st pass: checkout prev_commit as detached head, and get invariants for all interesting targets
     '''
-    one_pass(junit_path, go, prev_hash, set(old_improved_changed_methods + old_all_ccc_related))
+    one_pass(junit_path, go, prev_hash, targets)
     
     '''
         2-nd pass: checkout post_commit as detached head, and get invariants for all interesting targets
     '''
-    one_pass(junit_path, go, post_hash, set(new_improved_changed_methods + new_all_ccc_related))
+    one_pass(junit_path, go, post_hash, targets)
     
     print 'Center analysis is completed.'

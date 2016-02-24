@@ -43,7 +43,7 @@ except ImportError:
         "simplediff module is not installed - find it here: https://github.com/paulgb/simplediff\n")
 
 from tools.daikon import fsformat
-from tools.ex import read_str_from
+from tools.html import inv_to_html
 from tools.os import from_sys_call_enforce
 
 
@@ -101,6 +101,7 @@ html_hdr = """<!DOCTYPE html>
 </head>
 <body>
     <h3>getty - semantiful differentials</h3>
+    <u id='getty-advice-title'>{{{{{{__getty_advice__}}}}}}</u><br>
 """
 
 html_footer = """
@@ -688,8 +689,7 @@ def _getty_append_invariants(html_string, targets, go, prev_hash, curr_hash):
     return html_string
 
 
-def _getty_install_invtips(html_string, prev_hash, curr_hash, go):
-    newl2m = read_str_from(go + "_getty_fl2m_" + curr_hash + "_.ex")
+def _getty_install_invtips(html_string, prev_hash, curr_hash, go, oldl2m, newl2m):
     newarray = ["\"" + curr_hash + "\""]
     for pair in newl2m:
         newarray.append("\"" + __path_to_image(pair[0]) + "\"")
@@ -697,7 +697,6 @@ def _getty_install_invtips(html_string, prev_hash, curr_hash, go):
         newarray.append("\"" + fsformat(newl2m[pair]) + "\"")
     newarray_str = "[" + ", ".join(t for t in newarray) + "]"
     
-    oldl2m = read_str_from(go + "_getty_fl2m_" + prev_hash + "_.ex")
     oldarray = ["\"" + prev_hash + "\""]
     for pair in oldl2m:
         oldarray.append("\"" + __path_to_image(pair[0]) + "\"")
@@ -713,7 +712,7 @@ def _getty_install_invtips(html_string, prev_hash, curr_hash, go):
     return html_string
 
 
-def getty_append_semainfo(template_file, targets, go, js_path, prev_hash, curr_hash):
+def getty_append_semainfo(template_file, targets, go, js_path, prev_hash, curr_hash, old_l2m, new_l2m):
     if not go.endswith("/"):
         go = go + "/"
     
@@ -723,8 +722,10 @@ def getty_append_semainfo(template_file, targets, go, js_path, prev_hash, curr_h
     
     html_string = _getty_append_invdiff(html_string, targets, go, prev_hash, curr_hash)
     html_string = _import_js(html_string, js_path)
-    html_string = _getty_append_invariants(html_string, targets, go, prev_hash, curr_hash)
-    html_string = _getty_install_invtips(html_string, prev_hash, curr_hash, go)
+#     html_string = _getty_append_invariants(html_string, targets, go, prev_hash, curr_hash)
+    inv_to_html(targets, go, prev_hash)
+    inv_to_html(targets, go, curr_hash)
+    html_string = _getty_install_invtips(html_string, prev_hash, curr_hash, go, old_l2m, new_l2m)
     
     with open(template_file, 'w') as wf:
         wf.write(html_string)

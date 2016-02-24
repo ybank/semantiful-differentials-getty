@@ -8,6 +8,7 @@ from inspect import getsourcefile
 import center
 import gallery
 import villa
+from analysis.advisor import report
 from tools.git import (
     backup_and_stash_first,
     get_current_head_branch,
@@ -140,25 +141,25 @@ if __name__ == "__main__":
 #     print "number of keys in new_all_cccs: {0}".format(len(new_all_cccs))
 #     print "size of new_all_methods: {0}".format(len(new_all_methods))
     
-    center.visit(
-        junit_path, go, prev_hash, post_hash, \
-        old_changed_methods, old_improved_changed_methods, old_added_changed_methods, \
-        old_all_ccc_related, old_all_cccs, old_all_methods, \
-        old_inner_dataflow_methods, old_outer_dataflow_methods, \
-        new_changed_methods, new_improved_changed_methods, new_removed_changed_methods, \
-        new_all_ccc_related, new_all_cccs, new_all_methods, \
-        new_inner_dataflow_methods, new_outer_dataflow_methods
-    )
+    targets = \
+        set(old_improved_changed_methods + old_all_ccc_related) & \
+        set(new_improved_changed_methods + new_all_ccc_related)
+    
+    center.visit(junit_path, go, prev_hash, post_hash, targets)
     
     '''
-        last: restore original branch and all its pending work
+        before last: restore original branch and all its pending work
     '''
     restore_and_pop_last(working_branch, should_further_recover)
     
     '''
+        last: generate reports
+    '''
+    report(new_all_cccs, go)
+    
+    '''
         optional: view results
     '''
-    gallery.view(pwd, go, js_path, prev_hash, post_hash, \
-        (set(old_all_ccc_related) & set(new_all_ccc_related)))
+    gallery.view(pwd, go, js_path, targets, prev_hash, post_hash, old_l2m, new_l2m)
     
     print 'Quit Getty.'
