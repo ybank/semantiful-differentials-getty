@@ -11,6 +11,7 @@ import edu.ucsd.getty.ITraceFinder;
 import edu.ucsd.getty.callgraph.CallGraph;
 import edu.ucsd.getty.callgraph.CallGraphAnalyzer;
 //import edu.ucsd.getty.callgraph.NameHandler;
+import edu.ucsd.getty.utils.SetOperations;
 
 public class CandidateGenerator implements ITraceFinder {
 	
@@ -54,8 +55,9 @@ public class CandidateGenerator implements ITraceFinder {
 	public Set<String> getCallersFor(String methodName) {
 		Set<String> callers = callgraph.getPossibleCallersOf(methodName);
 		if (callers == null)
-			callers = new HashSet<String>();
-		return callers;
+			return new HashSet<String>();
+		else
+			return SetOperations.intersection(callers, allProjectMethods);
 	}
 
 	@Override
@@ -74,8 +76,9 @@ public class CandidateGenerator implements ITraceFinder {
 	public Set<String> getCalleesFor(String methodName) {
 		Set<String> callees = callgraph.getPossibleCalleesOf(methodName);
 		if (callees == null)
-			callees = new HashSet<String>();
-		return callees;
+			return new HashSet<String>();
+		else
+			return SetOperations.intersection(callees, allProjectMethods);
 	}
 	
 	@Override

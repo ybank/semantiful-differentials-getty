@@ -68,15 +68,19 @@ def visit(villa_path, pwd, go, prev_hash, post_hash, pkg_prefix="-"):
     new_all_methods = ex.read_str_from(go + "_getty_allmtd_src_{0}_.ex".format(post_hash))
     new_l2m = ex.read_str_from(go + "_getty_fl2m_{0}_.ex".format(post_hash))
     new_m2l = ex.read_str_from(go + "_getty_fm2l_{0}_.ex".format(post_hash))
+    new_inner_dataflow_methods = ex.read_str_from(go + "_getty_dfinner_{0}_.ex".format(post_hash))
+    new_outer_dataflow_methods = ex.read_str_from(go + "_getty_dfouter_{0}_.ex".format(post_hash))
 #     # DEBUG ONLY
 #     print new_changed_methods
 #     print new_improved_changed_methods
 #     print new_removed_changed_methods
-#     print new_all_callers
+#     print new_all_ccc_related
 #     print new_all_cccs
 #     print len(new_all_methods)
 #     print new_l2m
 #     print new_m2l
+#     print new_inner_dataflow_methods
+#     print new_outer_dataflow_methods
     
     git.clear_temp_checkout(post_hash)
     
@@ -95,20 +99,26 @@ def visit(villa_path, pwd, go, prev_hash, post_hash, pkg_prefix="-"):
     old_added_changed_methods = ex.read_str_from(go + "_getty_chgmtd_src_gain_{0}_{1}_.ex".format(prev_hash, post_hash))
     old_all_ccc_related = ex.read_str_from(go + "_getty_cccmtd_{0}_.ex".format(prev_hash))
     old_all_cccs = ex.read_str_from(go + "_getty_ccc_{0}_.ex".format(prev_hash))
+    old_inner_dataflow_methods = ex.read_str_from(go + "_getty_dfinner_{0}_.ex".format(prev_hash))
+    old_outer_dataflow_methods = ex.read_str_from(go + "_getty_dfouter_{0}_.ex".format(prev_hash))
 #     # DEBUG ONLY
 #     print old_changed_methods
 #     print old_improved_changed_methods
 #     print old_added_changed_methods
-#     print old_all_callers
+#     print old_all_ccc_related
 #     print old_all_cccs
 #     print len(old_all_methods)
+#     print old_inner_dataflow_methods
+#     print old_outer_dataflow_methods
     
     git.clear_temp_checkout(prev_hash)
     
     print 'Villa analysis is completed.'
     return old_changed_methods, old_improved_changed_methods, old_added_changed_methods, \
         old_all_ccc_related, old_all_cccs, old_all_methods, \
+        old_inner_dataflow_methods, old_outer_dataflow_methods, \
         old_l2m, old_m2l, \
         new_changed_methods, new_improved_changed_methods, new_removed_changed_methods, \
         new_all_ccc_related, new_all_cccs, new_all_methods, \
+        new_inner_dataflow_methods, new_outer_dataflow_methods, \
         new_l2m, new_m2l

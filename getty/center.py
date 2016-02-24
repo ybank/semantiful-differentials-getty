@@ -98,8 +98,10 @@ def visit(junit_path, \
           go, prev_hash, post_hash, \
           old_changed_methods, old_improved_changed_methods, old_added_changed_methods, \
           old_all_ccc_related, old_all_cccs, old_all_methods, \
+          old_inner_dataflow_methods, old_outer_dataflow_methods, \
           new_changed_methods, new_improved_changed_methods, new_removed_changed_methods, \
-          new_all_ccc_related, new_all_cccs, new_all_methods):
+          new_all_ccc_related, new_all_cccs, new_all_methods, \
+          new_inner_dataflow_methods, new_outer_dataflow_methods):
     
 #     # DEBUG ONLY
 #     print common_prefixes(old_all_methods)

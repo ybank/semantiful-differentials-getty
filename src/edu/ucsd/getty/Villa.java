@@ -445,7 +445,7 @@ public class Villa {
 			is_str += "}";
 			String is_out_path = output_dir + "_getty_dfinner_" + commit_hash + "_.ex";
 			System.out.println(
-					"<dataflow approximate>: number of methods considered for inner flows: " + inner_streams.size() + "\n"
+					"<dataflow approximate>: number of project methods considered for inner flows: " + inner_streams.size() + "\n"
 							+ "  output to file --> " + is_out_path + " ...\n");
 			PrintWriter is_out = new PrintWriter(
 					new BufferedWriter(new FileWriter(is_out_path, false)));
@@ -469,7 +469,7 @@ public class Villa {
 			os_str += "}";
 			String os_out_path = output_dir + "_getty_dfouter_" + commit_hash + "_.ex";
 			System.out.println(
-					"<dataflow approximate>: number of methods considered for outer flows: " + outer_streams.size() + "\n"
+					"<dataflow approximate>: number of project methods considered for outer flows: " + outer_streams.size() + "\n"
 							+ "  output to file --> " + os_out_path + " ...\n");
 			PrintWriter os_out = new PrintWriter(
 					new BufferedWriter(new FileWriter(os_out_path, false)));
