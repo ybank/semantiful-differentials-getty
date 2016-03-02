@@ -101,7 +101,7 @@ html_hdr = """<!DOCTYPE html>
 </head>
 <body>
     <h3>getty - semantiful differentials</h3>
-    <u id='getty-advice-title'>{{{{{{__getty_advice__}}}}}}</u><br>
+    <a href='#' id='getty-advice-title' onclick='return false;'>{{{{{{__getty_advice__}}}}}}</a><br>
 """
 
 html_footer = """
@@ -323,7 +323,11 @@ def __path_to_image(fpath):
 
 preimage = ""
 postimage = ""
+prefile = ""
+postfile = ""
 image2filename = {}
+oldl2m = {}
+newl2m = {}
 def __filepath_to_image(pathname):
     if pathname.startswith("/"):
         return "_dev_null_"
@@ -341,9 +345,13 @@ def __filepath_to_image(pathname):
 def add_filename(f1, f2, output_file):
     global preimage
     global postimage
+    global prefile
+    global postfile
     global image2filename
     preimage = __filepath_to_image(f1)
     postimage = __filepath_to_image(f2)
+    prefile = (f1[2:] if not f1.startswith("/") else f1)
+    postfile = (f2[2:] if not f2.startswith("/") else f2)
     output_file.write(("<tr><th colspan='2'>%s</th>"%convert(f1, linesize=linesize)).encode(encoding))
     output_file.write(("<th colspan='2'>%s</th></tr>\n"%convert(f2, linesize=linesize)).encode(encoding))
 
@@ -360,26 +368,48 @@ def add_hunk(output_file, show_hunk_infos):
 def add_line(s1, s2, output_file):
     global line1
     global line2
+    
+    global oldl2m
+    global newl2m
 
     orig1 = s1
     orig2 = s2
+    
+    line1_active_flag = False
+    line2_active_flag = False
 
     if s1 == None and s2 == None:
         type_name = "unmodified"
     elif s1 == None or s1 == "":
         type_name = "added " + postimage
+        line2_active_flag = True
     elif s2 == None or s1 == "":
         type_name = "deleted " + preimage
+        line1_active_flag = True
     elif s1 == s2:
         type_name = "unmodified"
     else:
         type_name = "changed " + postimage
+        line2_active_flag = True
         if algorithm == 1:
             s1, s2 = diff_changed_words_ts(orig1, orig2)
         elif algorithm == 2:
             s1, s2 = diff_changed_ts(orig1, orig2)
         else: # default
             s1, s2 = linediff(orig1, orig2)
+    
+    if (not line1_active_flag) and (not line2_active_flag):
+        pass
+    elif line2_active_flag:
+        possible_nk = (postfile, int(line2))
+        if possible_nk in newl2m:
+            type_name += (" -related-" + fsformat(newl2m[possible_nk]))
+    elif line1_active_flag:
+        possible_ok = (prefile, int(line1))
+        if possible_ok in oldl2m:
+            type_name += (" -related-" + fsformat(oldl2m[possible_ok]))
+    else:
+        raise ValueError("adding a line with wrong flags: " + str(line1_active_flag) + " " + str(line2_active_flag))
     
     output_file.write(('<tr class="diff%s">' % type_name).encode(encoding))
     if s1 != None and s1 != "":
@@ -603,7 +633,11 @@ def parse_from_memory(txt, exclude_headers, show_hunk_infos):
     return output_stream.getvalue()
 
 
-def diff_to_html(input_diff_file, output_html_file, exclude_headers=False):
+def diff_to_html(input_diff_file, output_html_file, exclude_headers=False, old_l2m={}, new_l2m={}):
+    global oldl2m
+    global newl2m
+    oldl2m = old_l2m
+    newl2m = new_l2m
     with open(input_diff_file, 'r') as input, open(output_html_file, 'w') as output:
         parse_input(input, output, '', '', exclude_headers, True)
 
@@ -641,11 +675,15 @@ def _getty_append_invdiff(html_string, targets, go, prev_hash, curr_hash):
         dtable = parse_from_memory(dstring, True, True)
         anchor = "<br>{{{__getty_invariant_diff__}}}<br>"
         inv_title = "<br>compare inviants for { <b>" + __escape(target) + "</b> }<br>"
-        replacement = anchor + "\n" + \
+        invdiffhtml = \
             "<div id='vsinvs-" + fsformat(target) + "' style='min-width:960px'>" + \
             inv_title + "\n" + dtable + \
             ("NO DIFFERENCE" if is_empty(dtable) else "") + \
             "\n</div>\n"
+        invdiff_out = go + "_getty_inv__" + tfs + "__" + ".inv.diff.html"
+        with open(invdiff_out, 'w') as idout:
+            idout.write(invdiffhtml)
+        replacement = anchor + "\n" + invdiffhtml
         html_string = html_string.replace(anchor, replacement)
     return html_string
 
@@ -713,6 +751,11 @@ def _getty_install_invtips(html_string, prev_hash, curr_hash, go, oldl2m, newl2m
 
 
 def getty_append_semainfo(template_file, targets, go, js_path, prev_hash, curr_hash, old_l2m, new_l2m):
+    global oldl2m
+    global newl2m
+    oldl2m = old_l2m
+    newl2m = new_l2m
+    
     if not go.endswith("/"):
         go = go + "/"
     

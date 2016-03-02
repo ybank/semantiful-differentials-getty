@@ -8,7 +8,6 @@ from inspect import getsourcefile
 import center
 import gallery
 import villa
-from analysis.advisor import report
 from tools.git import (
     backup_and_stash_first,
     get_current_head_branch,
@@ -153,13 +152,8 @@ if __name__ == "__main__":
     restore_and_pop_last(working_branch, should_further_recover)
     
     '''
-        last: generate reports
-    '''
-    report(new_all_cccs, go)
-    
-    '''
         optional: view results
     '''
-    gallery.view(pwd, go, js_path, targets, prev_hash, post_hash, old_l2m, new_l2m)
+    gallery.view(pwd, go, js_path, targets, new_all_cccs, prev_hash, post_hash, old_l2m, new_l2m)
     
     print 'Quit Getty.'

@@ -26,6 +26,7 @@ def inv_to_html(targets, go, commit_hash):
         invs_file = go + "_getty_inv__" + tfs + "__" + commit_hash + "_.inv.txt"
         with open(invs_file, 'r') as invf:
             invs = invf.read()
+        invs = invs.replace("<", "&lt;").replace(">", "&gt;")
         invs_html = go + "_getty_inv__" + tfs + "__" + commit_hash + "_.inv.html"
         with open(invs_html, 'w') as invh:
             content = inv_html_header
