@@ -22,13 +22,13 @@ from tools.os import cwd
 def help():
     print "\n== Usage ==\n"
     print "\tGet help:"
-    print "\t  semadiff <-h | --help>\n"
+    print "\t  semadiff < -h | --help >\n"
     print "\tDefault compare: origin/HEAD or origin/master or origin/trunk vs. HEAD:"
     print "\t  semadiff\n"
     print "\tCompare HEAD with the given commit, or with the commit of given ancestor index:"
     print "\t  semadiff < compare_commit | -<num_ancestor_index> >\n"
     print "\tCompare between the given commits: preimage_commit vs. postimage_commit:"
-    print "\t  semadiff <preimage_commit> <postimage_commit>\n"
+    print "\t  semadiff < preimage_commit | -<num_preimage_index> > < postimage_commit | -<num_postimage_index> >\n"
 
 
 def config_env():
@@ -39,13 +39,17 @@ def config_env():
     this_script_dir = this_script_path[:this_script_path.rfind("/")+1]
     villa_path = this_script_dir + "lib/villa.jar"  # jar is at the same dir
     junit_path = this_script_dir + "lib/junit-4.12-getty.jar"  # jar (revised junit) is at the same dir
-    if os.path.exists(villa_path) and os.path.exists(junit_path):
+    agent_path = this_script_dir + "lib/jdyncg-0.1-getty-dycg-agent.jar"  # jar is at the same dir
+    if os.path.exists(villa_path) and os.path.exists(junit_path) and os.path.exists(agent_path):
         print "\nvilla.jar path: " + villa_path
         print "\njunit-4.12-getty.jar path: " + junit_path
+        print "\njdyncg-0.1-getty-dycg-agent.jar path: " + agent_path
     elif not os.path.exists(villa_path):
         raise EnvironmentError("could not find villa.jar in script dir " + this_script_dir)
     elif not os.path.exists(junit_path):
         raise EnvironmentError("could not find getty-junit-4.12.jar in script dir " + this_script_dir)
+    elif not os.path.exists(agent_path):
+        raise EnvironmentError("could not find jdyncg-0.1-getty-dycg-agent.jar in script dir " + this_script_dir)
     
     # present working directory - it should be the project's root with "/" at the end
     pwd = cwd()
@@ -66,7 +70,7 @@ def config_env():
     # javascript path
     js_path = this_script_dir + "js/"
     
-    return villa_path, junit_path, pwd, go, js_path
+    return villa_path, junit_path, agent_path, pwd, go, js_path
 
 
 def set_args():
@@ -89,9 +93,25 @@ def set_args():
             prev_hash = sys.argv[1]
             post_hash = get_hash_for("HEAD")
     elif len(sys.argv) == 3:
-        if re.compile("[a-z0-9]{5,}").match(sys.argv[1]) and re.compile("[a-z0-9]{5,}").match(sys.argv[2]):
+        hash_regex = "[a-z0-9]{5,}"
+        index_regex = "(^-(\d+))|0"
+        if re.compile(hash_regex).match(sys.argv[1]) and re.compile(hash_regex).match(sys.argv[2]):
             prev_hash = sys.argv[1]
             post_hash = sys.argv[2]
+        elif (re.compile(index_regex).match(sys.argv[1]) or sys.argv[1] == "0") and \
+                (re.compile(index_regex).match(sys.argv[2]) or sys.argv[2] == "0"):
+            if sys.argv[1] == "0":
+                arg1 = "-0"
+            else:
+                arg1 = sys.argv[1]
+            prev_index = re.match(index_regex, arg1).group(2)
+            prev_hash = get_ancestor_hash(prev_index)
+            if sys.argv[2] == "0":
+                arg2 = "-0"
+            else:
+                arg2 = sys.argv[1]
+            post_index = re.match(index_regex, arg2).group(2)
+            post_hash = get_ancestor_hash(post_index)
         else:
             help()
             raise ValueError("invalid arguments passed: " + sys.argv[1] + " and " + sys.argv[2])
@@ -104,7 +124,7 @@ def set_args():
 
 if __name__ == "__main__":
     ## env config
-    villa_path, junit_path, pwd, go, js_path = config_env()
+    villa_path, junit_path, agent_path, pwd, go, js_path = config_env()
     
     ## args checking & setting
     prev_hash, post_hash = set_args()
