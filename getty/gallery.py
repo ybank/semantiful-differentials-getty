@@ -15,3 +15,7 @@ def view(pwd, go, js_path, targets, new_all_cccs, prev_hash, post_hash, old_l2m,
     sys_call("open -a /Applications/Safari.app/Contents/MacOS/Safari " + html_out)
 #     # open with default app
 #     sys_call("open " + html_out)
+
+
+def exam():
+    pass

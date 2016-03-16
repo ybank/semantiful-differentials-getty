@@ -35,6 +35,18 @@ def copy_file(from_path, to_path):
     sys_call(" ".join(["cp", from_path, to_path]))
 
 
+# helper to replace last occurence of a string to something else
+def rreplace(s, old, new, occurrence):
+    li = s.rsplit(old, occurrence)
+    return new.join(li)
+
+
+# change file name to replace last '-hash-' to real hash
+def update_file_hash(f, hs):
+     nf = rreplace(f, '-hash-', hs, 1)
+     sys_call(" ".join(["mv", f, nf]), ignore_bad_exit=True)
+
+
 # get pwd
 def cwd():
     return from_sys_call("pwd").strip()

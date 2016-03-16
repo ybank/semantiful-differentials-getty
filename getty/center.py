@@ -42,7 +42,7 @@ def sort_txt_inv(out_file):
 
 # one pass template
 # FIXME: Daikon is very failure-prone; work around with it
-def one_pass(junit_path, go, this_hash, target_set):
+def one_pass(junit_path, agent_path, go, this_hash, target_set):
     os.sys_call("git checkout " + this_hash)
     
     bin_path = mvn.path_from_mvn_call("outputDirectory")
@@ -90,11 +90,29 @@ def one_pass(junit_path, go, this_hash, target_set):
         os.sys_call(run_printinv + " > " + out_file, ignore_bad_exit=True)
         sort_txt_inv(out_file)
     
+    prefixes = daikon.common_prefixes(target_set)
+    prefix_regexes = []
+    for p in prefixes:
+        prefix_regexes.append(p + "*")
+    instrument_regex = "|".join(prefix_regexes)
+    print "\n===instrumentation pattern===\n" + instrument_regex + "\n"
+    # run tests with instrumentation
+    run_instrumented_tests = \
+        " ".join([java_cmd, 
+                  "-javaagent:" + agent_path + "=\"" + instrument_regex + "\"",
+                  junit_torun])
+    print "\n=== Instrumented testing command to run: \n" + run_instrumented_tests
+    os.sys_call(run_instrumented_tests, ignore_bad_exit=True)
+    dyncg_file = go + "_getty_dyncg_-hash-_.ex"
+    os.update_file_hash(dyncg_file, this_hash)
+    dynfg_file = go + "_getty_dynfg_-hash-_.ex"
+    os.update_file_hash(dynfg_file, this_hash)
+    
     git.clear_temp_checkout(this_hash)
 
 
 # the main entrance
-def visit(junit_path, go, prev_hash, post_hash, targets):
+def visit(junit_path, agent_path, go, prev_hash, post_hash, targets):
     
 #     # DEBUG ONLY
 #     print common_prefixes(old_all_methods)
@@ -109,11 +127,11 @@ def visit(junit_path, go, prev_hash, post_hash, targets):
     '''
         1-st pass: checkout prev_commit as detached head, and get invariants for all interesting targets
     '''
-    one_pass(junit_path, go, prev_hash, targets)
+    one_pass(junit_path, agent_path, go, prev_hash, targets)
     
     '''
         2-nd pass: checkout post_commit as detached head, and get invariants for all interesting targets
     '''
-    one_pass(junit_path, go, post_hash, targets)
+    one_pass(junit_path, agent_path, go, post_hash, targets)
     
     print 'Center analysis is completed.'

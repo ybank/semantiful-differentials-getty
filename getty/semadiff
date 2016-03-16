@@ -164,7 +164,7 @@ if __name__ == "__main__":
         set(old_improved_changed_methods + old_all_ccc_related) & \
         set(new_improved_changed_methods + new_all_ccc_related)
     
-    center.visit(junit_path, go, prev_hash, post_hash, targets)
+    center.visit(junit_path, agent_path, go, prev_hash, post_hash, targets)
     
     '''
         before last: restore original branch and all its pending work

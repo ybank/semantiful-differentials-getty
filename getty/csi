@@ -162,10 +162,24 @@ if __name__ == "__main__":
 #     print "number of keys in new_all_cccs: {0}".format(len(new_all_cccs))
 #     print "size of new_all_methods: {0}".format(len(new_all_methods))
     
-    # TODO: get interested targets
     targets = agency.investigate(go, agent_path, old_all_methods, new_all_methods, prev_hash, post_hash)
     
-    center.visit(junit_path, go, prev_hash, post_hash, targets)
+    center.visit(junit_path, agent_path, go, prev_hash, post_hash, targets)
+    
+    old_caller_of, old_callee_of = agency.caller_callee(go, prev_hash)
+    old_pred_of, old_succ_of = agency.pred_succ(go, prev_hash)
+    new_caller_of, new_callee_of = agency.caller_callee(go, post_hash)
+    new_pred_of, new_succ_of = agency.pred_succ(go, post_hash)
+#     # DEBUG ONLY
+#     print "Debug info: "
+#     print old_caller_of
+#     print old_callee_of
+#     print old_pred_of
+#     print old_succ_of
+#     print new_caller_of
+#     print new_callee_of
+#     print new_pred_of
+#     print new_succ_of
     
     '''
         before last: restore original branch and all its pending work
