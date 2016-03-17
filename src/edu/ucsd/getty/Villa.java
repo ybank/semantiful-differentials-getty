@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -173,7 +174,7 @@ public class Villa {
 				file_revision_lines = get_revised_file_lines_map(diff_path, prev_commit, curr_commit);
 			}
 			
-			Set<String> revised_methods = get_changed_methods(test_path, file_revision_lines, this_commit, output_dir);
+			Set<String> revised_methods = get_changed_src_methods(test_path, file_revision_lines, this_commit, output_dir);
 //					System.out.println("changed methods: " + revised_methods + "\n");
 			String chgmtd_out_path = output_dir + "_getty_chgmtd_src_";
 			if (args[0].equals("-s") || args[0].equals("-so") 
@@ -197,6 +198,24 @@ public class Villa {
 					"<simple mode>: number of all methods in project: " + all_project_methods.size() + "\n"
 							+ "  output to file --> " + apm_out_path + " ...\n");
 			output_to(apm_out_path, all_project_methods);
+			
+			// modified tests, inaccurate
+			Set<String> revised_tests = SetOperations.difference(
+					get_all_changed_methods(file_revision_lines, this_commit, output_dir),
+					all_project_methods);
+//			System.out.println("changed tests: " + revised_tests + "\n");
+			String indicator = "";
+			if (this_commit.equals(prev_commit))
+				indicator = "old";
+			else if (this_commit.equals(curr_commit))
+				indicator = "new";
+			else
+				throw new Exception("simple mode usage error");
+			String chgtests_out_path = output_dir + "_getty_chgmtd_test_" + indicator + "_" + this_commit + "_.ex";
+			System.out.println(
+					"<simple mode>: number of changed tests (inaccurate): " + revised_tests.size() + "\n"
+							+ "  output to file --> " + chgtests_out_path + " ...\n");
+			output_to(chgtests_out_path, revised_tests);
 			
 			////
 			// get ccc and clr only if it is not bare mode
@@ -268,7 +287,10 @@ public class Villa {
 			/**********************************/
 			Map<String, Integer[]> file_revision_lines = get_revised_file_lines_map(diff_path, prev_commit, curr_commit);
 			
-			Set<String> revised_methods = get_changed_methods(test_path, file_revision_lines, curr_commit, output_dir);
+			Map<String, Integer[]> file_revision_lines_fullbak = new HashMap<String, Integer[]>();
+			file_revision_lines_fullbak.putAll(file_revision_lines);
+			
+			Set<String> revised_methods = get_changed_src_methods(test_path, file_revision_lines, curr_commit, output_dir);
 //					System.out.println("changed methods: " + revised_methods + "\n");
 			String chgmtd_out_path = output_dir + "_getty_chgmtd_src_" + "new" + "_" + curr_commit + "_.ex";
 			System.out.println(
@@ -309,6 +331,18 @@ public class Villa {
 					"<complex mode>: IMPROVED, number of removed methods: " + removed_methods.size() + "\n"
 							+ "  output to file --> " + removed_chgmtd_out_path + " ...\n");
 			output_to(removed_chgmtd_out_path, removed_methods);
+			
+			// modified tests, inaccurate
+			Set<String> revised_tests = SetOperations.difference(
+					get_all_changed_methods(file_revision_lines_fullbak, curr_commit, output_dir),
+					all_project_methods);
+//			System.out.println("changed tests: " + revised_tests + "\n");
+			String chgtests_out_path = output_dir + "_getty_chgmtd_test_" + "new" + "_" + curr_commit + "_.ex";
+			System.out.println(
+					"<complex mode>: number of changed tests (inaccurate): " + revised_tests.size() + "\n"
+							+ "  output to file --> " + chgtests_out_path + " ...\n");
+			output_to(chgtests_out_path, revised_tests);
+			
 			/************************************************/
 			ITraceFinder chain_generator_improved = get_generator(target_path, package_prefix, revised_methods);
 			
@@ -534,8 +568,31 @@ public class Villa {
 		ITraceFinder chain_generator = new CandidateGenerator(revised_methods, target_path, package_prefix);
 		return chain_generator;
 	}
+	
+	private static Set<String> get_all_changed_methods(
+			Map<String, Integer[]> file_revision_lines, String commit_hash, String output_dir) {
+		System.out.println("\nGetting changed methods (in .java files only, not excluding tests) ...\n");
+		IMethodRecognizer ast_inspector = new ASTInspector();
+		Set<String> exclusion = new HashSet<String>();
+//		System.out.println("DEBUG -- before exclusion: " + file_revision_lines.keySet());
+		for (String file : file_revision_lines.keySet())
+			if (!file.endsWith(".java"))
+				exclusion.add(file);
+		for (String ext : exclusion)
+			file_revision_lines.remove(ext);
+//		System.out.println("DEBUG -- after exclusion: " + file_revision_lines.keySet());
+			
+		Set<String> revised_methods = ast_inspector.changedMethods(file_revision_lines);
+//		Map<String, String> l2m = ast_inspector.l2m();
+////		System.out.println(l2m);
+//		Map<String, Set<String>> m2l = ast_inspector.m2l();
+////		System.out.println(m2l);
+//		output_m2l_l2m(output_dir, l2m, m2l, commit_hash);
+		
+		return revised_methods;
+	}
 
-	private static Set<String> get_changed_methods(
+	private static Set<String> get_changed_src_methods(
 			String test_path, Map<String, Integer[]> file_revision_lines, String commit_hash, String output_dir) {
 		System.out.println("\nGetting changed methods (in .java files only, excluding tests) ...\n");
 		IMethodRecognizer ast_inspector = new ASTInspector();

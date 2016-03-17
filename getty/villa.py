@@ -41,11 +41,13 @@ def visit(villa_path, pwd, go, prev_hash, post_hash, pkg_prefix="-"):
     old_all_methods = ex.read_str_from(go + "_getty_allmtd_src_{0}_.ex".format(prev_hash))
     old_l2m = ex.read_str_from(go + "_getty_fl2m_{0}_.ex".format(prev_hash))
     old_m2l = ex.read_str_from(go + "_getty_fm2l_{0}_.ex".format(prev_hash))
+    old_changed_tests = ex.read_str_from(go + "_getty_chgmtd_test_old_{0}_.ex".format(prev_hash))
 #     # DEBUG ONLY
 #     print old_changed_methods
 #     print len(old_all_methods)
 #     print old_l2m
 #     print old_m2l
+#     print old_changed_tests
     
     git.clear_temp_checkout(prev_hash)
     
@@ -70,6 +72,7 @@ def visit(villa_path, pwd, go, prev_hash, post_hash, pkg_prefix="-"):
     new_m2l = ex.read_str_from(go + "_getty_fm2l_{0}_.ex".format(post_hash))
     new_inner_dataflow_methods = ex.read_str_from(go + "_getty_dfinner_{0}_.ex".format(post_hash))
     new_outer_dataflow_methods = ex.read_str_from(go + "_getty_dfouter_{0}_.ex".format(post_hash))
+    new_changed_tests = ex.read_str_from(go + "_getty_chgmtd_test_new_{0}_.ex".format(post_hash))
 #     # DEBUG ONLY
 #     print new_changed_methods
 #     print new_improved_changed_methods
@@ -81,6 +84,7 @@ def visit(villa_path, pwd, go, prev_hash, post_hash, pkg_prefix="-"):
 #     print new_m2l
 #     print new_inner_dataflow_methods
 #     print new_outer_dataflow_methods
+#     print new_changed_tests
     
     git.clear_temp_checkout(post_hash)
     
@@ -121,4 +125,5 @@ def visit(villa_path, pwd, go, prev_hash, post_hash, pkg_prefix="-"):
         new_changed_methods, new_improved_changed_methods, new_removed_changed_methods, \
         new_all_ccc_related, new_all_cccs, new_all_methods, \
         new_inner_dataflow_methods, new_outer_dataflow_methods, \
-        new_l2m, new_m2l
+        new_l2m, new_m2l, \
+        list(set(old_changed_tests + new_changed_tests))

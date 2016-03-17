@@ -65,8 +65,11 @@ def __append_script_mm2d(html_string, mm, for_whom):
 
 
 def _getty_csi_setvars(html_string, go, prev_hash, post_hash, \
+                       all_changed_tests, \
                        new_modified_src, new_all_src, \
                        new_caller_of, new_callee_of, new_pred_of, new_succ_of):
+    html_string = __append_script_l2s(html_string, all_changed_tests, "all_changed_tests")
+    
     new_all = set()
     __set_all_with_tests(new_all, new_caller_of)
     __set_all_with_tests(new_all, new_callee_of)
@@ -100,6 +103,7 @@ def _getty_csi_setvars(html_string, go, prev_hash, post_hash, \
     
 
 def getty_csi_targets_prep(html_file, go, prev_hash, post_hash, \
+                           all_changed_tests, \
                            new_modified_src, new_all_src, \
                            new_caller_of, new_callee_of, new_pred_of, new_succ_of):
     html_string = ""
@@ -115,6 +119,7 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash, \
     html_string = html_string.replace(targets_place_holder, replace_header + replacement + replace_footer)
 
     html_string = _getty_csi_setvars(html_string, go, prev_hash, post_hash, \
+                                     all_changed_tests, \
                                      new_modified_src, new_all_src, \
                                      new_caller_of, new_callee_of, new_pred_of, new_succ_of)
     

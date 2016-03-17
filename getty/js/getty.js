@@ -282,14 +282,15 @@ function installInvTips4Advice(methods, prev, post) {
 }
 
 // useful variables for CSI display
-var all_project_methods; // = new buckets.Set();
-var all_modified_targets; // = new buckets.Set();
-var all_test_and_else; // = new buckets.Set();
-var all_whose_inv_changed; // = new buckets.Set();
-var post_affected_caller_of; // = new buckets.Dictionary();
-var post_affected_callee_of; // = new buckets.Dictionary();
-var post_affected_pred_of; // = new buckets.Dictionary();
-var post_affected_succ_of; // = new buckets.Dictionary();
+var all_project_methods;  // = new buckets.Set();
+var all_modified_targets;  // = new buckets.Set();
+var all_changed_tests;  // = new buckets.Set();
+var all_test_and_else;  // = new buckets.Set();
+var all_whose_inv_changed;  // = new buckets.Set();
+var post_affected_caller_of;  // = new buckets.Dictionary();
+var post_affected_callee_of;  // = new buckets.Dictionary();
+var post_affected_pred_of;  // = new buckets.Dictionary();
+var post_affected_succ_of;  // = new buckets.Dictionary();
 
 function real_name(s) {
 	colon_index = s.lastIndexOf(":");
@@ -356,8 +357,8 @@ function active_link_for(method_name, count) {
 	return "<a href='#' onclick='" + js_cmd + "'>" + bolden_for_modified(method_name) + " (" + count + ")" + "</a>";
 }
 
-function span_for_test_else(method_name, count) {
-	return "<span>" + bolden_for_modified(method_name) + " (" + count + ")" + "</a>";
+function span_for_test(method_name, count) {
+	return "<span><b>" + bolden_for_modified(method_name) + " (" + count + ")" + "</b></a>";
 }
 
 function update_neighbor(method_name, direction, ref_var) {	
@@ -375,9 +376,9 @@ function update_neighbor(method_name, direction, ref_var) {
 					!all_test_and_else.contains(affected_method)) {				
 				affected_count = map_result.get(affected_method);
 				all_link_elements.push(active_link_for(affected_method, affected_count));
-			} else if (all_test_and_else.contains(affected_method)) {
+			} else if (all_changed_tests.contains(affected_method)) {
 				affected_count = map_result.get(affected_method);
-				all_link_elements.push(span_for_test_else(affected_method, affected_count));
+				all_link_elements.push(span_for_test(affected_method, affected_count));
 			}
 		}
 		html_content = all_link_elements.join("&nbsp;,&nbsp;");
