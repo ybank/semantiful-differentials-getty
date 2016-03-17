@@ -100,11 +100,16 @@ html_hdr = """<!DOCTYPE html>
     </style>
 </head>
 <body>
-    <h3>getty - semantiful differentials</h3>
+    <h3>GETTY - SEMANTIFUL DIFFERENTIALS</h3>
     <a href='#' id='getty-advice-title' onclick='return false;'>{{{{{{__getty_advice__}}}}}}</a><br>
+    <a href='#' onclick='$(\"div#hide-all\").toggle();return false;'>show/hide more code and invariant diffs</a>
+    <br><br>
+    <div id='hide-all' style='display:block;'>
+    {{{{{{__getty_code_diff__}}}}}}<br>
 """
 
 html_footer = """
+</div>
 <footer>
     <p><br>--------<br>Modified at {1}. Getty - Semantiful Differentials.    </p>
 </footer>
@@ -744,7 +749,10 @@ def _getty_install_invtips(html_string, prev_hash, curr_hash, go, oldl2m, newl2m
     
     install_line = \
         "<script>\n" + \
-        "    installInvTips(" + newarray_str + ", " + oldarray_str + ");\n" + \
+        "    installInvTips(" + \
+        "\"" + curr_hash + "\", " + "\"" + prev_hash + "\", " + \
+        newarray_str + ", " + oldarray_str + ");\n" + \
+        "    $(\"div#hide-all\").toggle();\n" + \
         "</script>\n</body>"
     html_string = html_string.replace("</body>", install_line)
     return html_string

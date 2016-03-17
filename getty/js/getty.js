@@ -2,6 +2,14 @@
  * the javascript file to import for semantiful differential html page
  */
 
+var prev_hash = "";
+var post_hash = "";
+
+var post_affected_caller_of = []
+var post_affected_callee_of = []
+var post_affected_pred_of = []
+var post_affected_succ_of = []
+
 //deprecated
 function invstr2html(str, pos) {
 	style = "width:48%;max-height:400px;overflow:auto;padding:5px 5px 5px 5px;";
@@ -120,8 +128,7 @@ function installInvTips_old(newl2m, oldl2m) {
 }
 
 function methodInvsComparePage(theMtd, prev, post) {
-	compareInvs = $("div#vsinvs-" + theMtd)[0].outerHTML;
-//	compareInvs = $("div#vsinvs-org_joda_time_tz_ZoneInfoCompiler_main")[0].outerHTML;
+	compareInvs = $("div#hide-all div#vsinvs-" + theMtd)[0].outerHTML;
 	left = 
 		"width:48%;height:400px;background-color: #5A5F5A;" + 
 		"display:inline-block;position:relative;border:2px dotted #A8BBA8;";
@@ -138,6 +145,24 @@ function methodInvsComparePage(theMtd, prev, post) {
 	return "<body>" + htmlContent + "</body>";
 }
 
+function methodInvsCompareDiv(divId, theMtd) {
+	compareInvs = $("div#hide-all div#vsinvs-" + theMtd)[0].outerHTML;
+	left = 
+		"width:48%;height:400px;background-color: #5A5F5A;" + 
+		"display:inline-block;position:relative;border:2px dotted #A8BBA8;";
+	preInvs = 
+		"<iframe src='./_getty_inv__" + theMtd + "__" + prev_hash + "_.inv.html' " +
+				"class='invtip' style='" + left + "'></iframe>";
+	right = 
+		"width:48%;height:400px;background-color: #5A5F5A;" + 
+		"display:inline-block;position:absolute;right:15px;border:2px dotted #A8BBA8;";
+	postInvs = 
+		"<iframe src='./_getty_inv__" + theMtd + "__" + post_hash + "_.inv.html' " +
+				"class='invtip' style='" + right + "'></iframe>";
+	htmlContent = compareInvs + "<br>" + preInvs + postInvs;
+	return "<div id='" + divId + "' style='border:4px dashed #1111E4;'>" + htmlContent + "</div>";
+}
+
 function methodName(classNames) {
 	arr = classNames.split(" ");
 	if (arr.length == 3)
@@ -146,7 +171,9 @@ function methodName(classNames) {
 		return undefined;
 }
 
-function installInvTips(newl2m, oldl2m) {
+function installInvTips(post, prev, newl2m, oldl2m) {
+	prev_hash = prev;
+	post_hash = post;
 	postHash = newl2m[0];
 	prevHash = oldl2m[0];
 	
@@ -160,7 +187,7 @@ function installInvTips(newl2m, oldl2m) {
 		for (j = 0; j < the_rows.length; j ++) {			
 			if (the_rows[j].childNodes[1].innerText == theLine) {
 				config_obj = {
-					fixed: true, position: 'bottom',
+					fixed: true, position: 'bottom', //persistent: true,
 					onBeforeShow: function() {
 						method_name = methodName(this.getParent().attr('class'));
 						this.update(methodInvsComparePage(method_name, prevHash, postHash));
@@ -183,7 +210,7 @@ function installInvTips(newl2m, oldl2m) {
 		for (j = 0; j < the_rows.length; j ++) {			
 			if (the_rows[j].childNodes[2].innerText == theLine) {
 				config_obj = {
-					fixed: true, position: 'bottom',
+					fixed: true, position: 'bottom', //persistent: true,
 					onBeforeShow: function() {
 						method_name = methodName(this.getParent().attr('class'));
 						this.update(methodInvsComparePage(method_name, prevHash, postHash));
@@ -208,7 +235,7 @@ function installInvTips(newl2m, oldl2m) {
 		for (j = 0; j < the_rows.length; j ++) {			
 			if (the_rows[j].childNodes[0].innerText == theLine) {
 				config_obj = {
-					fixed: true, position: 'bottom',
+					fixed: true, position: 'bottom', //persistent: true,
 					onBeforeShow: function() {
 						method_name = methodName(this.getParent().attr('class'));
 						this.update(methodInvsComparePage(method_name, prevHash, postHash));
@@ -276,4 +303,3 @@ function installInvTips4Advice(methods, prev, post) {
 		}
 	}
 }
-

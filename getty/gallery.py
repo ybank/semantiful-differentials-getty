@@ -1,4 +1,5 @@
 from analysis.advisor import getty_append_report, report
+from analysis.inspector import getty_csi_init, getty_csi_targets_prep
 from tools.hdiff import diff_to_html, getty_append_semainfo
 from tools.os import sys_call
 
@@ -17,5 +18,16 @@ def view(pwd, go, js_path, targets, new_all_cccs, prev_hash, post_hash, old_l2m,
 #     sys_call("open " + html_out)
 
 
-def exam():
-    pass
+def exam(pwd, go, js_path, targets, prev_hash, post_hash, old_l2m, new_l2m, old_m2l, new_m2l):
+    diff_in = pwd[:-1] + ".__getty_output__/text.diff"
+    html_out = pwd[:-1] + ".__getty_output__/sema.diff.html"
+    diff_to_html(diff_in, html_out, exclude_headers=False, old_l2m=old_l2m, new_l2m=new_l2m)
+    getty_append_semainfo(html_out, targets, go, js_path, prev_hash, post_hash, old_l2m, new_l2m)
+    
+    getty_csi_init(html_out)
+    getty_csi_targets_prep(html_out, go, prev_hash, post_hash)
+    
+    # open with Safari on Mac OS
+    sys_call("open -a /Applications/Safari.app/Contents/MacOS/Safari " + html_out)
+#     # open with default app
+#     sys_call("open " + html_out)
