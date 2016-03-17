@@ -697,8 +697,9 @@ def _import_js(html_string, js_path):
     import_script = "<script type=\"text/javascript\" src=\"{0}\"></script>"
     import_jquery = import_script.format(js_path + "jquery-1.2.6.js")
     import_simpletip = import_script.format(js_path + "jquery.simpletip-1.3.1.js")
+    import_buckets = import_script.format(js_path + "buckets.min.js")
     import_getty = import_script.format(js_path + "getty.js")
-    last_import = import_jquery + "\n" + import_simpletip + "\n" + import_getty + "\n" + "</body>"
+    last_import = "\n".join([import_jquery, import_simpletip, import_buckets, import_getty, "</body>"])
     return html_string.replace("</body>", last_import)
 
 

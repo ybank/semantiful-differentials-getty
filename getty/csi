@@ -189,6 +189,9 @@ if __name__ == "__main__":
     '''
         optional: csi view results
     '''
-    gallery.exam(pwd, go, js_path, targets, prev_hash, post_hash, old_l2m, new_l2m, old_m2l, new_m2l)
+    gallery.exam(pwd, go, js_path, \
+                 targets, new_improved_changed_methods, new_all_methods, \
+                 new_caller_of, new_callee_of, new_pred_of, new_succ_of, \
+                 prev_hash, post_hash, old_l2m, new_l2m, old_m2l, new_m2l)
     
     print 'Quit Getty.'

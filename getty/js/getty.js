@@ -5,11 +5,6 @@
 var prev_hash = "";
 var post_hash = "";
 
-var post_affected_caller_of = []
-var post_affected_callee_of = []
-var post_affected_pred_of = []
-var post_affected_succ_of = []
-
 //deprecated
 function invstr2html(str, pos) {
 	style = "width:48%;max-height:400px;overflow:auto;padding:5px 5px 5px 5px;";
@@ -143,24 +138,6 @@ function methodInvsComparePage(theMtd, prev, post) {
 				"class='invtip' style='" + right + "'></iframe>";
 	htmlContent = compareInvs + "<br>" + preInvs + postInvs;
 	return "<body>" + htmlContent + "</body>";
-}
-
-function methodInvsCompareDiv(divId, theMtd) {
-	compareInvs = $("div#hide-all div#vsinvs-" + theMtd)[0].outerHTML;
-	left = 
-		"width:48%;height:400px;background-color: #5A5F5A;" + 
-		"display:inline-block;position:relative;border:2px dotted #A8BBA8;";
-	preInvs = 
-		"<iframe src='./_getty_inv__" + theMtd + "__" + prev_hash + "_.inv.html' " +
-				"class='invtip' style='" + left + "'></iframe>";
-	right = 
-		"width:48%;height:400px;background-color: #5A5F5A;" + 
-		"display:inline-block;position:absolute;right:15px;border:2px dotted #A8BBA8;";
-	postInvs = 
-		"<iframe src='./_getty_inv__" + theMtd + "__" + post_hash + "_.inv.html' " +
-				"class='invtip' style='" + right + "'></iframe>";
-	htmlContent = compareInvs + "<br>" + preInvs + postInvs;
-	return "<div id='" + divId + "' style='border:4px dashed #1111E4;'>" + htmlContent + "</div>";
 }
 
 function methodName(classNames) {
@@ -302,4 +279,153 @@ function installInvTips4Advice(methods, prev, post) {
 			this_span.simpletip(config_obj);
 		}
 	}
+}
+
+// useful variables for CSI display
+var all_project_methods; // = new buckets.Set();
+var all_modified_targets; // = new buckets.Set();
+var all_test_and_else; // = new buckets.Set();
+var all_whose_inv_changed; // = new buckets.Set();
+var post_affected_caller_of; // = new buckets.Dictionary();
+var post_affected_callee_of; // = new buckets.Dictionary();
+var post_affected_pred_of; // = new buckets.Dictionary();
+var post_affected_succ_of; // = new buckets.Dictionary();
+
+function real_name(s) {
+	colon_index = s.lastIndexOf(":");
+	if (colon_index == -1)
+		return s;
+	else if (s.substring(colon_index+1) == "<init>") {
+		last_prd_index = s.lastIndexOf(".");
+		last_dlr_index = s.lastIndexOf("$");
+		chop_index = (last_prd_index > last_dlr_index ? last_prd_index : last_dlr_index);
+		mtd_name = s.substring(chop_index+1, colon_index);
+		return s.substring(0, colon_index+1) + mtd_name;
+	} else if (s.substring(colon_index+1) == "<clinit>") {
+		return s.substring(0, colon_index);
+	} else {
+		return s;
+	}
+}
+
+function fsformat(s) {
+	s = real_name(s);
+	return s.replace(":", "_", "g").replace("$", "_", "g").replace(/\./g, '_');
+}
+
+function methodInvsCompareDiv(method_name) {
+	theMtd = fsformat(method_name);
+	compareInvs = $("div#hide-all div#vsinvs-" + theMtd)[0].outerHTML;
+	left = 
+		"width:49%;height:400px;background-color: #5A5F5A;" + 
+		"display:inline-block;position:relative;border:2px dotted #A8BBA8;";
+	preInvs = 
+		"<iframe src='./_getty_inv__" + theMtd + "__" + prev_hash + "_.inv.html' " +
+		"class='invtip' style='" + left + "'></iframe>";
+	right = 
+		"width:49%;height:400px;background-color: #5A5F5A;" + 
+		"display:inline-block;position:absolute;right:15px;border:2px dotted #A8BBA8;";
+	postInvs = 
+		"<iframe src='./_getty_inv__" + theMtd + "__" + post_hash + "_.inv.html' " +
+		"class='invtip' style='" + right + "'></iframe>";
+	return htmlContent = compareInvs + "<br>" + preInvs + postInvs;
+}
+
+var neighborhood_table =
+	"<style>\n" + 
+	"  td.exist-neighbor { border:dotted; padding:10px; text-align:center; }\n" + 
+	"  table#neighbors a { display:inline-block; }\n" + 
+	"  table#neighbors span { display:inline-block; }\n</style>" +
+	"<table id='neighbors' style='table-layout:fixed;'>\n" +  
+	"<tr><td></td><td id='neighbor-north' class='exist-neighbor'>north</td><td></td><tr>\n" +
+	"<tr><td id='neighbor-west' class='exist-neighbor'>west</td>\n" + 
+	"<td id='neighbor-center' class='exist-neighbor'>center</td>" + 
+	"<td id='neighbor-east' class='exist-neighbor'>east</td><tr>\n" +
+	"<tr><td></td><td id='neighbor-south' class='exist-neighbor'>south</td><td></td><tr>\n" +
+	"</table>\n";
+
+function bolden_for_modified(method_name) {
+	if (all_modified_targets.contains(method_name))
+		return "<b>" + method_name + "</b>";
+	else
+		return method_name;
+}
+
+function active_link_for(method_name, count) {
+	js_cmd = "return structure_neighbors(\"" + method_name + "\");";
+	return "<a href='#' onclick='" + js_cmd + "'>" + bolden_for_modified(method_name) + " (" + count + ")" + "</a>";
+}
+
+function span_for_test_else(method_name, count) {
+	return "<span>" + bolden_for_modified(method_name) + " (" + count + ")" + "</a>";
+}
+
+function update_neighbor(method_name, direction, ref_var) {	
+	html_content = ""
+	map_result = ref_var.get(method_name);
+	if (map_result == undefined)
+		html_content = "none";
+	else {
+		all_link_elements = [];
+		all_keys = map_result.keys();
+		for (i = 0; i < all_keys.length; i ++) {
+			affected_method = all_keys[i];
+			if (all_project_methods.contains(affected_method) && 
+					all_whose_inv_changed.contains(affected_method) && 
+					!all_test_and_else.contains(affected_method)) {				
+				affected_count = map_result.get(affected_method);
+				all_link_elements.push(active_link_for(affected_method, affected_count));
+			} else if (all_test_and_else.contains(affected_method)) {
+				affected_count = map_result.get(affected_method);
+				all_link_elements.push(span_for_test_else(affected_method, affected_count));
+			}
+		}
+		html_content = all_link_elements.join("&nbsp;,&nbsp;");
+	}
+	$('table#neighbors td#neighbor-' + direction).html(html_content);
+}
+
+function output_inv_diff(method_name) {
+	$('div#csi-output-invcomp').html(methodInvsCompareDiv(method_name));
+}
+
+function structure_neighbors(method_name) {
+	$('div#csi-output-neighbors').html(neighborhood_table);
+	$('table#neighbors td#neighbor-center').html("&lt;&nbsp;" + bolden_for_modified(method_name) + "&nbsp;&gt;");
+	update_neighbor(method_name, 'north', post_affected_caller_of);
+	update_neighbor(method_name, 'south', post_affected_callee_of);
+	update_neighbor(method_name, 'west', post_affected_pred_of);
+	update_neighbor(method_name, 'east', post_affected_succ_of);
+	output_inv_diff(method_name);
+	return false;
+}
+
+function activateNeighbors(method_name) {
+	$('a.target-linkstyle').css("border", "none");
+	$("a#target-link-" + fsformat(method_name)).css("border", "dashed");
+	structure_neighbors(method_name);
+	output_inv_diff(method_name);
+	return false;
+}
+
+function list_to_set(lst) {
+	var temp = new buckets.Set();
+	for (i = 0; i < lst.length; i ++) {
+		temp.add(lst[i]);
+	}
+	return temp;
+}
+
+function list_list_to_dict_dict(lst_lst) {	
+	var temp = new buckets.Dictionary();
+	for (i = 0; i < lst_lst.length - 1; i += 2) {
+		the_key = lst_lst[i];
+		serialized_map = lst_lst[i+1];
+		tm = new buckets.Dictionary();
+		for (j = 0; j < serialized_map.length - 1; j += 2) {
+			tm.set(serialized_map[j], serialized_map[j+1]);
+		}
+		temp.set(the_key, tm);
+	}
+	return temp;
 }

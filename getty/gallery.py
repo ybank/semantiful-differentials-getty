@@ -18,14 +18,20 @@ def view(pwd, go, js_path, targets, new_all_cccs, prev_hash, post_hash, old_l2m,
 #     sys_call("open " + html_out)
 
 
-def exam(pwd, go, js_path, targets, prev_hash, post_hash, old_l2m, new_l2m, old_m2l, new_m2l):
+def exam(pwd, go, js_path, \
+         targets, new_modified_src, new_all_src, \
+         new_caller_of, new_callee_of, new_pred_of, new_succ_of, \
+         prev_hash, post_hash, old_l2m, new_l2m, old_m2l, new_m2l):
     diff_in = pwd[:-1] + ".__getty_output__/text.diff"
     html_out = pwd[:-1] + ".__getty_output__/sema.diff.html"
     diff_to_html(diff_in, html_out, exclude_headers=False, old_l2m=old_l2m, new_l2m=new_l2m)
     getty_append_semainfo(html_out, targets, go, js_path, prev_hash, post_hash, old_l2m, new_l2m)
     
     getty_csi_init(html_out)
-    getty_csi_targets_prep(html_out, go, prev_hash, post_hash)
+    getty_csi_targets_prep(html_out, go, prev_hash, post_hash, \
+                           new_modified_src, new_all_src, \
+                           new_caller_of, new_callee_of, new_pred_of, new_succ_of)
+    
     
     # open with Safari on Mac OS
     sys_call("open -a /Applications/Safari.app/Contents/MacOS/Safari " + html_out)
