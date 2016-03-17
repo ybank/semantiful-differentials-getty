@@ -85,11 +85,11 @@ def _getty_csi_setvars(html_string, go, prev_hash, post_hash, \
             all_whose_inv_changed.add(mtd);
     html_string = __append_script_l2s(html_string, all_whose_inv_changed, "all_whose_inv_changed")
     
-    # DEBUG ONLY
-    print new_caller_of
-    print new_callee_of
-    print new_pred_of
-    print new_succ_of
+#     # DEBUG ONLY
+#     print new_caller_of
+#     print new_callee_of
+#     print new_pred_of
+#     print new_succ_of
     
     html_string = __append_script_mm2d(html_string, new_caller_of, "post_affected_caller_of")
     html_string = __append_script_mm2d(html_string, new_callee_of, "post_affected_callee_of")
