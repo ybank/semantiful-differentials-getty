@@ -126,4 +126,5 @@ def visit(villa_path, pwd, go, prev_hash, post_hash, pkg_prefix="-"):
         new_all_ccc_related, new_all_cccs, new_all_methods, \
         new_inner_dataflow_methods, new_outer_dataflow_methods, \
         new_l2m, new_m2l, \
-        list(set(old_changed_tests + new_changed_tests))
+        old_changed_tests, new_changed_tests
+#         list(set(old_changed_tests + new_changed_tests))

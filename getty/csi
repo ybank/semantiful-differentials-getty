@@ -148,7 +148,7 @@ if __name__ == "__main__":
         new_all_ccc_related, new_all_cccs, new_all_methods, \
         new_inner_dataflow_methods, new_outer_dataflow_methods, \
         new_l2m, new_m2l, \
-        all_changed_tests = \
+        old_changed_tests, new_changed_tests = \
             villa.visit(villa_path, pwd, go, prev_hash, post_hash)
 #     # DEBUG ONLY
 #     print "Debug info: "
@@ -190,10 +190,11 @@ if __name__ == "__main__":
     '''
         optional: csi view results
     '''
+    all_changed_tests = list(set(old_changed_tests + new_changed_tests))
     gallery.exam(pwd, go, js_path, \
                  targets, new_improved_changed_methods, new_all_methods, \
                  new_caller_of, new_callee_of, new_pred_of, new_succ_of, \
-                 all_changed_tests, \
+                 all_changed_tests, old_changed_tests, new_changed_tests, \
                  prev_hash, post_hash, old_l2m, new_l2m, old_m2l, new_m2l)
     
     print 'Quit Getty.'

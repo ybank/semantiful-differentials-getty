@@ -21,7 +21,7 @@ def view(pwd, go, js_path, targets, new_all_cccs, prev_hash, post_hash, old_l2m,
 def exam(pwd, go, js_path, \
          targets, new_modified_src, new_all_src, \
          new_caller_of, new_callee_of, new_pred_of, new_succ_of, \
-         all_changed_tests, \
+         all_changed_tests, old_changed_tests, new_changed_tests, \
          prev_hash, post_hash, old_l2m, new_l2m, old_m2l, new_m2l):
     diff_in = pwd[:-1] + ".__getty_output__/text.diff"
     html_out = pwd[:-1] + ".__getty_output__/sema.diff.html"
@@ -30,7 +30,7 @@ def exam(pwd, go, js_path, \
     
     getty_csi_init(html_out)
     getty_csi_targets_prep(html_out, go, prev_hash, post_hash, \
-                           all_changed_tests, \
+                           all_changed_tests, old_changed_tests, new_changed_tests, \
                            new_modified_src, new_all_src, \
                            new_caller_of, new_callee_of, new_pred_of, new_succ_of)
     

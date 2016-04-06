@@ -65,10 +65,12 @@ def __append_script_mm2d(html_string, mm, for_whom):
 
 
 def _getty_csi_setvars(html_string, go, prev_hash, post_hash, \
-                       all_changed_tests, \
+                       all_changed_tests, old_changed_tests, new_changed_tests, \
                        new_modified_src, new_all_src, \
                        new_caller_of, new_callee_of, new_pred_of, new_succ_of):
     html_string = __append_script_l2s(html_string, all_changed_tests, "all_changed_tests")
+    html_string = __append_script_l2s(html_string, old_changed_tests, "old_changed_tests")
+    html_string = __append_script_l2s(html_string, new_changed_tests, "new_changed_tests")
     
     new_all = set()
     __set_all_with_tests(new_all, new_caller_of)
@@ -103,7 +105,7 @@ def _getty_csi_setvars(html_string, go, prev_hash, post_hash, \
     
 
 def getty_csi_targets_prep(html_file, go, prev_hash, post_hash, \
-                           all_changed_tests, \
+                           all_changed_tests, old_changed_tests, new_changed_tests, \
                            new_modified_src, new_all_src, \
                            new_caller_of, new_callee_of, new_pred_of, new_succ_of):
     html_string = ""
@@ -115,11 +117,22 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash, \
         "style='border:4px ridge gray; padding: 4px 4px 4px 4px; margin: 8px 0 0 0;'>" + \
         "<h4 style='margin: 4px 0 8px 0'>Updated Method Targets:</h4>"
     replace_footer = "</div>"
-    replacement = " ,  ".join([__link_to_show_neighbors(t) for t in new_modified_src])
-    html_string = html_string.replace(targets_place_holder, replace_header + replacement + replace_footer)
+    if new_modified_src:
+        replacement = " ,  ".join([__link_to_show_neighbors(t) for t in new_modified_src])
+    else:
+        replacement = "<span>None</span>"
+    embed_test_update = \
+        "<br><br><h4 style='margin: 4px 0 8px 0'>Updated Tests:</h4>"
+    if all_changed_tests:
+        tests_replacement = " ,  ".join([__link_to_show_neighbors(t) for t in all_changed_tests])
+    else:
+        tests_replacement = "<span>None</span>"
+    html_string = html_string.replace(targets_place_holder, \
+                                      replace_header + replacement + \
+                                      embed_test_update + tests_replacement + replace_footer)
 
     html_string = _getty_csi_setvars(html_string, go, prev_hash, post_hash, \
-                                     all_changed_tests, \
+                                     all_changed_tests, old_changed_tests, new_changed_tests, \
                                      new_modified_src, new_all_src, \
                                      new_caller_of, new_callee_of, new_pred_of, new_succ_of)
     
