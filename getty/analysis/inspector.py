@@ -67,6 +67,7 @@ def __append_script_mm2d(html_string, mm, for_whom):
 def _getty_csi_setvars(html_string, go, prev_hash, post_hash, \
                        all_changed_tests, old_changed_tests, new_changed_tests, \
                        new_modified_src, new_all_src, \
+                       old_caller_of, old_callee_of, old_pred_of, old_succ_of, \
                        new_caller_of, new_callee_of, new_pred_of, new_succ_of):
     html_string = __append_script_l2s(html_string, all_changed_tests, "all_changed_tests")
     html_string = __append_script_l2s(html_string, old_changed_tests, "old_changed_tests")
@@ -96,6 +97,10 @@ def _getty_csi_setvars(html_string, go, prev_hash, post_hash, \
 #     print new_pred_of
 #     print new_succ_of
     
+    html_string = __append_script_mm2d(html_string, old_caller_of, "prev_affected_caller_of")
+    html_string = __append_script_mm2d(html_string, old_callee_of, "prev_affected_callee_of")
+    html_string = __append_script_mm2d(html_string, old_pred_of, "prev_affected_pred_of")
+    html_string = __append_script_mm2d(html_string, old_succ_of, "prev_affected_succ_of")
     html_string = __append_script_mm2d(html_string, new_caller_of, "post_affected_caller_of")
     html_string = __append_script_mm2d(html_string, new_callee_of, "post_affected_callee_of")
     html_string = __append_script_mm2d(html_string, new_pred_of, "post_affected_pred_of")
@@ -107,6 +112,7 @@ def _getty_csi_setvars(html_string, go, prev_hash, post_hash, \
 def getty_csi_targets_prep(html_file, go, prev_hash, post_hash, \
                            all_changed_tests, old_changed_tests, new_changed_tests, \
                            new_modified_src, new_all_src, \
+                           old_caller_of, old_callee_of, old_pred_of, old_succ_of, \
                            new_caller_of, new_callee_of, new_pred_of, new_succ_of):
     html_string = ""
     with open(html_file, 'r') as rf:
@@ -134,6 +140,7 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash, \
     html_string = _getty_csi_setvars(html_string, go, prev_hash, post_hash, \
                                      all_changed_tests, old_changed_tests, new_changed_tests, \
                                      new_modified_src, new_all_src, \
+                                     old_caller_of, old_callee_of, old_pred_of, old_succ_of, \
                                      new_caller_of, new_callee_of, new_pred_of, new_succ_of)
     
     with open(html_file, 'w') as wf:

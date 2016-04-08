@@ -285,8 +285,14 @@ function installInvTips4Advice(methods, prev, post) {
 var all_project_methods;  // = new buckets.Set();
 var all_modified_targets;  // = new buckets.Set();
 var all_changed_tests;  // = new buckets.Set();
+var old_changed_tests;  // = new buckets.Set();
+var new_changed_tests;  // = new buckets.Set();
 var all_test_and_else;  // = new buckets.Set();
 var all_whose_inv_changed;  // = new buckets.Set();
+var prev_affected_caller_of;  // = new buckets.Dictionary();
+var prev_affected_callee_of;  // = new buckets.Dictionary();
+var prev_affected_pred_of;  // = new buckets.Dictionary();
+var prev_affected_succ_of;  // = new buckets.Dictionary();
 var post_affected_caller_of;  // = new buckets.Dictionary();
 var post_affected_callee_of;  // = new buckets.Dictionary();
 var post_affected_pred_of;  // = new buckets.Dictionary();
@@ -316,7 +322,11 @@ function fsformat(s) {
 
 function methodInvsCompareDiv(method_name) {
 	theMtd = fsformat(method_name);
-	compareInvs = $("div#hide-all div#vsinvs-" + theMtd)[0].outerHTML;
+	targetInvComp = $("div#hide-all div#vsinvs-" + theMtd)[0]
+	if (targetInvComp == undefined)
+		return htmlContent = "Choose a neighbor target to show its invariant change";
+	else
+		compareInvs = targetInvComp.outerHTML;
 	left = 
 		"width:49%;height:400px;background-color: #5A5F5A;" + 
 		"display:inline-block;position:relative;border:2px dotted #A8BBA8;";
@@ -361,9 +371,37 @@ function span_for_test(method_name, count) {
 	return "<span><b>" + bolden_for_modified(method_name) + " (" + count + ")" + "</b></a>";
 }
 
-function update_neighbor(method_name, direction, ref_var) {	
+function relative_count_format(map_post, map_prev, affected_method) {
+	new_count = map_post.get(affected_method);
+	if (new_count == undefined)
+		return "0";
+	else {
+		if (map_prev == undefined)
+			return "0+" + new_count;
+		old_count = map_prev.get(affected_method);
+		if (old_count == undefined)
+			return "0+" + new_count;
+		else {
+			new_count_int = parseInt(new_count);
+			old_count_int = parseInt(old_count);
+			count_diff = new_count_int - old_count_int;
+			console.log("good here");
+			if (count_diff >= 0)
+				return old_count + "+" + count_diff;
+			else
+				return old_count + count_diff;
+		}
+	}
+}
+
+function update_neighbor(method_name, direction, ref_var, ref_prev_var) {	
 	html_content = ""
 	map_result = ref_var.get(method_name);
+	var map_prev_result;
+	if (ref_prev_var == undefined)
+		map_prev_result = undefined;
+	else
+		map_prev_result = ref_prev_var.get(method_name);
 	if (map_result == undefined)
 		html_content = "none";
 	else {
@@ -373,11 +411,11 @@ function update_neighbor(method_name, direction, ref_var) {
 			affected_method = all_keys[i];
 			if (all_project_methods.contains(affected_method) && 
 					all_whose_inv_changed.contains(affected_method) && 
-					!all_test_and_else.contains(affected_method)) {				
-				affected_count = map_result.get(affected_method);
+					!all_test_and_else.contains(affected_method)) {
+				affected_count = relative_count_format(map_result, map_prev_result, affected_method);
 				all_link_elements.push(active_link_for(affected_method, affected_count));
 			} else if (all_changed_tests.contains(affected_method)) {
-				affected_count = map_result.get(affected_method);
+				affected_count = relative_count_format(map_result, map_prev_result, affected_method);
 				all_link_elements.push(span_for_test(affected_method, affected_count));
 			}
 		}
@@ -393,10 +431,10 @@ function output_inv_diff(method_name) {
 function structure_neighbors(method_name) {
 	$('div#csi-output-neighbors').html(neighborhood_table);
 	$('table#neighbors td#neighbor-center').html("&lt;&nbsp;" + bolden_for_modified(method_name) + "&nbsp;&gt;");
-	update_neighbor(method_name, 'north', post_affected_caller_of);
-	update_neighbor(method_name, 'south', post_affected_callee_of);
-	update_neighbor(method_name, 'west', post_affected_pred_of);
-	update_neighbor(method_name, 'east', post_affected_succ_of);
+	update_neighbor(method_name, 'north', post_affected_caller_of, prev_affected_caller_of);
+	update_neighbor(method_name, 'south', post_affected_callee_of, prev_affected_callee_of);
+	update_neighbor(method_name, 'west', post_affected_pred_of, prev_affected_pred_of);
+	update_neighbor(method_name, 'east', post_affected_succ_of, prev_affected_succ_of);
 	output_inv_diff(method_name);
 	return false;
 }

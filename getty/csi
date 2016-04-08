@@ -194,6 +194,7 @@ if __name__ == "__main__":
     gallery.exam(pwd, go, js_path, \
                  targets, new_improved_changed_methods, new_all_methods, \
                  new_caller_of, new_callee_of, new_pred_of, new_succ_of, \
+                 old_caller_of, old_callee_of, old_pred_of, old_succ_of, \
                  all_changed_tests, old_changed_tests, new_changed_tests, \
                  prev_hash, post_hash, old_l2m, new_l2m, old_m2l, new_m2l)
     
