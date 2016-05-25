@@ -24,7 +24,7 @@ def sort_txt_inv(out_file):
                 line = line.strip()
                 if line.startswith("================"):
                     current_key = None
-                elif re.match(".*:::(ENTER|EXIT|CLASS|OBJECT).*", line):
+                elif re.match(".*:::(ENTER|EXIT|CLASS|OBJECT|THROW).*", line):
                     current_key = line
                     inv_map[current_key] = []
                 else:
@@ -44,6 +44,7 @@ def sort_txt_inv(out_file):
 # FIXME: Daikon is very failure-prone; work around with it
 def one_pass(junit_path, agent_path, go, this_hash, target_set):
     os.sys_call("git checkout " + this_hash)
+    os.sys_call("mvn clean")
     
     bin_path = mvn.path_from_mvn_call("outputDirectory")
     test_bin_path = mvn.path_from_mvn_call("testOutputDirectory")
@@ -60,7 +61,7 @@ def one_pass(junit_path, agent_path, go, this_hash, target_set):
     
     # run Chicory for trace
     run_chicory = \
-        " ".join([java_cmd, "daikon.Chicory", \
+        " ".join([java_cmd, "daikon.Chicory --exception-handling", \
                   "--dtrace-file="+rel_go(go)+"_getty_trace_"+this_hash+"_.dtrace.gz", \
                   "--ppt-select-pattern=\'"+select_pattern+"\'", \
                   junit_torun])
