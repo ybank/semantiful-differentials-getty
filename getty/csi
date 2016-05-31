@@ -171,6 +171,7 @@ if __name__ == "__main__":
     old_pred_of, old_succ_of = agency.pred_succ(go, prev_hash)
     new_caller_of, new_callee_of = agency.caller_callee(go, post_hash)
     new_pred_of, new_succ_of = agency.pred_succ(go, post_hash)
+    
 #     # DEBUG ONLY
 #     print "Debug info: "
 #     print old_caller_of

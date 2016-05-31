@@ -2,6 +2,7 @@
 
 import re
 
+import agency
 from tools import daikon, git, mvn, os
 
 
@@ -51,11 +52,40 @@ def one_pass(junit_path, agent_path, go, this_hash, target_set):
     cp = mvn.full_classpath(junit_path, bin_path, test_bin_path)
     print "\n===full classpath===\n" + cp + "\n"
     
+    java_cmd = "java -cp " + cp
+    
     os.sys_call("mvn test -DskipTests")
     junit_torun = mvn.junit_torun_str()
     print "\n===junit torun===\n" + junit_torun + "\n"
     
-    java_cmd = "java -cp " + cp
+    #### dynamic run one round for all information    
+    prefixes = daikon.common_prefixes(target_set)
+    prefix_regexes = []
+    for p in prefixes:
+        prefix_regexes.append(p + "*")
+    instrument_regex = "|".join(prefix_regexes)
+    print "\n===instrumentation pattern===\n" + instrument_regex + "\n"
+    # run tests with instrumentation
+    run_instrumented_tests = \
+        " ".join([java_cmd, 
+                  "-javaagent:" + agent_path + "=\"" + instrument_regex + "\"",
+                  junit_torun])
+    print "\n=== Instrumented testing command to run: \n" + run_instrumented_tests
+    os.sys_call(run_instrumented_tests, ignore_bad_exit=True)
+    dyncg_file = go + "_getty_dyncg_-hash-_.ex"
+    os.update_file_hash(dyncg_file, this_hash)
+    dynfg_file = go + "_getty_dynfg_-hash-_.ex"
+    os.update_file_hash(dynfg_file, this_hash)
+    ####
+    
+    # add test methods into target set
+    _, callee_of = agency.caller_callee(go, this_hash)
+    all_tests = junit_torun.split(" ")[1:]
+    for possible_test_mtd in callee_of.keys():
+        for one_test in all_tests:
+            if possible_test_mtd.startswith(one_test):
+                target_set.add(possible_test_mtd)
+    
     select_pattern = daikon.reformat_all(target_set, more_ppts=True)
     print "\n===select pattern===\n" + select_pattern + "\n"
     
@@ -90,24 +120,6 @@ def one_pass(junit_path, agent_path, go, this_hash, target_set):
         print "\n=== Daikon:PrintInvs command to run: \n" + run_printinv
         os.sys_call(run_printinv + " > " + out_file, ignore_bad_exit=True)
         sort_txt_inv(out_file)
-    
-    prefixes = daikon.common_prefixes(target_set)
-    prefix_regexes = []
-    for p in prefixes:
-        prefix_regexes.append(p + "*")
-    instrument_regex = "|".join(prefix_regexes)
-    print "\n===instrumentation pattern===\n" + instrument_regex + "\n"
-    # run tests with instrumentation
-    run_instrumented_tests = \
-        " ".join([java_cmd, 
-                  "-javaagent:" + agent_path + "=\"" + instrument_regex + "\"",
-                  junit_torun])
-    print "\n=== Instrumented testing command to run: \n" + run_instrumented_tests
-    os.sys_call(run_instrumented_tests, ignore_bad_exit=True)
-    dyncg_file = go + "_getty_dyncg_-hash-_.ex"
-    os.update_file_hash(dyncg_file, this_hash)
-    dynfg_file = go + "_getty_dynfg_-hash-_.ex"
-    os.update_file_hash(dynfg_file, this_hash)
     
     git.clear_temp_checkout(this_hash)
 

@@ -87,6 +87,7 @@ html_hdr = """<!DOCTYPE html>
         span.diffponct {{ color: #B08080 }}
         tr.diffmisc td {{}}
         tr.diffseparator td {{}}
+        tr.invheader > td {{ background: #A0A0A0; color: #C334A2; font-weight: bold }}
         .tooltip {{
             position: absolute;
             padding: 8px 15px;
@@ -136,6 +137,12 @@ hunk_off1, hunk_size1, hunk_off2, hunk_size2 = 0, 0, 0, 0
 
 # Characters we're willing to word wrap on
 WORDBREAK = " \t;.,/):-"
+
+
+# for temp invariant files for prettier html diff
+PRSV_LEFT = "[a/] -- "
+PRSV_RIGHT = "[b/] -- "
+PRSV_TMP = ".tagged.tmp"
 
 
 def is_empty(table):
@@ -416,7 +423,12 @@ def add_line(s1, s2, output_file):
     else:
         raise ValueError("adding a line with wrong flags: " + str(line1_active_flag) + " " + str(line2_active_flag))
     
-    output_file.write(('<tr class="diff%s">' % type_name).encode(encoding))
+    if (orig1 is not None and orig1.startswith(PRSV_LEFT)) or \
+            (orig2 is not None and orig2.startswith(PRSV_RIGHT)):
+        output_file.write(('<tr class="invheader diff%s">' % type_name).encode(encoding))
+    else:
+        output_file.write(('<tr class="diff%s">' % type_name).encode(encoding))
+    
     if s1 != None and s1 != "":
         output_file.write(('<td class="diffline">%d </td>' % line1).encode(encoding))
         output_file.write('<td class="diffpresent">'.encode(encoding))
@@ -670,14 +682,34 @@ def __escape(target):
     return target.replace("<", "&lt;").replace(">", "&gt;")
 
 
+def __prediff_process(file_name, preserve_tag, postfix):
+    content = ""
+    with open(file_name, 'r') as rf:
+        content = rf.read()
+    new_content = []
+    for line in content.split("\n"):
+        if re.match(".*:::(ENTER|EXIT|CLASS|OBJECT|THROW).*", line):
+            line = preserve_tag + line
+        new_content.append(line)
+    new_file_name = file_name + PRSV_TMP
+    with open(new_file_name, 'w') as wf:
+        wf.write("\n".join(new_content))
+    return new_file_name
+
+
 def _getty_append_invdiff(html_string, targets, go, prev_hash, curr_hash):
     for target in sorted(targets, reverse=True):
         tfs = fsformat(target)
+        
         prev_invs_file = go + "_getty_inv__" + tfs + "__" + prev_hash + "_.inv.txt"
+        prev_invs_file_tagged = __prediff_process(prev_invs_file, PRSV_LEFT, PRSV_TMP)
         curr_invs_file = go + "_getty_inv__" + tfs + "__" + curr_hash + "_.inv.txt"
-        dstring = from_sys_call_enforce(" ".join(["git diff", prev_invs_file, curr_invs_file]))
+        curr_invs_file_tagged = __prediff_process(curr_invs_file, PRSV_RIGHT, PRSV_TMP)
+        dstring = from_sys_call_enforce(
+            " ".join(["git diff --unified=0", prev_invs_file_tagged, curr_invs_file_tagged]))
+        
         dstring = __denoise(dstring)
-        dtable = parse_from_memory(dstring, True, True)
+        dtable = parse_from_memory(dstring, True, False)
         anchor = "<br>{{{__getty_invariant_diff__}}}<br>"
         inv_title = "<br>compare inviants for { <b>" + __escape(target) + "</b> }<br>"
         invdiffhtml = \
@@ -690,6 +722,7 @@ def _getty_append_invdiff(html_string, targets, go, prev_hash, curr_hash):
             idout.write(invdiffhtml)
         replacement = anchor + "\n" + invdiffhtml
         html_string = html_string.replace(anchor, replacement)
+    from_sys_call_enforce("rm " + go + "*" + PRSV_TMP)
     return html_string
 
 

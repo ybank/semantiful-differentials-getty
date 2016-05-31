@@ -36,7 +36,6 @@ def exam(pwd, go, js_path, \
                            old_caller_of, old_callee_of, old_pred_of, old_succ_of, \
                            new_caller_of, new_callee_of, new_pred_of, new_succ_of)
     
-    
     # open with Safari on Mac OS
     sys_call("open -a /Applications/Safari.app/Contents/MacOS/Safari " + html_out)
 #     # open with default app

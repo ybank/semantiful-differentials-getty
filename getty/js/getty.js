@@ -164,15 +164,15 @@ function installInvTips(post, prev, newl2m, oldl2m) {
 		for (j = 0; j < the_rows.length; j ++) {			
 			if (the_rows[j].childNodes[1].innerText == theLine) {
 				config_obj = {
-					fixed: true, position: 'bottom', //persistent: true,
-					onBeforeShow: function() {
-						method_name = methodName(this.getParent().attr('class'));
-						this.update(methodInvsComparePage(method_name, prevHash, postHash));
-					},
-					onHide: function() {
-						this.update("");
-					},
-					showTime: 200, hideTime: 0, hideEffect: 'none'
+						fixed: true, position: 'bottom', persistent: true,
+						onBeforeShow: function() {
+							method_name = methodName(this.getParent().attr('class'));
+							this.update(methodInvsComparePage(method_name, prevHash, postHash));
+						},
+						onHide: function() {
+							this.update("");
+						},
+						showTime: 200, hideTime: 0, hideEffect: 'none'
 				}
 				the_rows.eq(j).simpletip(config_obj);
 			}
@@ -187,15 +187,15 @@ function installInvTips(post, prev, newl2m, oldl2m) {
 		for (j = 0; j < the_rows.length; j ++) {			
 			if (the_rows[j].childNodes[2].innerText == theLine) {
 				config_obj = {
-					fixed: true, position: 'bottom', //persistent: true,
-					onBeforeShow: function() {
-						method_name = methodName(this.getParent().attr('class'));
-						this.update(methodInvsComparePage(method_name, prevHash, postHash));
-					},
-					onHide: function() {
-						this.update("");
-					},
-					showTime: 200, hideTime: 0, hideEffect: 'none'
+						fixed: true, position: 'bottom', persistent: true,
+						onBeforeShow: function() {
+							method_name = methodName(this.getParent().attr('class'));
+							this.update(methodInvsComparePage(method_name, prevHash, postHash));
+						},
+						onHide: function() {
+							this.update("");
+						},
+						showTime: 200, hideTime: 0, hideEffect: 'none'
 				}
 				the_rows.eq(j).simpletip(config_obj);
 			}
@@ -212,15 +212,15 @@ function installInvTips(post, prev, newl2m, oldl2m) {
 		for (j = 0; j < the_rows.length; j ++) {			
 			if (the_rows[j].childNodes[0].innerText == theLine) {
 				config_obj = {
-					fixed: true, position: 'bottom', //persistent: true,
-					onBeforeShow: function() {
-						method_name = methodName(this.getParent().attr('class'));
-						this.update(methodInvsComparePage(method_name, prevHash, postHash));
-					},
-					onHide: function() {
-						this.update("");
-					},
-					showTime: 200, hideTime: 0, hideEffect: 'none'
+						fixed: true, position: 'bottom', persistent: true,
+						onBeforeShow: function() {
+							method_name = methodName(this.getParent().attr('class'));
+							this.update(methodInvsComparePage(method_name, prevHash, postHash));
+						},
+						onHide: function() {
+							this.update("");
+						},
+						showTime: 200, hideTime: 0, hideEffect: 'none'
 				}
 				the_rows.eq(j).simpletip(config_obj);
 			}
