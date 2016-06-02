@@ -427,7 +427,15 @@ def add_line(s1, s2, output_file):
             (orig2 is not None and orig2.startswith(PRSV_RIGHT)):
         output_file.write(('<tr class="invheader diff%s">' % type_name).encode(encoding))
     else:
-        output_file.write(('<tr class="diff%s">' % type_name).encode(encoding))
+        if ((orig1 is None or str(orig1).strip() == "") and 
+            (orig2 is not None and str(orig2).strip().startswith("================"))) or \
+             ((orig2 is None or str(orig2).strip() == "") and 
+              (orig1 is not None and str(orig1).strip().startswith("================"))) or \
+             (orig1 is None and orig2 is not None and str(orig2).strip() == "") or \
+             (orig2 is None and orig1 is not None and str(orig1).strip() == ""):
+            output_file.write(('<tr class="diff-ignore diff%s">' % type_name).encode(encoding))
+        else:
+            output_file.write(('<tr class="diff%s">' % type_name).encode(encoding))
     
     if s1 != None and s1 != "":
         output_file.write(('<td class="diffline">%d </td>' % line1).encode(encoding))
@@ -684,8 +692,14 @@ def __escape(target):
 
 def __prediff_process(file_name, preserve_tag, postfix):
     content = ""
-    with open(file_name, 'r') as rf:
-        content = rf.read()
+    try:
+        with open(file_name, 'r') as rf:
+            content = rf.read()
+    except IOError:
+        non_exist = '<DOES NOT EXIST>'
+        with open(file_name, 'w') as wf:
+            wf.write(non_exist)
+        content = non_exist
     new_content = []
     for line in content.split("\n"):
         if re.match(".*:::(ENTER|EXIT|CLASS|OBJECT|THROW).*", line):
@@ -787,6 +801,8 @@ def _getty_install_invtips(html_string, prev_hash, curr_hash, go, oldl2m, newl2m
         "\"" + curr_hash + "\", " + "\"" + prev_hash + "\", " + \
         newarray_str + ", " + oldarray_str + ");\n" + \
         "    $(\"div#hide-all\").toggle();\n" + \
+        "    $(\"tr.diffhunk\").hide();\n" + \
+        "    $(\"tr.diff-ignore\").hide();\n" + \
         "</script>\n</body>"
     html_string = html_string.replace("</body>", install_line)
     return html_string

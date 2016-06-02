@@ -9,6 +9,7 @@ import agency
 import center
 import gallery
 import villa
+from tools import profiler
 from tools.ex import save_to
 from tools.git import (
     backup_and_stash_first,
@@ -140,7 +141,8 @@ if __name__ == "__main__":
     '''
         multi-stage analysis: Villa (code) and Center (invariants) 
     '''
-    old_changed_methods, old_improved_changed_methods, old_added_changed_methods, \
+    profiler.run_and_report(
+        "old_changed_methods, old_improved_changed_methods, old_added_changed_methods, \
         old_all_ccc_related, old_all_cccs, old_all_methods, \
         old_inner_dataflow_methods, old_outer_dataflow_methods, \
         old_l2m, old_m2l, \
@@ -149,7 +151,19 @@ if __name__ == "__main__":
         new_inner_dataflow_methods, new_outer_dataflow_methods, \
         new_l2m, new_m2l, \
         old_changed_tests, new_changed_tests = \
-            villa.visit(villa_path, pwd, go, prev_hash, post_hash)
+            villa.visit(villa_path, pwd, go, prev_hash, post_hash)",
+        go + "_getty_x_profile_villa.profile")
+#     old_changed_methods, old_improved_changed_methods, old_added_changed_methods, \
+#         old_all_ccc_related, old_all_cccs, old_all_methods, \
+#         old_inner_dataflow_methods, old_outer_dataflow_methods, \
+#         old_l2m, old_m2l, \
+#         new_changed_methods, new_improved_changed_methods, new_removed_changed_methods, \
+#         new_all_ccc_related, new_all_cccs, new_all_methods, \
+#         new_inner_dataflow_methods, new_outer_dataflow_methods, \
+#         new_l2m, new_m2l, \
+#         old_changed_tests, new_changed_tests = \
+#             villa.visit(villa_path, pwd, go, prev_hash, post_hash)
+
 #     # DEBUG ONLY
 #     print "Debug info: "
 #     print old_changed_methods
@@ -165,7 +179,9 @@ if __name__ == "__main__":
     
     targets = agency.investigate(go, agent_path, old_all_methods, new_all_methods, prev_hash, post_hash)
     
-    center.visit(junit_path, agent_path, go, prev_hash, post_hash, targets)
+    profiler.run_and_report("center.visit(junit_path, agent_path, go, prev_hash, post_hash, targets)",
+                            go + "_getty_x_profile_center.profile")
+#     center.visit(junit_path, agent_path, go, prev_hash, post_hash, targets)
     
     old_caller_of, old_callee_of = agency.caller_callee(go, prev_hash)
     old_pred_of, old_succ_of = agency.pred_succ(go, prev_hash)
@@ -192,11 +208,19 @@ if __name__ == "__main__":
         optional: csi view results
     '''
     all_changed_tests = list(set(old_changed_tests + new_changed_tests))
-    gallery.exam(pwd, go, js_path, \
+    profiler.run_and_report(
+                "gallery.exam(pwd, go, js_path, \
                  targets, new_improved_changed_methods, new_all_methods, \
                  new_caller_of, new_callee_of, new_pred_of, new_succ_of, \
                  old_caller_of, old_callee_of, old_pred_of, old_succ_of, \
                  all_changed_tests, old_changed_tests, new_changed_tests, \
-                 prev_hash, post_hash, old_l2m, new_l2m, old_m2l, new_m2l)
+                 prev_hash, post_hash, old_l2m, new_l2m, old_m2l, new_m2l)",
+                 go + "_getty_x_profile_gallery.profile")
+#     gallery.exam(pwd, go, js_path, \
+#                  targets, new_improved_changed_methods, new_all_methods, \
+#                  new_caller_of, new_callee_of, new_pred_of, new_succ_of, \
+#                  old_caller_of, old_callee_of, old_pred_of, old_succ_of, \
+#                  all_changed_tests, old_changed_tests, new_changed_tests, \
+#                  prev_hash, post_hash, old_l2m, new_l2m, old_m2l, new_m2l)
     
     print 'Quit Getty.'

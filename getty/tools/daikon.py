@@ -149,6 +149,24 @@ def dfformat(target, more_ppts=False):
             return "^" + target.replace(":", ".").replace(".", "\.").replace("$", "\$") + "\("
 
 
+# reformat all methods together so it is recognizable by Daikon filter
+def dfformat_full(target_set):
+    interest_set = set()
+    for target in target_set:
+        target = real_name(target)
+        colon_index = target.rfind(":")
+        if colon_index == -1:
+            # includes class and class.*
+            interest_set.add("^" + target.replace(":", ".").replace(".", "\.").replace("$", "\$") + ":")
+            interest_set.add("^" + target.replace(":", ".").replace(".", "\.").replace("$", "\$") + "\.")
+        else:
+            possible_parents = target[:colon_index].replace(":", ".")
+            itself = target.replace(":", ".")
+            interest_set.add(("^" + possible_parents + ":").replace(".", "\.").replace("$", "\$"))
+            interest_set.add(("^" + itself + "\(").replace(".", "\.").replace("$", "\$"))
+    return "|".join(interest_set)
+
+
 # reformat one target so it is recognizable by Daikon filter
 def fsformat(target, for_daikon=True):
     if for_daikon:
