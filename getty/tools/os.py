@@ -35,6 +35,11 @@ def copy_file(from_path, to_path):
     sys_call(" ".join(["cp", from_path, to_path]))
 
 
+# remove
+def remove_file(file_path):
+    sys_call(" ".join(["rm", file_path]), ignore_bad_exit=True)
+
+
 # helper to replace last occurence of a string to something else
 def rreplace(s, old, new, occurrence):
     li = s.rsplit(old, occurrence)

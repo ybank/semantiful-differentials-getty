@@ -9,6 +9,7 @@ from tools import daikon, git, mvn, os, profiler
 
 
 PARALLEL_LEVEL = 4
+SHOW_DEBUG_INFO = False
 
 
 # relative path of getty output path (go), when pwd is root dir of project
@@ -47,31 +48,64 @@ def sort_txt_inv(out_file):
 
 
 # Chicory-Daikon-Invariant
-# v3. flexible to be run in parallel
+# # v3. flexible to be run in parallel
+# def seq_get_invs(target_set, java_cmd, junit_torun, go, this_hash):
+#     index = target_set[-1]
+#     target_set = target_set[:-1]
+#     
+#     select_pattern = daikon.reformat_all(target_set, more_ppts=True)
+#     print "\n===select pattern===\n" + select_pattern + "\n"
+#     
+#     # run Chicory for trace
+#     run_chicory = \
+#         " ".join([java_cmd, "daikon.Chicory --exception-handling", \
+#                   "--dtrace-file="+rel_go(go)+"_getty_trace_"+this_hash+"_."+index+".dtrace.gz", \
+#                   "--ppt-select-pattern=\'"+select_pattern+"\'", \
+#                   junit_torun])
+#     print "\n=== Daikon:Chicory command to run: \n" + run_chicory
+#     os.sys_call(run_chicory, ignore_bad_exit=True)
+#     
+#     run_daikon = \
+#         " ".join([java_cmd, "daikon.Daikon", 
+#                   go+"_getty_trace_"+this_hash+"_."+index+".dtrace.gz", \
+#                   "--ppt-select-pattern=\'"+daikon.dfformat_full(target_set)+"\'", \
+#                   "--no_text_output", "--show_progress", \
+#                   "-o", go+"_getty_inv_"+this_hash+"_."+index+".inv.gz"])
+#     print "\n=== Daikon:Daikon command to run: \n" + run_daikon
+#     os.sys_call(run_daikon, ignore_bad_exit=True)
+#     
+#     os.remove_file(go+"_getty_trace_"+this_hash+"_."+index+".dtrace.gz")
+#     
+#     for tgt in target_set:
+#         target_ff = daikon.fsformat(tgt)
+#         run_printinv = \
+#             " ".join([java_cmd, "daikon.PrintInvariants", \
+#                       "--ppt-select-pattern=\'"+daikon.dfformat(tgt)+"\'", \
+#                       go+"_getty_inv_"+this_hash+"_."+index+".inv.gz"])
+#         out_file = go+"_getty_inv__"+target_ff+"__"+this_hash+"_.inv.txt"
+#         print "\n=== Daikon:PrintInvs command to run: \n" + run_printinv
+#         os.sys_call(run_printinv + " > " + out_file, ignore_bad_exit=True)
+#         sort_txt_inv(out_file)
+
+# v4. flexible to be run in parallel, in daikon-online mode
 def seq_get_invs(target_set, java_cmd, junit_torun, go, this_hash):
     index = target_set[-1]
     target_set = target_set[:-1]
     
-    select_pattern = daikon.reformat_all(target_set, more_ppts=True)
+    select_pattern = daikon.select_full(target_set)
     print "\n===select pattern===\n" + select_pattern + "\n"
     
-    # run Chicory for trace
-    run_chicory = \
-        " ".join([java_cmd, "daikon.Chicory --exception-handling", \
-                  "--dtrace-file="+rel_go(go)+"_getty_trace_"+this_hash+"_."+index+".dtrace.gz", \
-                  "--ppt-select-pattern=\'"+select_pattern+"\'", \
-                  junit_torun])
-    print "\n=== Daikon:Chicory command to run: \n" + run_chicory
-    os.sys_call(run_chicory, ignore_bad_exit=True)
+    inv_gz = go + "_getty_inv_" + this_hash + "_." + index + ".inv.gz"
     
-    run_daikon = \
-        " ".join([java_cmd, "daikon.Daikon", 
-                  go+"_getty_trace_"+this_hash+"_."+index+".dtrace.gz", \
-                  "--ppt-select-pattern=\'"+daikon.dfformat_full(target_set)+"\'", \
-                  "--no_text_output", "--show_progress", \
-                  "-o", go+"_getty_inv_"+this_hash+"_."+index+".inv.gz"])
-    print "\n=== Daikon:Daikon command to run: \n" + run_daikon
-    os.sys_call(run_daikon, ignore_bad_exit=True)
+    # run Chicory + Daikon (online) for trace
+    run_chicory_daikon = \
+        " ".join([java_cmd, "daikon.Chicory --daikon-online --exception-handling", \
+                  "--daikon-args=\"--show_progress --no_text_output", \
+                  "-o", inv_gz+"\"", \
+                  "--ppt-select-pattern=\""+select_pattern+"\"", \
+                  junit_torun])
+    print "\n=== Daikon:Chicory+Daikon(online) command to run: \n" + run_chicory_daikon
+    os.sys_call(run_chicory_daikon, ignore_bad_exit=True)
     
     for tgt in target_set:
         target_ff = daikon.fsformat(tgt)
@@ -80,7 +114,10 @@ def seq_get_invs(target_set, java_cmd, junit_torun, go, this_hash):
                       "--ppt-select-pattern=\'"+daikon.dfformat(tgt)+"\'", \
                       go+"_getty_inv_"+this_hash+"_."+index+".inv.gz"])
         out_file = go+"_getty_inv__"+target_ff+"__"+this_hash+"_.inv.txt"
-        print "\n=== Daikon:PrintInvs command to run: \n" + run_printinv
+        if SHOW_DEBUG_INFO:
+            print "\n=== Daikon:PrintInvs command to run: \n" + run_printinv
+        else:
+            print "*"
         os.sys_call(run_printinv + " > " + out_file, ignore_bad_exit=True)
         sort_txt_inv(out_file)
 
@@ -199,13 +236,14 @@ def one_pass(junit_path, agent_path, go, this_hash, target_set):
 #     # v3.1 one core (purely sequential)
 #     seq_get_invs(target_set, java_cmd, junit_torun, go, this_hash)
     
-    # v3.2 execute with 4 core
+    # v3.2, v4 execute with 4 core
     if len(target_set) <= PARALLEL_LEVEL:
         seq_get_invs(java_cmd, junit_torun, go, this_hash, target_set)
     else:
         target_set_inputs = []
         all_target_set_list = list(target_set)
         each_bulk_size = int(len(target_set) / PARALLEL_LEVEL)
+        
         seq_func = partial(seq_get_invs, 
                            java_cmd=java_cmd, junit_torun=junit_torun, go=go, this_hash=this_hash)
         for i in range(PARALLEL_LEVEL):
@@ -220,9 +258,7 @@ def one_pass(junit_path, agent_path, go, this_hash, target_set):
         input_pool = Pool(PARALLEL_LEVEL)
         input_pool.map(seq_func, target_set_inputs)
         input_pool.close()
-        input_pool.join()
-
-
+        input_pool.join()    
     
     target_set = target_set - test_set
     git.clear_temp_checkout(this_hash)

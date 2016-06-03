@@ -167,6 +167,21 @@ def dfformat_full(target_set):
     return "|".join(interest_set)
 
 
+# extended filter (secure)
+def select_full(target_set):
+    interest_set = set()
+    for target in target_set:
+        target = real_name(target)
+        colon_index = target.rfind(":")
+        if colon_index == -1:
+            # includes class and class.*
+            interest_set.add("^" + target.replace(":", ".").replace(".", "\.").replace("$", "\$") + "(:|\.)")
+        else:
+            possible_parents = target[:colon_index].replace(":", ".")
+            interest_set.add(("^" + possible_parents).replace(".", "\.").replace("$", "\$") + "(:|\.)")
+    return "|".join(interest_set)
+
+
 # reformat one target so it is recognizable by Daikon filter
 def fsformat(target, for_daikon=True):
     if for_daikon:
