@@ -35,8 +35,8 @@ def full_env_classpath():
 
 
 # include target folders
-def full_classpath(junit_path, bin_output, test_output):
-    return junit_path + ":" + full_env_classpath() + ":" + bin_output + ":" + test_output
+def full_classpath(junit_path, sys_classpath, bin_output, test_output):
+    return ":".join([junit_path, classpath_from_mvn_call(), sys_classpath, bin_output, test_output])
 
 
 # get junit version, runner, and test classes

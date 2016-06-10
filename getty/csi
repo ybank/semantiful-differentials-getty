@@ -54,6 +54,23 @@ def config_env():
     elif not os.path.exists(agent_path):
         raise EnvironmentError("could not find jdyncg-0.1-getty-dycg-agent.jar in script dir " + this_script_dir)
     
+    # System classpath
+    hamcrest_path = this_script_dir + "lib/hamcrest-all-1.3.jar"
+    getopt_path = this_script_dir + "lib/java-getopt.jar"
+    plume_path = this_script_dir + "lib/plume.jar"
+    daikon_path = this_script_dir + "lib/daikon_3.3_exp.jar"
+    rt_path = this_script_dir + "lib/rt.jar"
+    jce_path = this_script_dir + "lib/jce.jar"
+    tools_path = this_script_dir + "lib/tools.jar"
+    if os.path.exists(hamcrest_path) and os.path.exists(getopt_path) and os.path.exists(plume_path) and \
+        os.path.exists(daikon_path) and \
+        os.path.exists(rt_path) and os.path.exists(jce_path) and os.path.exists(tools_path):
+        print "\nSystem classpath is complete"
+    else:
+        raise EnvironmentError(
+                "\nSystem classpath is NOT complete. Check for hamcrest, getopt, plume, daikon, rt, jce, and tools.jar")
+    sys_classpath = ":".join([hamcrest_path, getopt_path, plume_path, daikon_path, rt_path, jce_path, tools_path])
+    
     # present working directory - it should be the project's root with "/" at the end
     pwd = cwd()
     if pwd[-1] != "/":
@@ -73,7 +90,7 @@ def config_env():
     # javascript path
     js_path = this_script_dir + "js/"
     
-    return villa_path, junit_path, agent_path, pwd, go, js_path
+    return villa_path, junit_path, sys_classpath, agent_path, pwd, go, js_path
 
 
 def set_args():
@@ -127,7 +144,7 @@ def set_args():
 
 if __name__ == "__main__":
     ## env config
-    villa_path, junit_path, agent_path, pwd, go, js_path = config_env()
+    villa_path, junit_path, sys_classpath, agent_path, pwd, go, js_path = config_env()
     
     ## args checking & setting
     prev_hash, post_hash = set_args()
@@ -179,9 +196,9 @@ if __name__ == "__main__":
     
     targets = agency.investigate(go, agent_path, old_all_methods, new_all_methods, prev_hash, post_hash)
     
-    profiler.run_and_report("center.visit(junit_path, agent_path, go, prev_hash, post_hash, targets)",
+    profiler.run_and_report("center.visit(junit_path, sys_classpath, agent_path, go, prev_hash, post_hash, targets)",
                             go + "_getty_x_profile_center.profile")
-#     center.visit(junit_path, agent_path, go, prev_hash, post_hash, targets)
+#     center.visit(junit_path, sys_classpath, agent_path, go, prev_hash, post_hash, targets)
     
     old_caller_of, old_callee_of = agency.caller_callee(go, prev_hash)
     old_pred_of, old_succ_of = agency.pred_succ(go, prev_hash)
