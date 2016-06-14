@@ -204,7 +204,7 @@ def one_pass(junit_path, sys_classpath, agent_path, go, this_hash, target_set,
                     test_set.add(possible_test_mtd)
     test_mtd_count = len(test_set)
     # set target set here
-    target_set = test_set
+    target_set = target_set or test_set
     profiler.log_csv(["method_count", "test_count"], 
                      [[mtd_count, test_mtd_count]], 
                      go + "_getty_y_method_count_" + this_hash + "_.profile.readable")
