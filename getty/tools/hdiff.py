@@ -309,7 +309,10 @@ def convert(s, linesize=0, ponct=0):
             if show_CR:
                 t += u'<span class="diffponct">\</span>'
         else:
-            t += c
+            try:
+                t += c
+            except UnicodeDecodeError:
+                t += u"?"
             i += 1
 
         if linesize and (WORDBREAK.count(c) == 1):
@@ -736,7 +739,8 @@ def _getty_append_invdiff(html_string, targets, go, prev_hash, curr_hash):
             idout.write(invdiffhtml)
         replacement = anchor + "\n" + invdiffhtml
         html_string = html_string.replace(anchor, replacement)
-    from_sys_call_enforce("rm " + go + "*" + PRSV_TMP)
+#     from_sys_call_enforce("rm " + go + "*" + PRSV_TMP)
+    from_sys_call_enforce("find " + go +" -name \"*.tagged.tmp\" -print0 | xargs -0 rm")
     return html_string
 
 

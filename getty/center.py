@@ -162,7 +162,8 @@ def one_pass(junit_path, sys_classpath, agent_path, go, this_hash, target_set,
     if SHOW_DEBUG_INFO:
         print "\n===full classpath===\n" + cp + "\n"
     
-    java_cmd = " ".join(["java", "-cp", cp, "-Xms"+min_heap_size, "-Xmx"+max_heap_size])
+    java_cmd = " ".join(["java", "-cp", cp, 
+                         "-Xms"+min_heap_size, "-Xmx"+max_heap_size, "-XX:+UseConcMarkSweepGC"])
     
     os.sys_call("mvn test -DskipTests")
     junit_torun = mvn.junit_torun_str()
@@ -202,7 +203,8 @@ def one_pass(junit_path, sys_classpath, agent_path, go, this_hash, target_set,
                 if possible_test_mtd.startswith(one_test):
                     test_set.add(possible_test_mtd)
     test_mtd_count = len(test_set)
-    target_set = target_set or test_set
+    # set target set here
+    target_set = test_set
     profiler.log_csv(["method_count", "test_count"], 
                      [[mtd_count, test_mtd_count]], 
                      go + "_getty_y_method_count_" + this_hash + "_.profile.readable")
@@ -271,7 +273,9 @@ def one_pass(junit_path, sys_classpath, agent_path, go, this_hash, target_set,
     
     # v3.2, v4 execute with 4 core
     if len(target_set) <= parallel_level:
-        seq_get_invs(java_cmd, junit_torun, go, this_hash, target_set)
+        one_sublist = list(target_set)
+        one_sublist.append("0")
+        seq_get_invs(one_sublist, java_cmd, junit_torun, go, this_hash)
     else:
         target_set_inputs = []
         all_target_set_list = list(target_set)
