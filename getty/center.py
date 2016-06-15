@@ -342,12 +342,13 @@ def one_pass(junit_path, sys_classpath, agent_path, go, this_hash, target_set,
         sys.exit(1)
     
     target_set = target_set - test_set
+    os.from_sys_call_enforce("find " + go +" -name \"*.inv.gz\" -print0 | xargs -0 rm")
     git.clear_temp_checkout(this_hash)
 
 
 # the main entrance
 def visit(junit_path, sys_classpath, agent_path, go, prev_hash, post_hash, targets,
-          num_workers=1, auto_fork=True, classes_per_fork=1, min_heap="2048m", max_heap="16384m"):
+          num_workers=1, auto_fork=True, classes_per_fork=2, min_heap="2048m", max_heap="16384m"):
     
 #     # DEBUG ONLY
 #     print common_prefixes(old_all_methods)
