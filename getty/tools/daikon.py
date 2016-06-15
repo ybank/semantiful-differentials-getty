@@ -167,6 +167,24 @@ def dfformat_full(target_set):
     return "|".join(interest_set)
 
 
+# reformat all methods together so it is recognizable by Daikon filter
+def dfformat_full_ordered(target_set):
+    parent_interest_set = set()
+    method_interest_set = set()
+    for target in target_set:
+        target = real_name(target)
+        colon_index = target.rfind(":")
+        if colon_index == -1:
+            # includes class and class.*
+            parent_interest_set.add("^" + target.replace(":", ".").replace(".", "\.").replace("$", "\$") + ":")
+        else:
+            possible_parents = target[:colon_index].replace(":", ".")
+            itself = target.replace(":", ".")
+            parent_interest_set.add(("^" + possible_parents + ":").replace(".", "\.").replace("$", "\$"))
+            method_interest_set.add(("^" + itself + "\(").replace(".", "\.").replace("$", "\$"))
+    return "|".join(["|".join(parent_interest_set), "|".join(method_interest_set)])
+
+
 # extended filter (secure)
 def select_full(target_set):
     interest_set = set()
@@ -180,6 +198,29 @@ def select_full(target_set):
             possible_parents = target[:colon_index].replace(":", ".")
             interest_set.add(("^" + possible_parents).replace(".", "\.").replace("$", "\$") + "(:|\.)")
     return "|".join(interest_set)
+
+
+# get possible parent class
+def parent_class(target):
+    colon_index = target.rfind(":")
+    if colon_index == -1:
+        return target
+    else:
+        return target[:colon_index]
+
+
+# from target set to target map [parent -> method]
+def target_s2m(target_set):
+    target_map = {}
+    for target in target_set:
+        parent = parent_class(target)
+        if parent in target_map:
+            target_map[parent].append(target)
+        else:
+            target_methods = []
+            target_methods.append(target)
+            target_map[parent] = target_methods
+    return target_map
 
 
 # reformat one target so it is recognizable by Daikon filter

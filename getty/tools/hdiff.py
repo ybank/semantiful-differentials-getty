@@ -744,14 +744,19 @@ def _getty_append_invdiff(html_string, targets, go, prev_hash, curr_hash):
     return html_string
 
 
-def _import_js(html_string, js_path):
+def _import_js(html_string, js_path, go):
     import_script = "<script type=\"text/javascript\" src=\"{0}\"></script>"
-    import_jquery = import_script.format(js_path + "jquery-1.2.6.js")
-    import_simpletip = import_script.format(js_path + "jquery.simpletip-1.3.1.js")
-    import_buckets = import_script.format(js_path + "buckets.min.js")
-    import_getty = import_script.format(js_path + "getty.js")
-    last_import = "\n".join([import_jquery, import_simpletip, import_buckets, import_getty, "</body>"])
-    return html_string.replace("</body>", last_import)
+#     import_jquery = import_script.format(js_path + "jquery-1.2.6.js")
+#     import_simpletip = import_script.format(js_path + "jquery.simpletip-1.3.1.js")
+#     import_buckets = import_script.format(js_path + "buckets.min.js")
+#     import_getty = import_script.format(js_path + "getty.js")
+    last_import = []
+    for jslib in ["jquery-1.2.6.js", "jquery.simpletip-1.3.1.js", "buckets.min.js", "getty.js"]:
+        from_sys_call_enforce(" ".join(["cp", js_path + jslib, go + jslib]))
+        last_import.append(import_script.format(jslib))
+    last_import.append("</body>")
+    last_import_str = "\n".join(last_import)
+    return html_string.replace("</body>", last_import_str)
 
 
 def __add_inv_js_line(html_string, tfs, prev_hash, prev_invs, curr_hash, curr_invs):
@@ -826,7 +831,7 @@ def getty_append_semainfo(template_file, targets, go, js_path, prev_hash, curr_h
         html_string = rf.read()
     
     html_string = _getty_append_invdiff(html_string, targets, go, prev_hash, curr_hash)
-    html_string = _import_js(html_string, js_path)
+    html_string = _import_js(html_string, js_path, go)
 #     html_string = _getty_append_invariants(html_string, targets, go, prev_hash, curr_hash)
     inv_to_html(targets, go, prev_hash)
     inv_to_html(targets, go, curr_hash)

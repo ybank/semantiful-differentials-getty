@@ -1,6 +1,7 @@
 # all Daikon's usage for invariant analysis
 
 import re
+import sys
 from functools import partial
 from multiprocessing import Pool
 
@@ -87,11 +88,12 @@ def sort_txt_inv(out_file):
 #         sort_txt_inv(out_file)
 
 # v4. flexible to be run in parallel, in daikon-online mode
-def seq_get_invs(target_set, java_cmd, junit_torun, go, this_hash):
-    index = target_set[-1]
-    target_set = target_set[:-1]
+def seq_get_invs(target_set_index_pair, java_cmd, junit_torun, go, this_hash):
+    index = target_set_index_pair[1]
+    target_set = target_set_index_pair[0]
     
-    select_pattern = daikon.select_full(target_set)
+#     select_pattern = daikon.select_full(target_set)
+    select_pattern = daikon.dfformat_full_ordered(target_set)
     print "\n===select pattern===\n" + select_pattern + "\n"
     
     inv_gz = go + "_getty_inv_" + this_hash + "_." + index + ".inv.gz"
@@ -152,7 +154,8 @@ def seq_get_invs(target_set, java_cmd, junit_torun, go, this_hash):
 
 # one pass template
 def one_pass(junit_path, sys_classpath, agent_path, go, this_hash, target_set, 
-             parallel_level=1, min_heap_size="2048m", max_heap_size="16384m"):
+             num_primary_workers=1, auto_parallel_targets=False, slave_load=1, 
+             min_heap_size="512m", max_heap_size="16384m"):
     os.sys_call("git checkout " + this_hash)
     os.sys_call("mvn clean")
     
@@ -163,7 +166,10 @@ def one_pass(junit_path, sys_classpath, agent_path, go, this_hash, target_set,
         print "\n===full classpath===\n" + cp + "\n"
     
     java_cmd = " ".join(["java", "-cp", cp, 
-                         "-Xms"+min_heap_size, "-Xmx"+max_heap_size, "-XX:+UseConcMarkSweepGC"])
+                         "-Xms"+min_heap_size, "-Xmx"+max_heap_size, 
+                         # "-XX:+UseConcMarkSweepGC", 
+                         "-XX:-UseGCOverheadLimit",
+                         ])
     
     os.sys_call("mvn test -DskipTests")
     junit_torun = mvn.junit_torun_str()
@@ -179,8 +185,9 @@ def one_pass(junit_path, sys_classpath, agent_path, go, this_hash, target_set,
     if SHOW_DEBUG_INFO:
         print "\n===instrumentation pattern===\n" + instrument_regex + "\n"
     # run tests with instrumentation
+    # FIXME: JDK 8- only!
     run_instrumented_tests = \
-        " ".join([java_cmd, 
+        " ".join([java_cmd, "-XX:-UseSplitVerifier", 
                   "-javaagent:" + agent_path + "=\"" + instrument_regex + "\"",
                   junit_torun])
     if SHOW_DEBUG_INFO:
@@ -203,8 +210,10 @@ def one_pass(junit_path, sys_classpath, agent_path, go, this_hash, target_set,
                 if possible_test_mtd.startswith(one_test):
                     test_set.add(possible_test_mtd)
     test_mtd_count = len(test_set)
+    
     # set target set here
-    target_set = target_set or test_set
+    target_set = target_set | test_set
+        
     profiler.log_csv(["method_count", "test_count"], 
                      [[mtd_count, test_mtd_count]], 
                      go + "_getty_y_method_count_" + this_hash + "_.profile.readable")
@@ -272,30 +281,65 @@ def one_pass(junit_path, sys_classpath, agent_path, go, this_hash, target_set,
 #     seq_get_invs(target_set, java_cmd, junit_torun, go, this_hash)
     
     # v3.2, v4 execute with 4 core
-    if len(target_set) <= parallel_level:
-        one_sublist = list(target_set)
-        one_sublist.append("0")
-        seq_get_invs(one_sublist, java_cmd, junit_torun, go, this_hash)
-    else:
+    if len(target_set) <= num_primary_workers or (num_primary_workers == 1 and not auto_parallel_targets):
+        single_set_tuple = (target_set, "0")
+        seq_get_invs(single_set_tuple, java_cmd, junit_torun, go, this_hash)
+    elif num_primary_workers > 1:  # FIXME: this distributation is buggy
         target_set_inputs = []
         all_target_set_list = list(target_set)
-        each_bulk_size = int(len(target_set) / parallel_level)
+        each_bulk_size = int(len(target_set) / num_primary_workers)
         
         seq_func = partial(seq_get_invs, 
                            java_cmd=java_cmd, junit_torun=junit_torun, go=go, this_hash=this_hash)
-        for i in range(parallel_level):
-            if not(i == parallel_level - 1):
-                sub_list = all_target_set_list[each_bulk_size*i:each_bulk_size*(i+1)]
-                sub_list.append(str(i))
-                target_set_inputs.append(sub_list)
+        for i in range(num_primary_workers):
+            if not(i == num_primary_workers - 1):
+                sub_list_tuple = (all_target_set_list[each_bulk_size*i:each_bulk_size*(i+1)], str(i))                
+                target_set_inputs.append(sub_list_tuple)
             else:
-                sub_list = all_target_set_list[each_bulk_size*i:]
-                sub_list.append(str(i))
-                target_set_inputs.append(sub_list)
-        input_pool = Pool(parallel_level)
+                sub_list_tuple = (all_target_set_list[each_bulk_size*i:], str(i))
+                target_set_inputs.append(sub_list_tuple)
+        input_pool = Pool(num_primary_workers)
         input_pool.map(seq_func, target_set_inputs)
         input_pool.close()
-        input_pool.join()    
+        input_pool.join()
+    elif num_primary_workers == 1 and auto_parallel_targets and slave_load >= 1:
+        # elastic automatic processing
+        target_set_inputs = []
+        num_processes = 0
+        
+        target_map = daikon.target_s2m(target_set)
+        all_keys = target_map.keys()
+        num_keys = len(all_keys)
+        seq_func = partial(seq_get_invs, 
+                           java_cmd=java_cmd, junit_torun=junit_torun, go=go, this_hash=this_hash)
+        
+        for i in range(0, num_keys, slave_load):
+            # (inclusive) lower bound is i
+            # (exclusive) upper bound:
+            j = min(i+slave_load, num_keys)
+            sublist = []
+            for k in range(i, j):
+                the_key = all_keys[k]
+                sublist += target_map[the_key]
+            sublist_tuple = (sublist, str(num_processes))
+            target_set_inputs.append(sublist_tuple)
+            num_processes += 1
+        
+        profiler.log_csv(["class_count", "process_count", "slave_load"], 
+                         [[num_keys, num_processes, slave_load]],
+                         go + "_getty_y_elastic_count_" + this_hash + "_.profile.readable")
+        
+        input_pool = Pool(num_processes)
+        input_pool.map(seq_func, target_set_inputs)
+        input_pool.close()
+        input_pool.join()
+        
+    else:
+        print "\nIncorrect option for one center pass:"
+        print "\tnum_primary_workers:", str(num_primary_workers)
+        print "\tauto_parallel_targets:", str(auto_parallel_targets)
+        print "\tslave_load", str(slave_load)
+        sys.exit(1)
     
     target_set = target_set - test_set
     git.clear_temp_checkout(this_hash)
@@ -303,7 +347,7 @@ def one_pass(junit_path, sys_classpath, agent_path, go, this_hash, target_set,
 
 # the main entrance
 def visit(junit_path, sys_classpath, agent_path, go, prev_hash, post_hash, targets,
-          num_workers=4, min_heap="2048m", max_heap="16384m"):
+          num_workers=1, auto_fork=True, classes_per_fork=1, min_heap="2048m", max_heap="16384m"):
     
 #     # DEBUG ONLY
 #     print common_prefixes(old_all_methods)
@@ -319,12 +363,14 @@ def visit(junit_path, sys_classpath, agent_path, go, prev_hash, post_hash, targe
         1-st pass: checkout prev_commit as detached head, and get invariants for all interesting targets
     '''
     one_pass(junit_path, sys_classpath, agent_path, go, prev_hash, targets,
-             parallel_level=num_workers, min_heap_size=min_heap, max_heap_size=max_heap)
+             num_primary_workers=num_workers, auto_parallel_targets=auto_fork, slave_load=classes_per_fork,
+             min_heap_size=min_heap, max_heap_size=max_heap)
     
     '''
         2-nd pass: checkout post_commit as detached head, and get invariants for all interesting targets
     '''
     one_pass(junit_path, sys_classpath, agent_path, go, post_hash, targets,
-             parallel_level=num_workers, min_heap_size=min_heap, max_heap_size=max_heap)
+             num_primary_workers=num_workers, auto_parallel_targets=auto_fork, slave_load=classes_per_fork,
+             min_heap_size=min_heap, max_heap_size=max_heap)
     
     print 'Center analysis is completed.'
