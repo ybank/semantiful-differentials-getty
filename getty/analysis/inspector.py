@@ -64,10 +64,10 @@ def __append_script_mm2d(html_string, mm, for_whom):
     return html_string.replace(place_holder, to_replace)
 
 
-def _getty_csi_setvars(html_string, go, prev_hash, post_hash, \
-                       all_changed_tests, old_changed_tests, new_changed_tests, \
-                       new_modified_src, new_all_src, \
-                       old_caller_of, old_callee_of, old_pred_of, old_succ_of, \
+def _getty_csi_setvars(html_string, go, prev_hash, post_hash,
+                       all_changed_tests, old_changed_tests, new_changed_tests,
+                       new_modified_src, new_all_src,
+                       old_caller_of, old_callee_of, old_pred_of, old_succ_of,
                        new_caller_of, new_callee_of, new_pred_of, new_succ_of):
     html_string = __append_script_l2s(html_string, all_changed_tests, "all_changed_tests")
     html_string = __append_script_l2s(html_string, old_changed_tests, "old_changed_tests")
@@ -109,10 +109,10 @@ def _getty_csi_setvars(html_string, go, prev_hash, post_hash, \
     return html_string
     
 
-def getty_csi_targets_prep(html_file, go, prev_hash, post_hash, \
-                           all_changed_tests, old_changed_tests, new_changed_tests, \
-                           new_modified_src, new_all_src, \
-                           old_caller_of, old_callee_of, old_pred_of, old_succ_of, \
+def getty_csi_targets_prep(html_file, go, prev_hash, post_hash,
+                           all_changed_tests, old_changed_tests, new_changed_tests,
+                           new_modified_src, new_all_src,
+                           old_caller_of, old_callee_of, old_pred_of, old_succ_of,
                            new_caller_of, new_callee_of, new_pred_of, new_succ_of):
     html_string = ""
     with open(html_file, 'r') as rf:
@@ -133,14 +133,14 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash, \
         tests_replacement = " ,  ".join([__link_to_show_neighbors(t) for t in all_changed_tests])
     else:
         tests_replacement = "<span>None</span>"
-    html_string = html_string.replace(targets_place_holder, \
+    html_string = html_string.replace(targets_place_holder,
                                       replace_header + replacement + \
                                       embed_test_update + tests_replacement + replace_footer)
 
-    html_string = _getty_csi_setvars(html_string, go, prev_hash, post_hash, \
-                                     all_changed_tests, old_changed_tests, new_changed_tests, \
-                                     new_modified_src, new_all_src, \
-                                     old_caller_of, old_callee_of, old_pred_of, old_succ_of, \
+    html_string = _getty_csi_setvars(html_string, go, prev_hash, post_hash,
+                                     all_changed_tests, old_changed_tests, new_changed_tests,
+                                     new_modified_src, new_all_src,
+                                     old_caller_of, old_callee_of, old_pred_of, old_succ_of,
                                      new_caller_of, new_callee_of, new_pred_of, new_succ_of)
     
     with open(html_file, 'w') as wf:

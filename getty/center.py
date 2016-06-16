@@ -91,6 +91,7 @@ def sort_txt_inv(out_file):
 def seq_get_invs(target_set_index_pair, java_cmd, junit_torun, go, this_hash):
     index = target_set_index_pair[1]
     target_set = target_set_index_pair[0]
+    print "\n\t****\n" + "  forked: " + index + "\n\t****\n"
     
 #     select_pattern = daikon.select_full(target_set)
     select_pattern = daikon.dfformat_full_ordered(target_set)
@@ -155,7 +156,7 @@ def seq_get_invs(target_set_index_pair, java_cmd, junit_torun, go, this_hash):
 # one pass template
 def one_pass(junit_path, sys_classpath, agent_path, go, this_hash, target_set, 
              num_primary_workers=1, auto_parallel_targets=False, slave_load=1, 
-             min_heap_size="512m", max_heap_size="16384m"):
+             min_heap_size="2048m", max_heap_size="16384m"):
     os.sys_call("git checkout " + this_hash)
     os.sys_call("mvn clean")
     
@@ -166,7 +167,8 @@ def one_pass(junit_path, sys_classpath, agent_path, go, this_hash, target_set,
         print "\n===full classpath===\n" + cp + "\n"
     
     java_cmd = " ".join(["java", "-cp", cp, 
-                         "-Xms"+min_heap_size, "-Xmx"+max_heap_size, 
+#                          "-Xms"+min_heap_size, 
+                         "-Xmx"+max_heap_size, 
                          # "-XX:+UseConcMarkSweepGC", 
                          "-XX:-UseGCOverheadLimit",
                          ])

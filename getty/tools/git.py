@@ -47,9 +47,9 @@ def get_current_head_branch():
     for branch_unpolished in branches_unpolished:
         branch_raw = branch_unpolished.strip()
         if branch_raw[0] == "*":
-            m = re.compile("^\* \(detached from ([a-z0-9]{5,})\)$").match(branch_raw)
+            m = re.compile("^\* \((detached from|HEAD detached at) ([a-z0-9]{5,})\)$").match(branch_raw)
             if m:
-                return m.group(1)
+                return m.group(2)
             b = re.compile("^\* ([a-zA-Z0-9\-_]+)$").match(branch_raw)
             if b:
                 return b.group(1)

@@ -58,7 +58,7 @@ def config_env():
     hamcrest_path = this_script_dir + "lib/hamcrest-all-1.3.jar"
     getopt_path = this_script_dir + "lib/java-getopt.jar"
     plume_path = this_script_dir + "lib/plume.jar"
-    daikon_path = this_script_dir + "lib/daikon_3.3_exp.jar"
+    daikon_path = this_script_dir + "lib/daikon.jar"
     rt_path = this_script_dir + "lib/rt.jar"
     jce_path = this_script_dir + "lib/jce.jar"
     tools_path = this_script_dir + "lib/tools.jar"
