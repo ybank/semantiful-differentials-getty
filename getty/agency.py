@@ -16,12 +16,22 @@ def construct_invocation_map(triples_file):
         active = triple[0]
         passive = triple[1]
         count = triple[2]
-        if active not in to_map:
+        if active in to_map:
+            if passive in to_map[active]:
+                to_map[active][passive] += count
+            else:
+                to_map[active][passive] = count
+        else:
             to_map[active] = {}
-        to_map[active][passive] = count
-        if passive not in from_map:
+            to_map[active][passive] = count
+        if passive in from_map:
+            if active in from_map[passive]:
+                from_map[passive][active] += count
+            else:
+                from_map[passive][active] = count
+        else:
             from_map[passive] = {}
-        from_map[passive][active] = count
+            from_map[passive][active] = count
     return from_map, to_map
 
 

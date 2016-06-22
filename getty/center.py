@@ -195,10 +195,9 @@ def one_pass(junit_path, sys_classpath, agent_path, go, this_hash, target_set,
     if SHOW_DEBUG_INFO:
         print "\n=== Instrumented testing command to run: \n" + run_instrumented_tests
     os.sys_call(run_instrumented_tests, ignore_bad_exit=True)
-    dyncg_file = go + "_getty_dyncg_-hash-_.ex"
-    os.update_file_hash(dyncg_file, this_hash)
-    dynfg_file = go + "_getty_dynfg_-hash-_.ex"
-    os.update_file_hash(dynfg_file, this_hash)
+
+    os.merge_dyn_files(go, "_getty_dyncg_-hash-_.ex", this_hash)
+    os.merge_dyn_files(go, "_getty_dynfg_-hash-_.ex", this_hash)    
     ####
     
     # add test methods into target set
@@ -350,7 +349,7 @@ def one_pass(junit_path, sys_classpath, agent_path, go, this_hash, target_set,
 
 # the main entrance
 def visit(junit_path, sys_classpath, agent_path, go, prev_hash, post_hash, targets,
-          num_workers=1, auto_fork=True, classes_per_fork=2, min_heap="2048m", max_heap="16384m"):
+          num_workers=1, auto_fork=True, classes_per_fork=4, min_heap="2048m", max_heap="16384m"):
     
 #     # DEBUG ONLY
 #     print common_prefixes(old_all_methods)

@@ -34,23 +34,23 @@ def help():
     print "\t  csi < preimage_commit | -<num_preimage_index> > < postimage_commit | -<num_postimage_index> >\n"
 
 
-def config_env():
+def config_env(default_junit_version="4.11"):
     # Villa's jar path
     this_script_path = os.path.abspath(getsourcefile(lambda:0))
     if this_script_path[-1] == "/":
         this_script_path = this_script_path[:-1]
     this_script_dir = this_script_path[:this_script_path.rfind("/")+1]
     villa_path = this_script_dir + "lib/villa.jar"  # jar is at the same dir
-    junit_path = this_script_dir + "lib/junit-4.12-getty.jar"  # jar (revised junit) is at the same dir
-    agent_path = this_script_dir + "lib/jdyncg-0.1-getty-dycg-agent.jar"  # jar is at the same dir
+    junit_path = this_script_dir + "lib/junit-" + default_junit_version + ".jar"  # jar (junit) is at the same dir
+    agent_path = this_script_dir + "lib/jdyncg-0.3-getty-dycg-agent.jar"  # jar is at the same dir
     if os.path.exists(villa_path) and os.path.exists(junit_path) and os.path.exists(agent_path):
         print "\nvilla.jar path: " + villa_path
-        print "\njunit-4.12-getty.jar path: " + junit_path
+        print "\njunit-x-getty.jar path: " + junit_path
         print "\njdyncg-0.1-getty-dycg-agent.jar path: " + agent_path
     elif not os.path.exists(villa_path):
         raise EnvironmentError("could not find villa.jar in script dir " + this_script_dir)
     elif not os.path.exists(junit_path):
-        raise EnvironmentError("could not find getty-junit-4.12.jar in script dir " + this_script_dir)
+        raise EnvironmentError("could not find junit-x.jar (for getty) in script dir " + this_script_dir)
     elif not os.path.exists(agent_path):
         raise EnvironmentError("could not find jdyncg-0.1-getty-dycg-agent.jar in script dir " + this_script_dir)
     
@@ -89,6 +89,12 @@ def config_env():
     
     # javascript path
     js_path = this_script_dir + "js/"
+    
+#     preset_powermock_libs = ["powermock-api-easymock-1.6.5.jar", "powermock-core-1.6.5.jar",
+#                              "powermock-module-junit4-common-1.6.5.jar", "powermock-api-support-1.6.5.jar",
+#                              "powermock-module-junit4-1.6.5.jar", "powermock-reflect-1.6.5.jar"]
+#     preset_powermock_path = ":".join([this_script_dir+"lib/powermock_getty/"+jf for jf in preset_powermock_libs])
+#     junit_path = junit_path + ":" + preset_powermock_path
     
     return villa_path, junit_path, sys_classpath, agent_path, pwd, go, js_path
 

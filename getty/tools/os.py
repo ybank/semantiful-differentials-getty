@@ -49,8 +49,25 @@ def rreplace(s, old, new, occurrence):
 
 # change file name to replace last '-hash-' to real hash
 def update_file_hash(f, hs):
-     nf = rreplace(f, '-hash-', hs, 1)
-     sys_call(" ".join(["mv", f, nf]), ignore_bad_exit=True)
+    nf = rreplace(f, '-hash-', hs, 1)
+    sys_call(" ".join(["mv", f, nf]), ignore_bad_exit=True)
+    
+
+# merge all dyn info files, create a new one and remote all others
+def merge_dyn_files(go, file_part_name, hs):
+    related = from_sys_call(" ".join(["ls", go, "|", "grep", file_part_name]))
+    all_files = [go+t.strip() for t in related.strip().split("\n")]
+    concat_list_str = "["
+    for onefile in all_files:
+        with open(onefile, 'r') as rf:
+            content = rf.read().strip()
+            if content.startswith("[") and content.endswith("]"):
+                concat_list_str += content[1:-1]
+        from_sys_call("rm " + onefile)
+    concat_list_str += "]"
+    new_file = go + rreplace(file_part_name, '-hash-', hs, 1)
+    with open(new_file, 'w') as wf:
+        wf.write(concat_list_str)
 
 
 # get pwd
