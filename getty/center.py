@@ -345,6 +345,8 @@ def one_pass(junit_path, sys_classpath, agent_path, go, this_hash, target_set,
     target_set = target_set - test_set
     os.from_sys_call_enforce("find " + go +" -name \"*.inv.gz\" -print0 | xargs -0 rm")
     git.clear_temp_checkout(this_hash)
+    
+    return test_set
 
 
 # the main entrance
@@ -364,15 +366,18 @@ def visit(junit_path, sys_classpath, agent_path, go, prev_hash, post_hash, targe
     '''
         1-st pass: checkout prev_commit as detached head, and get invariants for all interesting targets
     '''
-    one_pass(junit_path, sys_classpath, agent_path, go, prev_hash, targets,
-             num_primary_workers=num_workers, auto_parallel_targets=auto_fork, slave_load=classes_per_fork,
-             min_heap_size=min_heap, max_heap_size=max_heap)
+    old_test_set = \
+        one_pass(junit_path, sys_classpath, agent_path, go, prev_hash, targets,
+                 num_primary_workers=num_workers, auto_parallel_targets=auto_fork, slave_load=classes_per_fork,
+                 min_heap_size=min_heap, max_heap_size=max_heap)
     
     '''
         2-nd pass: checkout post_commit as detached head, and get invariants for all interesting targets
     '''
-    one_pass(junit_path, sys_classpath, agent_path, go, post_hash, targets,
-             num_primary_workers=num_workers, auto_parallel_targets=auto_fork, slave_load=classes_per_fork,
-             min_heap_size=min_heap, max_heap_size=max_heap)
+    new_test_set = \
+        one_pass(junit_path, sys_classpath, agent_path, go, post_hash, targets,
+                 num_primary_workers=num_workers, auto_parallel_targets=auto_fork, slave_load=classes_per_fork,
+                 min_heap_size=min_heap, max_heap_size=max_heap)
     
     print 'Center analysis is completed.'
+    return old_test_set, new_test_set

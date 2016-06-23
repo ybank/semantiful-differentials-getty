@@ -13,6 +13,11 @@ def getty_csi_init(html_file):
         "<a href='#' id='getty-advice-title' onclick='return false;'>{{{__getty_advice__}}}</a>",
         "{{{__getty_continuous_semantic_inspection__}}}" + \
         "<div id='csi-output-targets'></div>\n" + \
+        "<br><div id='csi-output-menu'>" + \
+        "<a href='#' id='whether-show-invequal' onclick='return toggle_show_invequal();'>Show more methods: YES</a>" + \
+        "&nbsp;&nbsp;&nbsp;&nbsp;" + \
+        "<a href='#' id='whether-show-tests' onclick='return toggle_show_tests();'>Show tests: YES</a>" + \
+        "</div>" + \
         "<div id='csi-output-neighbors' " + \
         "style='border:4px double gray; padding: 4px 4px 4px 4px; margin: 8px 0 0 0;'>" + \
         "Choose a target to show its affected neighbors</div>\n" + \
@@ -67,6 +72,7 @@ def __append_script_mm2d(html_string, mm, for_whom):
 def _getty_csi_setvars(html_string, go, prev_hash, post_hash,
                        all_changed_tests, old_changed_tests, new_changed_tests,
                        new_modified_src, new_all_src,
+                       old_test_set, new_test_set,
                        old_caller_of, old_callee_of, old_pred_of, old_succ_of,
                        new_caller_of, new_callee_of, new_pred_of, new_succ_of):
     html_string = __append_script_l2s(html_string, all_changed_tests, "all_changed_tests")
@@ -86,7 +92,7 @@ def _getty_csi_setvars(html_string, go, prev_hash, post_hash,
     html_string = __append_script_l2s(html_string, new_all_test_and_else, "all_test_and_else")
     
     all_whose_inv_changed = set()
-    for mtd in new_all_src:
+    for mtd in (set(new_all_src) | set(new_test_set)):
         if is_different(mtd, go, prev_hash, post_hash):
             all_whose_inv_changed.add(mtd);
     html_string = __append_script_l2s(html_string, all_whose_inv_changed, "all_whose_inv_changed")
@@ -112,6 +118,7 @@ def _getty_csi_setvars(html_string, go, prev_hash, post_hash,
 def getty_csi_targets_prep(html_file, go, prev_hash, post_hash,
                            all_changed_tests, old_changed_tests, new_changed_tests,
                            new_modified_src, new_all_src,
+                           old_test_set, new_test_set,
                            old_caller_of, old_callee_of, old_pred_of, old_succ_of,
                            new_caller_of, new_callee_of, new_pred_of, new_succ_of):
     html_string = ""
@@ -140,6 +147,7 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash,
     html_string = _getty_csi_setvars(html_string, go, prev_hash, post_hash,
                                      all_changed_tests, old_changed_tests, new_changed_tests,
                                      new_modified_src, new_all_src,
+                                     old_test_set, new_test_set,
                                      old_caller_of, old_callee_of, old_pred_of, old_succ_of,
                                      new_caller_of, new_callee_of, new_pred_of, new_succ_of)
     

@@ -362,15 +362,6 @@ function bolden_for_modified(method_name) {
 		return method_name;
 }
 
-function active_link_for(method_name, count) {
-	js_cmd = "return structure_neighbors(\"" + method_name + "\");";
-	return "<a href='#' onclick='" + js_cmd + "'>" + bolden_for_modified(method_name) + " (" + count + ")" + "</a>";
-}
-
-function span_for_test(method_name, count) {
-	return "<span><b>" + bolden_for_modified(method_name) + " (" + count + ")" + "</b></a>";
-}
-
 function relative_count_format(map_post, map_prev, affected_method) {
 	new_count = map_post.get(affected_method);
 	if (new_count == undefined)
@@ -385,13 +376,63 @@ function relative_count_format(map_post, map_prev, affected_method) {
 			new_count_int = parseInt(new_count);
 			old_count_int = parseInt(old_count);
 			count_diff = new_count_int - old_count_int;
-			console.log("good here");
 			if (count_diff >= 0)
 				return old_count + "+" + count_diff;
 			else
 				return old_count + count_diff;
 		}
 	}
+}
+
+var show_methods_equal_inv = true;
+var show_test_methods_neighbor = true;
+
+function toggle_show_invequal() {
+	if (show_methods_equal_inv) {
+		$("div#csi-output-menu a#whether-show-invequal").text("Show more methods: NO");
+		$("a.hidable-mtd-equal-inv").hide();
+		show_methods_equal_inv = false;
+	} else {
+		$("div#csi-output-menu a#whether-show-invequal").text("Show more methods: YES");
+		$("a.hidable-mtd-equal-inv").show();
+		show_methods_equal_inv = true;
+	}
+	return false;
+}
+
+function toggle_show_tests() {
+	if (show_test_methods_neighbor) {
+		$("div#csi-output-menu a#whether-show-tests").text("Show tests: NO");
+		$("a.hidable-test-mtd-neighbor").hide();
+		show_test_methods_neighbor = false;
+	} else {
+		$("div#csi-output-menu a#whether-show-tests").text("Show tests: YES");
+		$("a.hidable-test-mtd-neighbor").show();
+		show_test_methods_neighbor = true;
+	}
+	return false;
+}
+
+function active_link_for(method_name, count) {
+	js_cmd = "return structure_neighbors(\"" + method_name + "\");";
+	return "<a href='#' class='special-neighbor-link' onclick='" + js_cmd + "'>" + bolden_for_modified(method_name) + " (" + count + ")" + "</a>";
+}
+
+function active_hidable_link_for(method_name, count) {
+	js_cmd = "return structure_neighbors(\"" + method_name + "\");";
+	return "<a href='#' class='hidable-mtd-equal-inv' onclick='" + js_cmd + "'>" + bolden_for_modified(method_name) + " (" + count + ")" + "</a>";
+}
+
+function active_hidable_test_link_for(method_name, count) {
+	js_cmd = "return structure_neighbors(\"" + method_name + "\");";
+	return "<a href='#' class='hidable-test-mtd-neighbor special-neighbor-link' onclick='" + js_cmd + "'>" + bolden_for_modified(method_name) + " (" + count + ")" + "</a>";
+}
+
+function span_for_test(method_name, count) {
+	// legacy code use span, but now we prefer to use links
+//	return "<span class='hidable-test-mtd-neighbor hidable-mtd-equal-inv'><b>" + bolden_for_modified(method_name) + " (" + count + ")" + "</b></span>";
+	js_cmd = "return structure_neighbors(\"" + method_name + "\");";
+	return "<a href='#' class='hidable-test-mtd-neighbor hidable-mtd-equal-inv' onclick='" + js_cmd + "'>" + bolden_for_modified(method_name) + " (" + count + ")" + "</a>";
 }
 
 function update_neighbor(method_name, direction, ref_var, ref_prev_var) {	
@@ -406,26 +447,49 @@ function update_neighbor(method_name, direction, ref_var, ref_prev_var) {
 		html_content = "none";
 	else {
 		all_link_elements = [];
+		all_link_tests = [];
 		all_keys = map_result.keys();
 		for (i = 0; i < all_keys.length; i ++) {
 			affected_method = all_keys[i];
-			if (all_project_methods.contains(affected_method) && 
-					all_whose_inv_changed.contains(affected_method) && 
-					!all_test_and_else.contains(affected_method)) {
+			if (all_project_methods.contains(affected_method) 
+					&& !all_test_and_else.contains(affected_method)) {
 				affected_count = relative_count_format(map_result, map_prev_result, affected_method);
-				all_link_elements.push(active_link_for(affected_method, affected_count));
+				if (all_whose_inv_changed.contains(affected_method)) {
+					all_link_elements.unshift(active_link_for(affected_method, affected_count));
+				} else {
+					all_link_elements.push(active_hidable_link_for(affected_method, affected_count));
+				}
 			} else if (all_changed_tests.contains(affected_method)) {
 				affected_count = relative_count_format(map_result, map_prev_result, affected_method);
-				all_link_elements.push(span_for_test(affected_method, affected_count));
+				if (all_whose_inv_changed.contains(affected_method)) {
+					all_link_tests.unshift(active_hidable_test_link_for(affected_method, affected_count));
+				} else {					
+					all_link_tests.push(span_for_test(affected_method, affected_count));
+				}
 			}
 		}
-		html_content = all_link_elements.join("&nbsp;,&nbsp;");
+		all_link_elements = all_link_elements.concat(all_link_tests);
+		html_content = all_link_elements.join("<br>");
+//		html_content = all_link_elements.join("&nbsp;,&nbsp;");
 	}
 	$('table#neighbors td#neighbor-' + direction).html(html_content);
 }
 
 function output_inv_diff(method_name) {
 	$('div#csi-output-invcomp').html(methodInvsCompareDiv(method_name));
+}
+
+function selected_show_hide() {
+	if (show_methods_equal_inv) {
+		$("a.hidable-mtd-equal-inv").show();
+	} else {
+		$("a.hidable-mtd-equal-inv").hide();
+	}
+	if (show_test_methods_neighbor) {
+		$("a.hidable-test-mtd-neighbor").show();
+	} else {
+		$("a.hidable-test-mtd-neighbor").hide();
+	}
 }
 
 function structure_neighbors(method_name) {
@@ -436,6 +500,7 @@ function structure_neighbors(method_name) {
 	update_neighbor(method_name, 'west', post_affected_pred_of, prev_affected_pred_of);
 	update_neighbor(method_name, 'east', post_affected_succ_of, prev_affected_succ_of);
 	output_inv_diff(method_name);
+	selected_show_hide();
 	return false;
 }
 

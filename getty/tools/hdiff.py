@@ -88,6 +88,8 @@ html_hdr = """<!DOCTYPE html>
         tr.diffmisc td {{}}
         tr.diffseparator td {{}}
         tr.invheader > td {{ background: #A0A0A0; color: #C334A2; font-weight: bold }}
+        a.special-neighbor-link {{ color: red }}
+        a.hidable-mtd-equal-inv {{ color: gray }}
         .tooltip {{
             position: absolute;
             padding: 8px 15px;
