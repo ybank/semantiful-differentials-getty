@@ -74,7 +74,8 @@ def _getty_csi_setvars(html_string, go, prev_hash, post_hash,
                        new_modified_src, new_all_src,
                        old_test_set, new_test_set,
                        old_caller_of, old_callee_of, old_pred_of, old_succ_of,
-                       new_caller_of, new_callee_of, new_pred_of, new_succ_of):
+                       new_caller_of, new_callee_of, new_pred_of, new_succ_of,
+                       all_whose_inv_changed):
     html_string = __append_script_l2s(html_string, all_changed_tests, "all_changed_tests")
     html_string = __append_script_l2s(html_string, old_changed_tests, "old_changed_tests")
     html_string = __append_script_l2s(html_string, new_changed_tests, "new_changed_tests")
@@ -91,10 +92,6 @@ def _getty_csi_setvars(html_string, go, prev_hash, post_hash,
     new_all_test_and_else = new_all - set(new_all_src)
     html_string = __append_script_l2s(html_string, new_all_test_and_else, "all_test_and_else")
     
-    all_whose_inv_changed = set()
-    for mtd in (set(new_all_src) | set(new_test_set)):
-        if is_different(mtd, go, prev_hash, post_hash):
-            all_whose_inv_changed.add(mtd);
     html_string = __append_script_l2s(html_string, all_whose_inv_changed, "all_whose_inv_changed")
     
 #     # DEBUG ONLY
@@ -121,15 +118,21 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash,
                            old_test_set, new_test_set,
                            old_caller_of, old_callee_of, old_pred_of, old_succ_of,
                            new_caller_of, new_callee_of, new_pred_of, new_succ_of):
+    
+    all_whose_inv_changed = set()
+    for mtd in (set(new_all_src) | set(new_test_set)):
+        if is_different(mtd, go, prev_hash, post_hash):
+            all_whose_inv_changed.add(mtd);
+    
     html_string = ""
     with open(html_file, 'r') as rf:
         html_string = rf.read()
     targets_place_holder = "<div id='csi-output-targets'></div>"
+    replace_footer = "</div>"
     replace_header = \
         "<div id='csi-output-targets' " + \
         "style='border:4px ridge gray; padding: 4px 4px 4px 4px; margin: 8px 0 0 0;'>" + \
         "<h4 style='margin: 4px 0 8px 0'>Updated Method Targets:</h4>"
-    replace_footer = "</div>"
     if new_modified_src:
         replacement = " ,  ".join([__link_to_show_neighbors(t) for t in new_modified_src])
     else:
@@ -140,16 +143,25 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash,
         tests_replacement = " ,  ".join([__link_to_show_neighbors(t) for t in all_changed_tests])
     else:
         tests_replacement = "<span>None</span>"
+    inv_change_update = \
+        "<br><br><h4 style='margin: 4px 0 8px 0'>Invariant changed:</h4>"
+    if all_whose_inv_changed:
+        invch_replacement = " ,  ".join([__link_to_show_neighbors(t) for t in all_whose_inv_changed])
+    else:
+        invch_replacement = "<span>None</span>"
     html_string = html_string.replace(targets_place_holder,
                                       replace_header + replacement + \
-                                      embed_test_update + tests_replacement + replace_footer)
+                                      embed_test_update + tests_replacement + \
+                                      inv_change_update + invch_replacement + \
+                                      replace_footer)
 
     html_string = _getty_csi_setvars(html_string, go, prev_hash, post_hash,
                                      all_changed_tests, old_changed_tests, new_changed_tests,
                                      new_modified_src, new_all_src,
                                      old_test_set, new_test_set,
                                      old_caller_of, old_callee_of, old_pred_of, old_succ_of,
-                                     new_caller_of, new_callee_of, new_pred_of, new_succ_of)
+                                     new_caller_of, new_callee_of, new_pred_of, new_succ_of,
+                                     all_whose_inv_changed)
     
     with open(html_file, 'w') as wf:
         wf.write(html_string)
