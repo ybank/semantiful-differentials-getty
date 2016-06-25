@@ -10,11 +10,11 @@ analyze_tests = True
 
 # whether to limit interested into a relatively smaller set
 limit_interest = True
-limit_distance = 2
+limit_distance = 3
 
 # scale parameters
 num_workers = 1
 auto_fork = True
-classes_per_fork = 2
+classes_per_fork = 1
 min_heap = "2048m"
 max_heap = "16384m"

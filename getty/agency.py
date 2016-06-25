@@ -78,16 +78,14 @@ def refine_targets(target_set, test_set,
         # do not use static call graph information for now, but consider to use it for better results!
         all_related = set()
         all_for_current = set(changed_methods) | set(changed_tests)
-        all_neighbors = set()
         for i in range(config.limit_distance):
+            all_neighbors = set()
             all_related = all_related | all_for_current
             for tgt in all_for_current:
-                all_its_callers = _neighbor_for(tgt, caller_of)
-                all_its_callees = _neighbor_for(tgt, callee_of)
-                all_its_preds = _neighbor_for(tgt, pred_of)
-                all_its_succs = _neighbor_for(tgt, succ_of)
-                all_neighbors = (
-                    all_its_callers | all_its_callees | all_its_preds | all_its_succs)
+                all_neighbors |= _neighbor_for(tgt, caller_of)
+                all_neighbors |= _neighbor_for(tgt, callee_of)
+                all_neighbors |= _neighbor_for(tgt, pred_of)
+                all_neighbors |= _neighbor_for(tgt, succ_of)
             all_for_current = all_neighbors - all_related
         all_related = all_related | all_for_current
         refined_target_set = refined_target_set & all_related
