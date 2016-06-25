@@ -44,7 +44,7 @@ except ImportError:
 
 from tools.daikon import fsformat
 from tools.html import inv_to_html
-from tools.os import from_sys_call_enforce
+from tools.os import from_sys_call_enforce, remove_many_files
 
 
 # minimum line size, we add a zero-sized breakable space every
@@ -742,7 +742,7 @@ def _getty_append_invdiff(html_string, targets, go, prev_hash, curr_hash):
         replacement = anchor + "\n" + invdiffhtml
         html_string = html_string.replace(anchor, replacement)
 #     from_sys_call_enforce("rm " + go + "*" + PRSV_TMP)
-    from_sys_call_enforce("find " + go +" -name \"*.tagged.tmp\" -print0 | xargs -0 rm")
+    remove_many_files(go, "*.tagged.tmp")
     return html_string
 
 

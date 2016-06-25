@@ -6,6 +6,7 @@ from functools import partial
 from multiprocessing import Pool
 
 import agency
+import config
 from tools import daikon, git, mvn, os, profiler
 
 
@@ -99,10 +100,14 @@ def seq_get_invs(target_set_index_pair, java_cmd, junit_torun, go, this_hash):
     
     inv_gz = go + "_getty_inv_" + this_hash + "_." + index + ".inv.gz"
     
+    if SHOW_MORE_DEBUG_INFO:
+        daikon_display_args = "--show_progress --no_text_output"
+    else:
+        daikon_display_args = "--no_text_output"
     # run Chicory + Daikon (online) for invariants without trace I/O
     run_chicory_daikon = \
         " ".join([java_cmd, "daikon.Chicory --daikon-online --exception-handling", \
-                  "--daikon-args=\"--show_progress --no_text_output", \
+                  "--daikon-args=\""+daikon_display_args, \
                   "-o", inv_gz+"\"", \
                   "--ppt-select-pattern=\""+select_pattern+"\"", \
                   junit_torun])
@@ -154,9 +159,9 @@ def seq_get_invs(target_set_index_pair, java_cmd, junit_torun, go, this_hash):
 
 
 # one pass template
-def one_pass(junit_path, sys_classpath, agent_path, go, this_hash, target_set, 
-             num_primary_workers=1, auto_parallel_targets=False, slave_load=1, 
-             min_heap_size="2048m", max_heap_size="16384m"):
+def one_info_pass(
+        junit_path, sys_classpath, agent_path, go, this_hash, target_set, 
+        changed_methods, changed_tests, inner_dataflow_methods, outer_dataflow_methods):
     os.sys_call("git checkout " + this_hash)
     os.sys_call("mvn clean")
     
@@ -166,11 +171,16 @@ def one_pass(junit_path, sys_classpath, agent_path, go, this_hash, target_set,
     if SHOW_DEBUG_INFO:
         print "\n===full classpath===\n" + cp + "\n"
     
-    java_cmd = " ".join(["java", "-cp", cp, 
-#                          "-Xms"+min_heap_size, 
-                         "-Xmx"+max_heap_size, 
-                         # "-XX:+UseConcMarkSweepGC", 
-                         "-XX:-UseGCOverheadLimit",
+    if config.use_special_junit_for_dyn:
+        info_junit_path = os.rreplace(junit_path, config.default_junit_version, config.special_junit_version, 1)
+        infocp = mvn.full_classpath(info_junit_path, sys_classpath, bin_path, test_bin_path)
+    else:
+        infocp = cp
+    java_cmd = " ".join(["java", "-cp", infocp, 
+#                          "-Xms"+config.min_heap, 
+                         "-Xmx"+config.max_heap, 
+                         "-XX:+UseConcMarkSweepGC", 
+#                          "-XX:-UseGCOverheadLimit",
                          ])
     
     os.sys_call("mvn test -DskipTests")
@@ -187,9 +197,9 @@ def one_pass(junit_path, sys_classpath, agent_path, go, this_hash, target_set,
     if SHOW_DEBUG_INFO:
         print "\n===instrumentation pattern===\n" + instrument_regex + "\n"
     # run tests with instrumentation
-    # FIXME: JDK 8- only!
     run_instrumented_tests = \
-        " ".join([java_cmd, "-XX:-UseSplitVerifier", 
+        " ".join([java_cmd, 
+#                   "-XX:-UseSplitVerifier", # FIXME: JDK 8- only! 
                   "-javaagent:" + agent_path + "=\"" + instrument_regex + "\"",
                   junit_torun])
     if SHOW_DEBUG_INFO:
@@ -198,97 +208,59 @@ def one_pass(junit_path, sys_classpath, agent_path, go, this_hash, target_set,
 
     os.merge_dyn_files(go, "_getty_dyncg_-hash-_.ex", this_hash)
     os.merge_dyn_files(go, "_getty_dynfg_-hash-_.ex", this_hash)    
-    ####
+    
+    caller_of, callee_of = agency.caller_callee(go, this_hash)
+    pred_of, succ_of = agency.pred_succ(go, this_hash)
     
     # add test methods into target set
-    test_set = set()
-    mtd_count = len(target_set)
-    _, callee_of = agency.caller_callee(go, this_hash)
-    all_tests = junit_torun.split(" ")[1:]
-    for possible_test_mtd in callee_of.keys():
-        if (not re.match(".*:((suite)|(setUp)|(tearDown))$", possible_test_mtd)):
-            for one_test in all_tests:
-                if possible_test_mtd.startswith(one_test):
-                    test_set.add(possible_test_mtd)
-    test_mtd_count = len(test_set)
+    test_set = agency.get_test_set_dyn(target_set, callee_of, junit_torun)
     
     # set target set here
-    target_set = target_set | test_set
+    refined_target_set = \
+        agency.refine_targets(target_set, test_set,
+                              caller_of, callee_of, pred_of, succ_of,
+                              changed_methods, changed_tests, 
+                              inner_dataflow_methods, outer_dataflow_methods)
         
-    profiler.log_csv(["method_count", "test_count"], 
-                     [[mtd_count, test_mtd_count]], 
+    profiler.log_csv(["method_count", "test_count", "refined_target_count"], 
+                     [[len(target_set), len(test_set), len(refined_target_set)]], 
                      go + "_getty_y_method_count_" + this_hash + "_.profile.readable")
     
-#     select_pattern = daikon.reformat_all(target_set, more_ppts=True)
-#     print "\n===select pattern===\n" + select_pattern + "\n"
-#     
-#     # run Chicory for trace
-#     run_chicory = \
-#         " ".join([java_cmd, "daikon.Chicory --exception-handling", \
-#                   "--dtrace-file="+rel_go(go)+"_getty_trace_"+this_hash+"_.dtrace.gz", \
-#                   "--ppt-select-pattern=\'"+select_pattern+"\'", \
-#                   junit_torun])
-#     print "\n=== Daikon:Chicory command to run: \n" + run_chicory
-#     os.sys_call(run_chicory, ignore_bad_exit=True)
-#     
-# #     # run Daikon for invariants
-# #     for tgt in target_set:
-# #         run_daikon = \
-# #             " ".join([java_cmd, "daikon.Daikon", 
-# #                       go+"_getty_trace_"+this_hash+"_.dtrace.gz", \
-# #                       "--ppt-select-pattern=\'"+daikon.dfformat(tgt, more_ppts=True)+"\'", \
-# #                       "--no_text_output --show_progress", \
-# #                       "-o", go+"_getty_inv__"+daikon.fsformat(tgt)+"__"+this_hash+"_.inv.gz"])
-# #         print "\n=== Daikon:Daikon command to run: \n" + run_daikon
-# #         os.sys_call(run_daikon, ignore_bad_exit=True)
-# 
-#     # run Daikon for invariants
-#     # v2: use one big inv.gz file, from one dtrace file
-#     run_daikon = \
-#         " ".join([java_cmd, "daikon.Daikon", 
-#                   go+"_getty_trace_"+this_hash+"_.dtrace.gz", \
-#                   "--ppt-select-pattern=\'"+daikon.dfformat_full(target_set)+"\'", \
-#                   "--no_text_output", "--show_progress", \
-#                   "-o", go+"_getty_inv_"+this_hash+"_.inv.gz"])
-#     print "\n=== Daikon:Daikon command to run: \n" + run_daikon
-#     os.sys_call(run_daikon, ignore_bad_exit=True)
-#
-# #     # run PrintInvariants for analysis
-# #     for tgt in target_set:
-# #         target_ff = daikon.fsformat(tgt)
-# #         run_printinv = \
-# #             " ".join([java_cmd, "daikon.PrintInvariants", \
-# #                       "--ppt-select-pattern=\'"+daikon.dfformat(tgt)+"\'", \
-# #                       go+"_getty_inv__"+target_ff+"__"+this_hash+"_.inv.gz"])
-# #         out_file = go+"_getty_inv__"+target_ff+"__"+this_hash+"_.inv.txt"
-# #         print "\n=== Daikon:PrintInvs command to run: \n" + run_printinv
-# #         os.sys_call(run_printinv + " > " + out_file, ignore_bad_exit=True)
-# #         sort_txt_inv(out_file)
-#         
-#     # run PrintInvariants for analysis
-#     # v2: get inv.txt from one big inv.gz file
-#     for tgt in target_set:
-#         target_ff = daikon.fsformat(tgt)
-#         run_printinv = \
-#             " ".join([java_cmd, "daikon.PrintInvariants", \
-#                       "--ppt-select-pattern=\'"+daikon.dfformat(tgt)+"\'", \
-#                       go+"_getty_inv_"+this_hash+"_.inv.gz"])
-#         out_file = go+"_getty_inv__"+target_ff+"__"+this_hash+"_.inv.txt"
-#         print "\n=== Daikon:PrintInvs command to run: \n" + run_printinv
-#         os.sys_call(run_printinv + " > " + out_file, ignore_bad_exit=True)
-#         sort_txt_inv(out_file)
+    git.clear_temp_checkout(this_hash)
+    
+    return test_set, refined_target_set, cp, junit_torun
 
-#     # v3.1 one core (purely sequential)
-#     seq_get_invs(target_set, java_cmd, junit_torun, go, this_hash)
+
+# one pass template
+def one_inv_pass(cp, junit_torun, go, this_hash, refined_target_set):
+    os.sys_call("git checkout " + this_hash)
+    os.sys_call("mvn clean")
+    
+    if SHOW_DEBUG_INFO:
+        print "\n===full classpath===\n" + cp + "\n"
+    
+    java_cmd = " ".join(["java", "-cp", cp, 
+#                          "-Xms"+config.min_heap, 
+                         "-Xmx"+config.max_heap, 
+                         "-XX:+UseConcMarkSweepGC", 
+#                          "-XX:-UseGCOverheadLimit",
+                         ])
+    
+    os.sys_call("mvn test -DskipTests")
+    if SHOW_DEBUG_INFO:
+        print "\n===junit torun===\n" + junit_torun + "\n"
     
     # v3.2, v4 execute with 4 core
-    if len(target_set) <= num_primary_workers or (num_primary_workers == 1 and not auto_parallel_targets):
-        single_set_tuple = (target_set, "0")
+    num_primary_workers = config.num_workers
+    auto_parallel_targets = config.auto_fork
+    slave_load = config.classes_per_fork
+    if len(refined_target_set) <= num_primary_workers or (num_primary_workers == 1 and not auto_parallel_targets):
+        single_set_tuple = (refined_target_set, "0")
         seq_get_invs(single_set_tuple, java_cmd, junit_torun, go, this_hash)
     elif num_primary_workers > 1:  # FIXME: this distributation is buggy
         target_set_inputs = []
-        all_target_set_list = list(target_set)
-        each_bulk_size = int(len(target_set) / num_primary_workers)
+        all_target_set_list = list(refined_target_set)
+        each_bulk_size = int(len(refined_target_set) / num_primary_workers)
         
         seq_func = partial(seq_get_invs, 
                            java_cmd=java_cmd, junit_torun=junit_torun, go=go, this_hash=this_hash)
@@ -308,7 +280,7 @@ def one_pass(junit_path, sys_classpath, agent_path, go, this_hash, target_set,
         target_set_inputs = []
         num_processes = 0
         
-        target_map = daikon.target_s2m(target_set)
+        target_map = daikon.target_s2m(refined_target_set)
         all_keys = target_map.keys()
         num_keys = len(all_keys)
         seq_func = partial(seq_get_invs, 
@@ -342,16 +314,14 @@ def one_pass(junit_path, sys_classpath, agent_path, go, this_hash, target_set,
         print "\tslave_load", str(slave_load)
         sys.exit(1)
     
-    target_set = target_set - test_set
     os.from_sys_call_enforce("find " + go +" -name \"*.inv.gz\" -print0 | xargs -0 rm")
     git.clear_temp_checkout(this_hash)
     
-    return test_set
-
 
 # the main entrance
 def visit(junit_path, sys_classpath, agent_path, go, prev_hash, post_hash, targets,
-          num_workers=1, auto_fork=True, classes_per_fork=4, min_heap="2048m", max_heap="16384m"):
+          old_changed_methods, old_changed_tests, old_inner_dataflow_methods, old_outer_dataflow_methods, 
+          new_changed_methods, new_changed_tests, new_inner_dataflow_methods, new_outer_dataflow_methods):
     
 #     # DEBUG ONLY
 #     print common_prefixes(old_all_methods)
@@ -364,20 +334,37 @@ def visit(junit_path, sys_classpath, agent_path, go, prev_hash, post_hash, targe
     print("****************************************************************\n");
     
     '''
-        1-st pass: checkout prev_commit as detached head, and get invariants for all interesting targets
+        1-st pass: checkout prev_commit as detached head, and get new interested targets
     '''
-    old_test_set = \
-        one_pass(junit_path, sys_classpath, agent_path, go, prev_hash, targets,
-                 num_primary_workers=num_workers, auto_parallel_targets=auto_fork, slave_load=classes_per_fork,
-                 min_heap_size=min_heap, max_heap_size=max_heap)
+    old_test_set, old_refined_target_set, old_cp, old_junit_torun = \
+        one_info_pass(
+            junit_path, sys_classpath, agent_path, go, prev_hash, targets,
+            old_changed_methods, old_changed_tests, old_inner_dataflow_methods, old_outer_dataflow_methods)
     
     '''
-        2-nd pass: checkout post_commit as detached head, and get invariants for all interesting targets
+        2-nd pass: checkout post_commit as detached head, and get new interested targets
     '''
-    new_test_set = \
-        one_pass(junit_path, sys_classpath, agent_path, go, post_hash, targets,
-                 num_primary_workers=num_workers, auto_parallel_targets=auto_fork, slave_load=classes_per_fork,
-                 min_heap_size=min_heap, max_heap_size=max_heap)
+    new_test_set, new_refined_target_set, new_cp, new_junit_torun = \
+        one_info_pass(
+            junit_path, sys_classpath, agent_path, go, post_hash, targets,
+            new_changed_methods, new_changed_tests, new_inner_dataflow_methods, new_outer_dataflow_methods)
+    
+    '''
+        middle pass: set common interests
+    '''
+    refined_target_set = old_refined_target_set | new_refined_target_set
+    
+    '''
+        3-rd pass: checkout prev_commit as detached head, and get invariants for all interesting targets
+    '''
+    one_inv_pass(
+        old_cp, old_junit_torun, go, prev_hash, refined_target_set)
+    
+    '''
+        4-th pass: checkout post_commit as detached head, and get invariants for all interesting targets
+    '''
+    one_inv_pass(
+        new_cp, new_junit_torun, go, post_hash, refined_target_set)
     
     print 'Center analysis is completed.'
-    return old_test_set, new_test_set
+    return old_test_set, old_refined_target_set, new_test_set, new_refined_target_set

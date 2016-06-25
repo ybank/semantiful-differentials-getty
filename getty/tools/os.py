@@ -41,7 +41,12 @@ def remove_file(file_path):
     sys_call(" ".join(["rm", file_path]), ignore_bad_exit=True)
 
 
-# helper to replace last occurence of a string to something else
+# remove a lot of files - use with care!
+def remove_many_files(dir, ptn):
+    from_sys_call_enforce("find " + dir +" -name \"" + ptn + "\" -print0 | xargs -0 rm")
+
+
+# helper to replace last occurrence of a string to something else
 def rreplace(s, old, new, occurrence):
     li = s.rsplit(old, occurrence)
     return new.join(li)
@@ -63,7 +68,7 @@ def merge_dyn_files(go, file_part_name, hs):
             content = rf.read().strip()
             if content.startswith("[") and content.endswith("]"):
                 concat_list_str += content[1:-1]
-        from_sys_call("rm " + onefile)
+        remove_file(onefile)
     concat_list_str += "]"
     new_file = go + rreplace(file_part_name, '-hash-', hs, 1)
     with open(new_file, 'w') as wf:

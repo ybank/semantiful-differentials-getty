@@ -1,6 +1,6 @@
 # CSI inspection page section
 
-
+import config
 from analysis.solver import is_different
 from tools.daikon import fsformat
 
@@ -117,10 +117,18 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash,
                            new_modified_src, new_all_src,
                            old_test_set, new_test_set,
                            old_caller_of, old_callee_of, old_pred_of, old_succ_of,
-                           new_caller_of, new_callee_of, new_pred_of, new_succ_of):
-    
+                           new_caller_of, new_callee_of, new_pred_of, new_succ_of,
+                           old_refined_target_set, new_refined_target_set, refined_target_set):
+    # TODO: 
+    #   Consider to use new_refined_target_set, old_refined_target_set for better results
     all_whose_inv_changed = set()
-    for mtd in (set(new_all_src) | set(new_test_set)):
+    if config.analyze_tests and not config.limit_interest:
+        all_considered = (set(new_all_src) | set(new_test_set))
+    elif config.limit_interest:
+        all_considered = refined_target_set
+    else:
+        all_considered = set(new_all_src)
+    for mtd in all_considered:
         if is_different(mtd, go, prev_hash, post_hash):
             all_whose_inv_changed.add(mtd);
     
@@ -134,19 +142,19 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash,
         "style='border:4px ridge gray; padding: 4px 4px 4px 4px; margin: 8px 0 0 0;'>" + \
         "<h4 style='margin: 4px 0 8px 0'>Updated Method Targets:</h4>"
     if new_modified_src:
-        replacement = " ,  ".join([__link_to_show_neighbors(t) for t in new_modified_src])
+        replacement = ", ".join([__link_to_show_neighbors(t) for t in new_modified_src])
     else:
         replacement = "<span>None</span>"
     embed_test_update = \
         "<br><br><h4 style='margin: 4px 0 8px 0'>Updated Tests:</h4>"
     if all_changed_tests:
-        tests_replacement = " ,  ".join([__link_to_show_neighbors(t) for t in all_changed_tests])
+        tests_replacement = ", ".join([__link_to_show_neighbors(t) for t in all_changed_tests])
     else:
         tests_replacement = "<span>None</span>"
     inv_change_update = \
-        "<br><br><h4 style='margin: 4px 0 8px 0'>Invariant changed:</h4>"
+        "<br><br><h4 style='margin: 4px 0 8px 0'>Invariant changed*:</h4>"
     if all_whose_inv_changed:
-        invch_replacement = " ,  ".join([__link_to_show_neighbors(t) for t in all_whose_inv_changed])
+        invch_replacement = ", ".join([__link_to_show_neighbors(t) for t in all_whose_inv_changed])
     else:
         invch_replacement = "<span>None</span>"
     html_string = html_string.replace(targets_place_holder,

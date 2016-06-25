@@ -7,6 +7,7 @@ from inspect import getsourcefile
 
 import agency
 import center
+import config
 import gallery
 import villa
 from tools import profiler
@@ -19,7 +20,7 @@ from tools.git import (
     get_remote_head,
     restore_and_pop_last
 )
-from tools.os import cwd
+from tools.os import cwd, remove_many_files
 
 
 def help():
@@ -34,15 +35,15 @@ def help():
     print "\t  csi < preimage_commit | -<num_preimage_index> > < postimage_commit | -<num_postimage_index> >\n"
 
 
-def config_env(default_junit_version="4.11"):
+def config_env():
     # Villa's jar path
     this_script_path = os.path.abspath(getsourcefile(lambda:0))
     if this_script_path[-1] == "/":
         this_script_path = this_script_path[:-1]
     this_script_dir = this_script_path[:this_script_path.rfind("/")+1]
     villa_path = this_script_dir + "lib/villa.jar"  # jar is at the same dir
-    junit_path = this_script_dir + "lib/junit-" + default_junit_version + ".jar"  # jar (junit) is at the same dir
-    agent_path = this_script_dir + "lib/jdyncg-0.3-getty-dycg-agent.jar"  # jar is at the same dir
+    junit_path = this_script_dir + "lib/junit-" + config.default_junit_version + ".jar"  # jar (junit) is at the same dir
+    agent_path = this_script_dir + "lib/jdyncg-0.4-getty-dycg-agent.jar"  # jar is at the same dir
     if os.path.exists(villa_path) and os.path.exists(junit_path) and os.path.exists(agent_path):
         print "\nvilla.jar path: " + villa_path
         print "\njunit-x-getty.jar path: " + junit_path
@@ -52,7 +53,7 @@ def config_env(default_junit_version="4.11"):
     elif not os.path.exists(junit_path):
         raise EnvironmentError("could not find junit-x.jar (for getty) in script dir " + this_script_dir)
     elif not os.path.exists(agent_path):
-        raise EnvironmentError("could not find jdyncg-0.1-getty-dycg-agent.jar in script dir " + this_script_dir)
+        raise EnvironmentError("could not find jdyncg-0.x-getty-dycg-agent.jar in script dir " + this_script_dir)
     
     # System classpath
     hamcrest_path = this_script_dir + "lib/hamcrest-all-1.3.jar"
@@ -89,12 +90,6 @@ def config_env(default_junit_version="4.11"):
     
     # javascript path
     js_path = this_script_dir + "js/"
-    
-#     preset_powermock_libs = ["powermock-api-easymock-1.6.5.jar", "powermock-core-1.6.5.jar",
-#                              "powermock-module-junit4-common-1.6.5.jar", "powermock-api-support-1.6.5.jar",
-#                              "powermock-module-junit4-1.6.5.jar", "powermock-reflect-1.6.5.jar"]
-#     preset_powermock_path = ":".join([this_script_dir+"lib/powermock_getty/"+jf for jf in preset_powermock_libs])
-#     junit_path = junit_path + ":" + preset_powermock_path
     
     return villa_path, junit_path, sys_classpath, agent_path, pwd, go, js_path
 
@@ -149,6 +144,7 @@ def set_args():
 
 
 if __name__ == "__main__":
+    
     ## env config
     villa_path, junit_path, sys_classpath, agent_path, pwd, go, js_path = config_env()
     
@@ -160,21 +156,23 @@ if __name__ == "__main__":
     '''
     working_branch = get_current_head_branch()
     should_further_recover = backup_and_stash_first()
+    # clean up output directory
+    remove_many_files(go, "_getty_*.*")
     
     '''
         multi-stage analysis: Villa (code) and Center (invariants) 
     '''
     profiler.run_and_report(
         "old_changed_methods, old_improved_changed_methods, old_added_changed_methods, \
-        old_all_ccc_related, old_all_cccs, old_all_methods, \
-        old_inner_dataflow_methods, old_outer_dataflow_methods, \
-        old_l2m, old_m2l, \
-        new_changed_methods, new_improved_changed_methods, new_removed_changed_methods, \
-        new_all_ccc_related, new_all_cccs, new_all_methods, \
-        new_inner_dataflow_methods, new_outer_dataflow_methods, \
-        new_l2m, new_m2l, \
-        old_changed_tests, new_changed_tests = \
-            villa.visit(villa_path, pwd, go, prev_hash, post_hash)",
+         old_all_ccc_related, old_all_cccs, old_all_methods, \
+         old_inner_dataflow_methods, old_outer_dataflow_methods, \
+         old_l2m, old_m2l, \
+         new_changed_methods, new_improved_changed_methods, new_removed_changed_methods, \
+         new_all_ccc_related, new_all_cccs, new_all_methods, \
+         new_inner_dataflow_methods, new_outer_dataflow_methods, \
+         new_l2m, new_m2l, \
+         old_changed_tests, new_changed_tests = \
+             villa.visit(villa_path, pwd, go, prev_hash, post_hash)",
         go + "_getty_x_profile_villa.profile")
 #     old_changed_methods, old_improved_changed_methods, old_added_changed_methods, \
 #         old_all_ccc_related, old_all_cccs, old_all_methods, \
@@ -203,10 +201,20 @@ if __name__ == "__main__":
     targets = agency.investigate(go, agent_path, old_all_methods, new_all_methods, prev_hash, post_hash)
     
     old_test_set = set()
+    old_refined_target_set = set()
     new_test_set = set()
-    profiler.run_and_report("old_test_set, new_test_set = center.visit(junit_path, sys_classpath, agent_path, go, prev_hash, post_hash, targets)",
-                            go + "_getty_x_profile_center.profile")
-#     old_test_set, new_test_set = center.visit(junit_path, sys_classpath, agent_path, go, prev_hash, post_hash, targets)
+    new_refined_target_set = set()
+    
+    profiler.run_and_report(
+        "old_test_set, old_refined_target_set, new_test_set, new_refined_target_set = \
+             center.visit(junit_path, sys_classpath, agent_path, go, prev_hash, post_hash, targets, \
+             old_improved_changed_methods, old_changed_tests, old_inner_dataflow_methods, old_outer_dataflow_methods, \
+             new_improved_changed_methods, new_changed_tests, new_inner_dataflow_methods, new_outer_dataflow_methods)",
+        go + "_getty_x_profile_center.profile")
+#     old_test_set, old_refined_target_set, new_test_set, new_refined_target_set = \
+#         center.visit(junit_path, sys_classpath, agent_path, go, prev_hash, post_hash, targets,
+#                      old_improved_changed_methods, old_changed_tests, old_inner_dataflow_methods, old_outer_dataflow_methods, 
+#                      new_improved_changed_methods, new_changed_tests, new_inner_dataflow_methods, new_outer_dataflow_methods)
     
     old_caller_of, old_callee_of = agency.caller_callee(go, prev_hash)
     old_pred_of, old_succ_of = agency.pred_succ(go, prev_hash)
@@ -234,16 +242,18 @@ if __name__ == "__main__":
     '''
     all_changed_tests = list(set(old_changed_tests + new_changed_tests))
     profiler.run_and_report(
-                "gallery.exam(pwd, go, js_path, \
-                 targets, new_improved_changed_methods, new_all_methods, \
-                 new_caller_of, new_callee_of, new_pred_of, new_succ_of, \
-                 old_caller_of, old_callee_of, old_pred_of, old_succ_of, \
-                 all_changed_tests, old_changed_tests, new_changed_tests, \
-                 old_test_set, new_test_set, \
-                 prev_hash, post_hash, old_l2m, new_l2m, old_m2l, new_m2l)",
-                 go + "_getty_x_profile_gallery.profile")
+        "gallery.exam(pwd, go, js_path, \
+             targets, new_refined_target_set, old_refined_target_set, \
+             new_improved_changed_methods, new_all_methods, \
+             new_caller_of, new_callee_of, new_pred_of, new_succ_of, \
+             old_caller_of, old_callee_of, old_pred_of, old_succ_of, \
+             all_changed_tests, old_changed_tests, new_changed_tests, \
+             old_test_set, new_test_set, \
+             prev_hash, post_hash, old_l2m, new_l2m, old_m2l, new_m2l)",
+        go + "_getty_x_profile_gallery.profile")
 #     gallery.exam(pwd, go, js_path, \
-#                  targets, new_improved_changed_methods, new_all_methods, \
+#                  targets, new_refined_target_set, old_refined_target_set, \
+#                  new_improved_changed_methods, new_all_methods, \
 #                  new_caller_of, new_callee_of, new_pred_of, new_succ_of, \
 #                  old_caller_of, old_callee_of, old_pred_of, old_succ_of, \
 #                  all_changed_tests, old_changed_tests, new_changed_tests, \
