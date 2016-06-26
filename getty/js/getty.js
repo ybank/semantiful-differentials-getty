@@ -513,7 +513,7 @@ function structure_neighbors(method_name) {
 
 function activateNeighbors(method_name) {
 	$('a.target-linkstyle').css("border", "none");
-	$("a#target-link-" + fsformat(method_name)).css("border", "dashed");
+	$("a.class-target-link-" + fsformat(method_name)).css("border", "solid green");
 	structure_neighbors(method_name);
 	output_inv_diff(method_name);
 	return false;

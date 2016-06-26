@@ -35,9 +35,11 @@ def __set_all_with_tests(new_all, map_of_map):
             new_all.add(m)
 
 
-def __link_to_show_neighbors(t, common_package):
+def __link_to_show_neighbors(t, common_package, style_class=None):
     aid = "target-link-" + fsformat(t)
-    cls = "target-linkstyle"
+    cls = "target-linkstyle" + " class-" + aid
+    if style_class is not None:
+        cls += (" " + style_class)
     js_cmd = "return activateNeighbors(\"" + t + "\");"
     tname = t
     if common_package != '':
@@ -176,7 +178,7 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash, common_package,
     inv_change_update = \
         "<br><br><h4 style='margin: 4px 0 8px 0'>Invariant changed:</h4>"
     if all_whose_inv_changed:
-        invch_replacement = ", ".join([__link_to_show_neighbors(t, common_package) for t in all_whose_inv_changed])
+        invch_replacement = ", ".join([__link_to_show_neighbors(t, common_package, "output-invc-highlight") for t in all_whose_inv_changed])
     else:
         invch_replacement = "<span>None</span>"
     html_string = html_string.replace(targets_place_holder,
