@@ -15,6 +15,18 @@ limit_distance = 3
 # scale parameters
 num_workers = 1
 auto_fork = True
-classes_per_fork = 1
+classes_per_fork = 2
 min_heap = "2048m"
 max_heap = "16384m"
+
+# options to control Daikon analysis
+omit_redundant_invs = True
+daikon_format_only = True
+disable_known_invs = False
+
+# whether to use compressed inv file
+compress_inv = False
+
+# development options
+show_debug_info = True
+show_debug_details = False

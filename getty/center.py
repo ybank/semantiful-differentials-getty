@@ -10,8 +10,8 @@ import config
 from tools import daikon, git, mvn, os, profiler
 
 
-SHOW_DEBUG_INFO = True
-SHOW_MORE_DEBUG_INFO = False
+SHOW_DEBUG_INFO = config.show_debug_info
+SHOW_MORE_DEBUG_INFO = config.show_debug_details
 
 
 # relative path of getty output path (go), when pwd is root dir of project
@@ -98,12 +98,26 @@ def seq_get_invs(target_set_index_pair, java_cmd, junit_torun, go, this_hash):
     select_pattern = daikon.dfformat_full_ordered(target_set)
     print "\n===select pattern===\n" + select_pattern + "\n"
     
-    inv_gz = go + "_getty_inv_" + this_hash + "_." + index + ".inv.gz"
-    
-    if SHOW_MORE_DEBUG_INFO:
-        daikon_display_args = "--show_progress --no_text_output"
+    inv_gz = go + "_getty_inv_" + this_hash + "_." + index
+    if config.compress_inv:
+        inv_gz += ".inv.gz"
     else:
-        daikon_display_args = "--no_text_output"
+        inv_gz += ".inv"
+    
+    daikon_control_opt_list = []
+    if SHOW_MORE_DEBUG_INFO:
+        daikon_control_opt_list.append("--show_progress --no_text_output")
+    elif SHOW_DEBUG_INFO:
+        daikon_control_opt_list.append("--no_show_progress --no_text_output")
+    else:
+        daikon_control_opt_list.append("--no_text_output")
+    if config.disable_known_invs:
+        daikon_control_opt_list.append("--disable-all-invariants")
+    if config.omit_redundant_invs:
+        daikon_control_opt_list.append("--omit_from_output 0r")
+    if config.daikon_format_only:
+        daikon_control_opt_list.append("--format Daikon")
+    daikon_display_args = " ".join(daikon_control_opt_list)
     # run Chicory + Daikon (online) for invariants without trace I/O
     run_chicory_daikon = \
         " ".join([java_cmd, "daikon.Chicory --daikon-online --exception-handling", \
@@ -142,10 +156,9 @@ def seq_get_invs(target_set_index_pair, java_cmd, junit_torun, go, this_hash):
         target_ff = daikon.fsformat(tgt)
         out_file = go+"_getty_inv__"+target_ff+"__"+this_hash+"_.inv.txt"
         run_printinv = \
-            " ".join([java_cmd, "daikon.PrintInvariants", \
+            " ".join([java_cmd, "daikon.PrintInvariants", "--format Daikon", \
                       "--ppt-select-pattern=\'"+daikon.dfformat(tgt)+"\'", \
-                      "--output", out_file, \
-                      go+"_getty_inv_"+this_hash+"_."+index+".inv.gz"])
+                      "--output", out_file, inv_gz])
         if SHOW_DEBUG_INFO:
             current_count += 1
             os.print_progress(current_count, total_count, 
@@ -156,6 +169,7 @@ def seq_get_invs(target_set_index_pair, java_cmd, junit_torun, go, this_hash):
             print "\n=== Daikon:PrintInvs command to run: \n" + run_printinv
         os.sys_call(run_printinv, ignore_bad_exit=True)
         sort_txt_inv(out_file)
+    os.remove_file(inv_gz)
 
 
 # one pass template
@@ -320,7 +334,10 @@ def one_inv_pass(cp, junit_torun, go, this_hash, refined_target_set):
         print "\tslave_load", str(slave_load)
         sys.exit(1)
     
-    os.from_sys_call_enforce("find " + go +" -name \"*.inv.gz\" -print0 | xargs -0 rm")
+    if config.compress_inv:
+        os.remove_many_files(go, "*.inv.gz")
+    else:
+        os.remove_many_files(go, "*.inv")
     git.clear_temp_checkout(this_hash)
     
 
