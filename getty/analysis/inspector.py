@@ -102,7 +102,8 @@ def _getty_csi_setvars(html_string, go, prev_hash, post_hash, common_package,
     __set_all_with_tests(new_all, new_succ_of)
     html_string = __append_script_l2s(html_string, new_all, "all_project_methods")
     
-    html_string = __append_script_l2s(html_string, new_modified_src, "all_modified_targets")
+    all_modified = set(all_changed_tests) | set(new_modified_src)
+    html_string = __append_script_l2s(html_string, all_modified, "all_modified_targets")
 
     new_all_test_and_else = new_all - set(new_all_src)
     html_string = __append_script_l2s(html_string, new_all_test_and_else, "all_test_and_else")
@@ -173,7 +174,7 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash, common_package,
     else:
         tests_replacement = "<span>None</span>"
     inv_change_update = \
-        "<br><br><h4 style='margin: 4px 0 8px 0'>Invariant changed*:</h4>"
+        "<br><br><h4 style='margin: 4px 0 8px 0'>Invariant changed:</h4>"
     if all_whose_inv_changed:
         invch_replacement = ", ".join([__link_to_show_neighbors(t, common_package) for t in all_whose_inv_changed])
     else:

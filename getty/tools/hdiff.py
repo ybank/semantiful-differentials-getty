@@ -90,6 +90,7 @@ html_hdr = """<!DOCTYPE html>
         tr.invheader > td {{ background: #A0A0A0; color: #C334A2; font-weight: bold }}
         a.special-neighbor-link {{ color: red }}
         a.hidable-mtd-equal-inv {{ color: gray }}
+        table#neighbors a {{ text-decoration: none; }}
         .tooltip {{
             position: absolute;
             padding: 8px 15px;

@@ -364,7 +364,7 @@ var common_prefix_length = 0;
 
 function bolden_for_modified(method_name) {
 	if (all_modified_targets.contains(method_name))
-		return "<b>" + method_name.substring(common_prefix_length) + "</b>";
+		return "<b><u>" + method_name.substring(common_prefix_length) + "</u></b>";
 	else
 		return method_name.substring(common_prefix_length);
 }
@@ -476,8 +476,8 @@ function update_neighbor(method_name, direction, ref_var, ref_prev_var) {
 			}
 		}
 		all_link_elements = all_link_elements.concat(all_link_tests);
-		html_content = all_link_elements.join("<br>");
-//		html_content = all_link_elements.join("&nbsp;,&nbsp;");
+//		html_content = all_link_elements.join("<br>");
+		html_content = all_link_elements.join("&nbsp;,&nbsp;");
 	}
 	$('table#neighbors td#neighbor-' + direction).html(html_content);
 }
