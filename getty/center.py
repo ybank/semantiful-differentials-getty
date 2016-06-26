@@ -190,6 +190,12 @@ def one_info_pass(
     
     #### dynamic run one round for all information    
     prefixes = daikon.common_prefixes(target_set)
+    common_package = ''
+    if len(prefixes) == 1:
+        last_period_index = prefixes[0].rindex('.')
+        if last_period_index > 0:
+            # the common package should be at least one period away from the rest
+            common_package = prefixes[0][:last_period_index]
     prefix_regexes = []
     for p in prefixes:
         prefix_regexes.append(p + "*")
@@ -228,7 +234,7 @@ def one_info_pass(
     
     git.clear_temp_checkout(this_hash)
     
-    return test_set, refined_target_set, cp, junit_torun
+    return common_package, test_set, refined_target_set, cp, junit_torun
 
 
 # one pass template
@@ -336,7 +342,7 @@ def visit(junit_path, sys_classpath, agent_path, go, prev_hash, post_hash, targe
     '''
         1-st pass: checkout prev_commit as detached head, and get new interested targets
     '''
-    old_test_set, old_refined_target_set, old_cp, old_junit_torun = \
+    old_common_package, old_test_set, old_refined_target_set, old_cp, old_junit_torun = \
         one_info_pass(
             junit_path, sys_classpath, agent_path, go, prev_hash, targets,
             old_changed_methods, old_changed_tests, old_inner_dataflow_methods, old_outer_dataflow_methods)
@@ -344,7 +350,7 @@ def visit(junit_path, sys_classpath, agent_path, go, prev_hash, post_hash, targe
     '''
         2-nd pass: checkout post_commit as detached head, and get new interested targets
     '''
-    new_test_set, new_refined_target_set, new_cp, new_junit_torun = \
+    new_common_package, new_test_set, new_refined_target_set, new_cp, new_junit_torun = \
         one_info_pass(
             junit_path, sys_classpath, agent_path, go, post_hash, targets,
             new_changed_methods, new_changed_tests, new_inner_dataflow_methods, new_outer_dataflow_methods)
@@ -366,5 +372,17 @@ def visit(junit_path, sys_classpath, agent_path, go, prev_hash, post_hash, targe
     one_inv_pass(
         new_cp, new_junit_torun, go, post_hash, refined_target_set)
     
+    '''
+        prepare to return
+    '''
+    common_package = ''
+    if old_common_package != '' and new_common_package != '':
+        if (len(old_common_package) < len(new_common_package) and 
+                (new_common_package+'.').find(old_common_package+'.') == 0):
+            common_package = old_common_package
+        elif (len(old_common_package) >= len(new_common_package) and 
+                (old_common_package+'.').find(new_common_package+'.') == 0):
+            common_package = old_common_package
+    
     print 'Center analysis is completed.'
-    return old_test_set, old_refined_target_set, new_test_set, new_refined_target_set
+    return common_package, old_test_set, old_refined_target_set, new_test_set, new_refined_target_set

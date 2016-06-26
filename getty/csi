@@ -200,18 +200,19 @@ if __name__ == "__main__":
     
     targets = agency.investigate(go, agent_path, old_all_methods, new_all_methods, prev_hash, post_hash)
     
+    common_package = ''
     old_test_set = set()
     old_refined_target_set = set()
     new_test_set = set()
     new_refined_target_set = set()
     
     profiler.run_and_report(
-        "old_test_set, old_refined_target_set, new_test_set, new_refined_target_set = \
+        "common_package, old_test_set, old_refined_target_set, new_test_set, new_refined_target_set = \
              center.visit(junit_path, sys_classpath, agent_path, go, prev_hash, post_hash, targets, \
              old_improved_changed_methods, old_changed_tests, old_inner_dataflow_methods, old_outer_dataflow_methods, \
              new_improved_changed_methods, new_changed_tests, new_inner_dataflow_methods, new_outer_dataflow_methods)",
         go + "_getty_x_profile_center.profile")
-#     old_test_set, old_refined_target_set, new_test_set, new_refined_target_set = \
+#     common_package, old_test_set, old_refined_target_set, new_test_set, new_refined_target_set = \
 #         center.visit(junit_path, sys_classpath, agent_path, go, prev_hash, post_hash, targets,
 #                      old_improved_changed_methods, old_changed_tests, old_inner_dataflow_methods, old_outer_dataflow_methods, 
 #                      new_improved_changed_methods, new_changed_tests, new_inner_dataflow_methods, new_outer_dataflow_methods)
@@ -242,7 +243,7 @@ if __name__ == "__main__":
     '''
     all_changed_tests = list(set(old_changed_tests + new_changed_tests))
     profiler.run_and_report(
-        "gallery.exam(pwd, go, js_path, \
+        "gallery.exam(pwd, go, js_path, common_package, \
              targets, new_refined_target_set, old_refined_target_set, \
              new_improved_changed_methods, new_all_methods, \
              new_caller_of, new_callee_of, new_pred_of, new_succ_of, \
@@ -251,7 +252,7 @@ if __name__ == "__main__":
              old_test_set, new_test_set, \
              prev_hash, post_hash, old_l2m, new_l2m, old_m2l, new_m2l)",
         go + "_getty_x_profile_gallery.profile")
-#     gallery.exam(pwd, go, js_path, \
+#     gallery.exam(pwd, go, js_path, common_package, \
 #                  targets, new_refined_target_set, old_refined_target_set, \
 #                  new_improved_changed_methods, new_all_methods, \
 #                  new_caller_of, new_callee_of, new_pred_of, new_succ_of, \

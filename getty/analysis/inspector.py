@@ -35,11 +35,14 @@ def __set_all_with_tests(new_all, map_of_map):
             new_all.add(m)
 
 
-def __link_to_show_neighbors(t):
+def __link_to_show_neighbors(t, common_package):
     aid = "target-link-" + fsformat(t)
     cls = "target-linkstyle"
     js_cmd = "return activateNeighbors(\"" + t + "\");"
-    return "<a href='#' id='" + aid + "' class='" + cls + "' onclick='" + js_cmd + "'>" + t + "</a>"
+    tname = t
+    if common_package != '':
+        tname = t[len(common_package)+1:]
+    return "<a href='#' id='" + aid + "' class='" + cls + "' onclick='" + js_cmd + "'>" + tname + "</a>"
 
 
 def __append_script_l2s(html_string, lst, for_whom):
@@ -69,7 +72,19 @@ def __append_script_mm2d(html_string, mm, for_whom):
     return html_string.replace(place_holder, to_replace)
 
 
-def _getty_csi_setvars(html_string, go, prev_hash, post_hash,
+def __append_script_common_package(html_string, common_package):
+    if common_package != '' and common_package is not None:
+        the_script = \
+            "    " + "common_package = " + "\"" + common_package + "\";" + "\n" + \
+            "    " + "common_prefix_length = " + str(len(common_package)+1) + ";" + "\n"
+        place_holder = "</script>\n</body>"
+        to_replace = the_script + place_holder
+        return html_string.replace(place_holder, to_replace)
+    else:
+        return html_string
+
+
+def _getty_csi_setvars(html_string, go, prev_hash, post_hash, common_package,
                        all_changed_tests, old_changed_tests, new_changed_tests,
                        new_modified_src, new_all_src,
                        old_test_set, new_test_set,
@@ -109,10 +124,12 @@ def _getty_csi_setvars(html_string, go, prev_hash, post_hash,
     html_string = __append_script_mm2d(html_string, new_pred_of, "post_affected_pred_of")
     html_string = __append_script_mm2d(html_string, new_succ_of, "post_affected_succ_of")
     
+    html_string = __append_script_common_package(html_string, common_package)
+    
     return html_string
     
 
-def getty_csi_targets_prep(html_file, go, prev_hash, post_hash,
+def getty_csi_targets_prep(html_file, go, prev_hash, post_hash, common_package,
                            all_changed_tests, old_changed_tests, new_changed_tests,
                            new_modified_src, new_all_src,
                            old_test_set, new_test_set,
@@ -136,25 +153,29 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash,
     with open(html_file, 'r') as rf:
         html_string = rf.read()
     targets_place_holder = "<div id='csi-output-targets'></div>"
+    cpkg_disclaimer = ""
+    if common_package != '' and common_package is not None:
+        cpkg_disclaimer = "<h4 style='margin: 4px 0 8px 0'>Common Package: " + common_package + "</h4>"
     replace_footer = "</div>"
     replace_header = \
         "<div id='csi-output-targets' " + \
         "style='border:4px ridge gray; padding: 4px 4px 4px 4px; margin: 8px 0 0 0;'>" + \
+        cpkg_disclaimer + \
         "<h4 style='margin: 4px 0 8px 0'>Updated Method Targets:</h4>"
     if new_modified_src:
-        replacement = ", ".join([__link_to_show_neighbors(t) for t in new_modified_src])
+        replacement = ", ".join([__link_to_show_neighbors(t, common_package) for t in new_modified_src])
     else:
         replacement = "<span>None</span>"
     embed_test_update = \
         "<br><br><h4 style='margin: 4px 0 8px 0'>Updated Tests:</h4>"
     if all_changed_tests:
-        tests_replacement = ", ".join([__link_to_show_neighbors(t) for t in all_changed_tests])
+        tests_replacement = ", ".join([__link_to_show_neighbors(t, common_package) for t in all_changed_tests])
     else:
         tests_replacement = "<span>None</span>"
     inv_change_update = \
         "<br><br><h4 style='margin: 4px 0 8px 0'>Invariant changed*:</h4>"
     if all_whose_inv_changed:
-        invch_replacement = ", ".join([__link_to_show_neighbors(t) for t in all_whose_inv_changed])
+        invch_replacement = ", ".join([__link_to_show_neighbors(t, common_package) for t in all_whose_inv_changed])
     else:
         invch_replacement = "<span>None</span>"
     html_string = html_string.replace(targets_place_holder,
@@ -163,7 +184,7 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash,
                                       inv_change_update + invch_replacement + \
                                       replace_footer)
 
-    html_string = _getty_csi_setvars(html_string, go, prev_hash, post_hash,
+    html_string = _getty_csi_setvars(html_string, go, prev_hash, post_hash, common_package,
                                      all_changed_tests, old_changed_tests, new_changed_tests,
                                      new_modified_src, new_all_src,
                                      old_test_set, new_test_set,

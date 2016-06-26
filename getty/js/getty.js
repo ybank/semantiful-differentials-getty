@@ -355,11 +355,18 @@ var neighborhood_table =
 	"<tr><td></td><td id='neighbor-south' class='exist-neighbor'>south</td><td></td><tr>\n" +
 	"</table>\n";
 
+// common_package discovered and set by getty
+// it exists only if 
+//		(1) there is only one non-zero length common prefix, and 
+//		(2) it is long enough with at least one period
+var common_package = '';
+var common_prefix_length = 0;
+
 function bolden_for_modified(method_name) {
 	if (all_modified_targets.contains(method_name))
-		return "<b>" + method_name + "</b>";
+		return "<b>" + method_name.substring(common_prefix_length) + "</b>";
 	else
-		return method_name;
+		return method_name.substring(common_prefix_length);
 }
 
 function relative_count_format(map_post, map_prev, affected_method) {
