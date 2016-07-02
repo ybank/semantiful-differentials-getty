@@ -30,8 +30,8 @@ def exam(pwd, go, js_path, common_package,
     
     refined_target_set = new_refined_target_set | old_refined_target_set
     
-    diff_in = pwd[:-1] + ".__getty_output__/text.diff"
-    html_out = pwd[:-1] + ".__getty_output__/sema.diff.html"
+    diff_in = go + "text.diff"
+    html_out = go + "sema.diff.html"
     diff_to_html(diff_in, html_out, exclude_headers=False, old_l2m=old_l2m, new_l2m=new_l2m)
     getty_append_semainfo(html_out, refined_target_set, go, js_path, prev_hash, post_hash, old_l2m, new_l2m)
     

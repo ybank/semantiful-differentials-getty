@@ -174,7 +174,7 @@ def seq_get_invs(target_set_index_pair, java_cmd, junit_torun, go, this_hash):
 
 # one pass template
 def one_info_pass(
-        junit_path, sys_classpath, agent_path, go, this_hash, target_set, 
+        junit_path, sys_classpath, agent_path, dyng_go, go, this_hash, target_set,
         changed_methods, changed_tests, inner_dataflow_methods, outer_dataflow_methods):
     os.sys_call("git checkout " + this_hash)
     os.sys_call("mvn clean")
@@ -219,15 +219,15 @@ def one_info_pass(
     # run tests with instrumentation
     run_instrumented_tests = \
         " ".join([java_cmd, 
-#                   "-XX:-UseSplitVerifier", # FIXME: JDK 8- only! 
+                  "-XX:-UseSplitVerifier",  # FIXME: JDK 8- only! 
                   "-javaagent:" + agent_path + "=\"" + instrument_regex + "\"",
                   junit_torun])
     if SHOW_DEBUG_INFO:
         print "\n=== Instrumented testing command to run: \n" + run_instrumented_tests
     os.sys_call(run_instrumented_tests, ignore_bad_exit=True)
 
-    os.merge_dyn_files(go, "_getty_dyncg_-hash-_.ex", this_hash)
-    os.merge_dyn_files(go, "_getty_dynfg_-hash-_.ex", this_hash)    
+    os.merge_dyn_files(dyng_go, go, "_getty_dyncg_-hash-_.ex", this_hash)
+    os.merge_dyn_files(dyng_go, go, "_getty_dynfg_-hash-_.ex", this_hash)
     
     caller_of, callee_of = agency.caller_callee(go, this_hash)
     pred_of, succ_of = agency.pred_succ(go, this_hash)
@@ -242,7 +242,7 @@ def one_info_pass(
                               changed_methods, changed_tests, 
                               inner_dataflow_methods, outer_dataflow_methods)
         
-    profiler.log_csv(["method_count", "test_count", "refined_target_count"], 
+    profiler.log_csv(["method_count", "test_count", "refined_target_count"],
                      [[len(target_set), len(test_set), len(refined_target_set)]], 
                      go + "_getty_y_method_count_" + this_hash + "_.profile.readable")
     
@@ -271,7 +271,7 @@ def one_inv_pass(cp, junit_torun, go, this_hash, refined_target_set):
         print "\n===junit torun===\n" + junit_torun + "\n"
     
     # v3.2, v4 execute with 4 core
-    num_primary_workers = config.num_workers
+    num_primary_workers = config.num_master_workers
     auto_parallel_targets = config.auto_fork
     slave_load = config.classes_per_fork
     if len(refined_target_set) <= num_primary_workers or (num_primary_workers == 1 and not auto_parallel_targets):
@@ -318,11 +318,12 @@ def one_inv_pass(cp, junit_torun, go, this_hash, refined_target_set):
             target_set_inputs.append(sublist_tuple)
             num_processes += 1
         
-        profiler.log_csv(["class_count", "process_count", "slave_load"], 
-                         [[num_keys, num_processes, slave_load]],
+        max_parallel_processes = config.num_slave_workers
+        profiler.log_csv(["class_count", "process_count", "max_parallel_processes", "slave_load"], 
+                         [[num_keys, num_processes, max_parallel_processes, slave_load]],
                          go + "_getty_y_elastic_count_" + this_hash + "_.profile.readable")
         
-        input_pool = Pool(num_processes)
+        input_pool = Pool(max_parallel_processes)
         input_pool.map(seq_func, target_set_inputs)
         input_pool.close()
         input_pool.join()
@@ -342,15 +343,12 @@ def one_inv_pass(cp, junit_torun, go, this_hash, refined_target_set):
     
 
 # the main entrance
-def visit(junit_path, sys_classpath, agent_path, go, prev_hash, post_hash, targets,
+def visit(junit_path, sys_classpath, agent_path, separate_go, prev_hash, post_hash, targets,
           old_changed_methods, old_changed_tests, old_inner_dataflow_methods, old_outer_dataflow_methods, 
           new_changed_methods, new_changed_tests, new_inner_dataflow_methods, new_outer_dataflow_methods):
     
-#     # DEBUG ONLY
-#     print common_prefixes(old_all_methods)
-#     print reformat_all(common_prefixes(old_all_methods))
-#     print common_prefixes(new_all_methods)
-#     print reformat_all(common_prefixes(new_all_methods))
+    dyng_go = separate_go[0]
+    go = separate_go[1]
     
     print("\n****************************************************************");
     print("        Getty Center: Semantiful Differential Analyzer");
@@ -361,7 +359,7 @@ def visit(junit_path, sys_classpath, agent_path, go, prev_hash, post_hash, targe
     '''
     old_common_package, old_test_set, old_refined_target_set, old_cp, old_junit_torun = \
         one_info_pass(
-            junit_path, sys_classpath, agent_path, go, prev_hash, targets,
+            junit_path, sys_classpath, agent_path, dyng_go, go, prev_hash, targets,
             old_changed_methods, old_changed_tests, old_inner_dataflow_methods, old_outer_dataflow_methods)
     
     '''
@@ -369,7 +367,7 @@ def visit(junit_path, sys_classpath, agent_path, go, prev_hash, post_hash, targe
     '''
     new_common_package, new_test_set, new_refined_target_set, new_cp, new_junit_torun = \
         one_info_pass(
-            junit_path, sys_classpath, agent_path, go, post_hash, targets,
+            junit_path, sys_classpath, agent_path, dyng_go, go, post_hash, targets,
             new_changed_methods, new_changed_tests, new_inner_dataflow_methods, new_outer_dataflow_methods)
     
     '''

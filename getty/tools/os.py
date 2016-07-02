@@ -59,9 +59,9 @@ def update_file_hash(f, hs):
     
 
 # merge all dyn info files, create a new one and remote all others
-def merge_dyn_files(go, file_part_name, hs):
-    related = from_sys_call(" ".join(["ls", go, "|", "grep", file_part_name]))
-    all_files = [go+t.strip() for t in related.strip().split("\n")]
+def merge_dyn_files(dyng_go, go, file_part_name, hs):
+    related = from_sys_call(" ".join(["ls", dyng_go, "|", "grep", file_part_name]))
+    all_files = [dyng_go + t.strip() for t in related.strip().split("\n")]
     concat_list_str = "["
     for onefile in all_files:
         with open(onefile, 'r') as rf:

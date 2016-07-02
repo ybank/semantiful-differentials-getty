@@ -1,4 +1,5 @@
 # this file contains all config paras
+import multiprocessing
 
 # default junit version to use uniformly
 default_junit_version = "4.12-getty"
@@ -13,9 +14,10 @@ limit_interest = True
 limit_distance = 3
 
 # scale parameters
-num_workers = 1
+num_master_workers = 1
 auto_fork = True
-classes_per_fork = 2
+num_slave_workers = multiprocessing.cpu_count()
+classes_per_fork = 1
 min_heap = "2048m"
 max_heap = "16384m"
 

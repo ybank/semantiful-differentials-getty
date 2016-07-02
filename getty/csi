@@ -30,9 +30,9 @@ def help():
     print "\tDefault compare: origin/HEAD or origin/master or origin/trunk vs. HEAD:"
     print "\t  csi\n"
     print "\tCompare HEAD with the given commit, or with the commit of given ancestor index:"
-    print "\t  csi < compare_commit | -<num_ancestor_index> >\n"
-    print "\tCompare between the given commits: preimage_commit vs. postimage_commit:"
-    print "\t  csi < preimage_commit | -<num_preimage_index> > < postimage_commit | -<num_postimage_index> >\n"
+    print "\t  csi < commit | -index >\n"
+    print "\tCompare between the given commits: preimage_commit vs. postimage_commit (give issue name optionally):"
+    print "\t  csi < preimage_commit | -preimage_index > < postimage_commit | -postimage_index > [issue:<ISSUE_NAME>]\n"
 
 
 def config_env():
@@ -95,6 +95,7 @@ def config_env():
 
 
 def set_args():
+    go_postfix = ""
     if len(sys.argv) == 1:
         remote_head = get_remote_head()
         prev_hash = get_hash_for(remote_head)
@@ -113,7 +114,7 @@ def set_args():
         else:
             prev_hash = sys.argv[1]
             post_hash = get_hash_for("HEAD")
-    elif len(sys.argv) == 3:
+    elif len(sys.argv) == 3 or len(sys.argv) == 4:
         hash_regex = "[a-z0-9]{5,}"
         index_regex = "(^-(\d+))|0"
         if re.compile(hash_regex).match(sys.argv[1]) and re.compile(hash_regex).match(sys.argv[2]):
@@ -130,17 +131,25 @@ def set_args():
             if sys.argv[2] == "0":
                 arg2 = "-0"
             else:
-                arg2 = sys.argv[1]
+                arg2 = sys.argv[2]
             post_index = re.match(index_regex, arg2).group(2)
             post_hash = get_ancestor_hash(post_index)
         else:
             help()
             raise ValueError("invalid arguments passed: " + sys.argv[1] + " and " + sys.argv[2])
+        if len(sys.argv) == 4:
+            issue_specific_regex = "issue:(.*)"
+            mts = re.match(issue_specific_regex, sys.argv[3])
+            if mts:
+                go_postfix = mts.group(1) + "_" + prev_hash + "_" + post_hash + "/"
+            else:
+                help()
+                raise ValueError("last argument should be: [issue:...]")
     else:
-        raise ValueError("number of arguments should be 0, 1, or 2")
+        raise ValueError("number of arguments should be 0~3")
     # consider using `git rev-parse --short HEAD` if shorter names are preferred
     
-    return prev_hash, post_hash
+    return prev_hash, post_hash, go_postfix
 
 
 if __name__ == "__main__":
@@ -149,7 +158,18 @@ if __name__ == "__main__":
     villa_path, junit_path, sys_classpath, agent_path, pwd, go, js_path = config_env()
     
     ## args checking & setting
-    prev_hash, post_hash = set_args()
+    prev_hash, post_hash, go_postfix = set_args()
+    
+    ## set new go folder if needed; keep old go folder for dynamic graph output
+    old_go = go
+    go += go_postfix
+    if go_postfix != "":
+        if os.path.exists(go):
+            if not os.path.isdir(go):
+                raise EnvironmentError(go + " already exists but is not a directory")
+        else:
+            os.makedirs(go)
+    separate_go = (old_go, go)
     
     '''
         0-th: backup current branch work in stash for the last pass to restore
@@ -208,12 +228,12 @@ if __name__ == "__main__":
     
     profiler.run_and_report(
         "common_package, old_test_set, old_refined_target_set, new_test_set, new_refined_target_set = \
-             center.visit(junit_path, sys_classpath, agent_path, go, prev_hash, post_hash, targets, \
+             center.visit(junit_path, sys_classpath, agent_path, separate_go, prev_hash, post_hash, targets, \
              old_improved_changed_methods, old_changed_tests, old_inner_dataflow_methods, old_outer_dataflow_methods, \
              new_improved_changed_methods, new_changed_tests, new_inner_dataflow_methods, new_outer_dataflow_methods)",
         go + "_getty_x_profile_center.profile")
 #     common_package, old_test_set, old_refined_target_set, new_test_set, new_refined_target_set = \
-#         center.visit(junit_path, sys_classpath, agent_path, go, prev_hash, post_hash, targets,
+#         center.visit(junit_path, sys_classpath, agent_path, separate_go, prev_hash, post_hash, targets,
 #                      old_improved_changed_methods, old_changed_tests, old_inner_dataflow_methods, old_outer_dataflow_methods, 
 #                      new_improved_changed_methods, new_changed_tests, new_inner_dataflow_methods, new_outer_dataflow_methods)
     
