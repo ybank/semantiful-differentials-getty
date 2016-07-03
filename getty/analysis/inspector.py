@@ -92,7 +92,7 @@ def _getty_csi_setvars(html_string, go, prev_hash, post_hash, common_package,
                        old_test_set, new_test_set,
                        old_caller_of, old_callee_of, old_pred_of, old_succ_of,
                        new_caller_of, new_callee_of, new_pred_of, new_succ_of,
-                       all_whose_inv_changed):
+                       all_whose_inv_changed, all_whose_clsobj_inv_changed):
     html_string = __append_script_l2s(html_string, all_changed_tests, "all_changed_tests")
     html_string = __append_script_l2s(html_string, old_changed_tests, "old_changed_tests")
     html_string = __append_script_l2s(html_string, new_changed_tests, "new_changed_tests")
@@ -111,6 +111,7 @@ def _getty_csi_setvars(html_string, go, prev_hash, post_hash, common_package,
     html_string = __append_script_l2s(html_string, new_all_test_and_else, "all_test_and_else")
     
     html_string = __append_script_l2s(html_string, all_whose_inv_changed, "all_whose_inv_changed")
+    html_string = __append_script_l2s(html_string, all_whose_clsobj_inv_changed, "all_whose_clsobj_inv_changed")
     
 #     # DEBUG ONLY
 #     print new_caller_of
@@ -138,9 +139,11 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash, common_package,
                            old_test_set, new_test_set,
                            old_caller_of, old_callee_of, old_pred_of, old_succ_of,
                            new_caller_of, new_callee_of, new_pred_of, new_succ_of,
-                           old_refined_target_set, new_refined_target_set, refined_target_set):
+                           old_refined_target_set, new_refined_target_set, refined_target_set,
+                           all_classes_set):
     # TODO: 
     #   Consider to use new_refined_target_set, old_refined_target_set for better results
+    
     all_whose_inv_changed = set()
     if config.analyze_tests and not config.limit_interest:
         all_considered = (set(new_all_src) | set(new_test_set))
@@ -151,6 +154,11 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash, common_package,
     for mtd in all_considered:
         if is_different(mtd, go, prev_hash, post_hash):
             all_whose_inv_changed.add(mtd);
+    
+    all_whose_clsobj_inv_changed = set()
+    for cls in all_classes_set:
+        if is_different(cls, go, prev_hash, post_hash):
+            all_whose_clsobj_inv_changed.add(cls)
     
     html_string = ""
     with open(html_file, 'r') as rf:
@@ -177,8 +185,18 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash, common_package,
         tests_replacement = "<span>None</span>"
     inv_change_update = \
         "<br><br><h4 style='margin: 4px 0 8px 0'>Invariant changed:</h4>"
-    if all_whose_inv_changed:
-        invch_replacement = ", ".join([__link_to_show_neighbors(t, common_package, "output-invc-highlight") for t in all_whose_inv_changed])
+    if all_whose_inv_changed or all_whose_clsobj_inv_changed:
+        if all_whose_inv_changed:
+            invch_mtd_replacement = "<span>Methods: </span>" + ", ".join(
+                [__link_to_show_neighbors(t, common_package, "output-invc-highlight") for t in all_whose_inv_changed])
+        else:
+            invch_mtd_replacement = "<span>Methods: None</span>"
+        if all_whose_clsobj_inv_changed:
+            invch_cls_replacement = "<span>Classes: </span>" + ", ".join(
+                [__link_to_show_neighbors(t, common_package, "output-invc-highlight") for t in all_whose_clsobj_inv_changed])            
+        else:
+            invch_cls_replacement = "<span>Classes: None</span>"
+        invch_replacement = invch_mtd_replacement + "<br>" + invch_cls_replacement
     else:
         invch_replacement = "<span>None</span>"
     html_string = html_string.replace(targets_place_holder,
@@ -193,7 +211,7 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash, common_package,
                                      old_test_set, new_test_set,
                                      old_caller_of, old_callee_of, old_pred_of, old_succ_of,
                                      new_caller_of, new_callee_of, new_pred_of, new_succ_of,
-                                     all_whose_inv_changed)
+                                     all_whose_inv_changed, all_whose_clsobj_inv_changed)
     
     with open(html_file, 'w') as wf:
         wf.write(html_string)

@@ -274,6 +274,10 @@ def one_inv_pass(cp, junit_torun, go, this_hash, refined_target_set):
     num_primary_workers = config.num_master_workers
     auto_parallel_targets = config.auto_fork
     slave_load = config.classes_per_fork
+    
+    target_map = daikon.target_s2m(refined_target_set)
+    all_classes = target_map.keys()
+    
     if len(refined_target_set) <= num_primary_workers or (num_primary_workers == 1 and not auto_parallel_targets):
         single_set_tuple = (refined_target_set, "0")
         seq_get_invs(single_set_tuple, java_cmd, junit_torun, go, this_hash)
@@ -300,9 +304,10 @@ def one_inv_pass(cp, junit_torun, go, this_hash, refined_target_set):
         target_set_inputs = []
         num_processes = 0
         
-        target_map = daikon.target_s2m(refined_target_set)
-        all_keys = target_map.keys()
-        num_keys = len(all_keys)
+        # target_map has been calculated already
+        # target_map = daikon.target_s2m(refined_target_set)
+        # all_classes = target_map.keys()
+        num_keys = len(all_classes)
         seq_func = partial(seq_get_invs, 
                            java_cmd=java_cmd, junit_torun=junit_torun, go=go, this_hash=this_hash)
         
@@ -312,7 +317,8 @@ def one_inv_pass(cp, junit_torun, go, this_hash, refined_target_set):
             j = min(i+slave_load, num_keys)
             sublist = []
             for k in range(i, j):
-                the_key = all_keys[k]
+                the_key = all_classes[k]
+                sublist.append(the_key)  # so it won't miss class/object invariants
                 sublist += target_map[the_key]
             sublist_tuple = (sublist, str(num_processes))
             target_set_inputs.append(sublist_tuple)
@@ -340,6 +346,7 @@ def one_inv_pass(cp, junit_torun, go, this_hash, refined_target_set):
     else:
         os.remove_many_files(go, "*.inv")
     git.clear_temp_checkout(this_hash)
+    return all_classes
     
 
 # the main entrance
@@ -378,18 +385,19 @@ def visit(junit_path, sys_classpath, agent_path, separate_go, prev_hash, post_ha
     '''
         3-rd pass: checkout prev_commit as detached head, and get invariants for all interesting targets
     '''
-    one_inv_pass(
+    old_all_classes = one_inv_pass(
         old_cp, old_junit_torun, go, prev_hash, refined_target_set)
     
     '''
         4-th pass: checkout post_commit as detached head, and get invariants for all interesting targets
     '''
-    one_inv_pass(
+    new_all_classes = one_inv_pass(
         new_cp, new_junit_torun, go, post_hash, refined_target_set)
     
     '''
         prepare to return
     '''
+    all_classes_set = set(old_all_classes + new_all_classes)
     common_package = ''
     if old_common_package != '' and new_common_package != '':
         if (len(old_common_package) < len(new_common_package) and 
@@ -400,4 +408,4 @@ def visit(junit_path, sys_classpath, agent_path, separate_go, prev_hash, post_ha
             common_package = old_common_package
     
     print 'Center analysis is completed.'
-    return common_package, old_test_set, old_refined_target_set, new_test_set, new_refined_target_set
+    return common_package, all_classes_set, old_test_set, old_refined_target_set, new_test_set, new_refined_target_set

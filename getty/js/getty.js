@@ -289,6 +289,7 @@ var old_changed_tests;  // = new buckets.Set();
 var new_changed_tests;  // = new buckets.Set();
 var all_test_and_else;  // = new buckets.Set();
 var all_whose_inv_changed;  // = new buckets.Set();
+var all_whose_clsobj_inv_changed;  // = new buckets.Set();
 var prev_affected_caller_of;  // = new buckets.Dictionary();
 var prev_affected_callee_of;  // = new buckets.Dictionary();
 var prev_affected_pred_of;  // = new buckets.Dictionary();
@@ -477,7 +478,7 @@ function update_neighbor(method_name, direction, ref_var, ref_prev_var) {
 		}
 		all_link_elements = all_link_elements.concat(all_link_tests);
 //		html_content = all_link_elements.join("<br>");
-		html_content = all_link_elements.join("&nbsp;,&nbsp;");
+		html_content = all_link_elements.join("&nbsp;&nbsp;");
 	}
 	$('table#neighbors td#neighbor-' + direction).html(html_content);
 }
