@@ -32,3 +32,6 @@ compress_inv = False
 # development options
 show_debug_info = True
 show_debug_details = False
+
+# misc
+review_after_analysys = False

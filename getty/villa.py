@@ -65,8 +65,9 @@ def visit(villa_path, pwd, go, prev_hash, post_hash, pkg_prefix="-"):
     new_changed_methods = ex.read_str_from(go + "_getty_chgmtd_src_new_{0}_.ex".format(post_hash))
     new_improved_changed_methods = ex.read_str_from(go + "_getty_chgmtd_src_{0}_{1}_.ex".format(prev_hash, post_hash))
     new_removed_changed_methods = ex.read_str_from(go + "_getty_chgmtd_src_gone_{0}_{1}_.ex".format(prev_hash, post_hash))
-    new_all_ccc_related = ex.read_str_from(go + "_getty_cccmtd_{0}_.ex".format(post_hash))
-    new_all_cccs = ex.read_str_from(go + "_getty_ccc_{0}_.ex".format(post_hash))
+    # TODO or FIXME
+    # new_all_ccc_related = ex.read_str_from(go + "_getty_cccmtd_{0}_.ex".format(post_hash))  # not needed for now
+    # new_all_cccs = ex.read_str_from(go + "_getty_ccc_{0}_.ex".format(post_hash))  # not needed for now
     new_all_methods = ex.read_str_from(go + "_getty_allmtd_src_{0}_.ex".format(post_hash))
     new_l2m = ex.read_str_from(go + "_getty_fl2m_{0}_.ex".format(post_hash))
     new_m2l = ex.read_str_from(go + "_getty_fm2l_{0}_.ex".format(post_hash))
@@ -101,8 +102,9 @@ def visit(villa_path, pwd, go, prev_hash, post_hash, pkg_prefix="-"):
     
     old_improved_changed_methods = ex.read_str_from(go + "_getty_chgmtd_src_{1}_{0}_.ex".format(prev_hash, post_hash))
     old_added_changed_methods = ex.read_str_from(go + "_getty_chgmtd_src_gain_{0}_{1}_.ex".format(prev_hash, post_hash))
-    old_all_ccc_related = ex.read_str_from(go + "_getty_cccmtd_{0}_.ex".format(prev_hash))
-    old_all_cccs = ex.read_str_from(go + "_getty_ccc_{0}_.ex".format(prev_hash))
+    # TODO or FIXME
+    # old_all_ccc_related = ex.read_str_from(go + "_getty_cccmtd_{0}_.ex".format(prev_hash))  # not needed for now
+    # old_all_cccs = ex.read_str_from(go + "_getty_ccc_{0}_.ex".format(prev_hash))  # not needed for now
     old_inner_dataflow_methods = ex.read_str_from(go + "_getty_dfinner_{0}_.ex".format(prev_hash))
     old_outer_dataflow_methods = ex.read_str_from(go + "_getty_dfouter_{0}_.ex".format(prev_hash))
 #     # DEBUG ONLY
@@ -119,11 +121,11 @@ def visit(villa_path, pwd, go, prev_hash, post_hash, pkg_prefix="-"):
     
     print 'Villa analysis is completed.'
     return old_changed_methods, old_improved_changed_methods, old_added_changed_methods, \
-        old_all_ccc_related, old_all_cccs, old_all_methods, \
+        old_all_methods, \
         old_inner_dataflow_methods, old_outer_dataflow_methods, \
         old_l2m, old_m2l, \
         new_changed_methods, new_improved_changed_methods, new_removed_changed_methods, \
-        new_all_ccc_related, new_all_cccs, new_all_methods, \
+        new_all_methods, \
         new_inner_dataflow_methods, new_outer_dataflow_methods, \
         new_l2m, new_m2l, \
         old_changed_tests, new_changed_tests

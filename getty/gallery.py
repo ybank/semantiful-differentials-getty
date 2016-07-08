@@ -1,3 +1,4 @@
+import config
 from analysis.advisor import getty_append_report, report
 from analysis.inspector import getty_csi_init, getty_csi_targets_prep
 from tools.hdiff import diff_to_html, getty_append_semainfo
@@ -25,8 +26,7 @@ def exam(pwd, go, js_path, common_package, all_classes_set,
          old_caller_of, old_callee_of, old_pred_of, old_succ_of,
          all_changed_tests, old_changed_tests, new_changed_tests,
          old_test_set, new_test_set,
-         prev_hash, post_hash, old_l2m, new_l2m, old_m2l, new_m2l,
-         view_results=True):
+         prev_hash, post_hash, old_l2m, new_l2m, old_m2l, new_m2l):
     
     refined_target_set = new_refined_target_set | old_refined_target_set
     refined_targets_parents_set = refined_target_set | all_classes_set
@@ -46,9 +46,8 @@ def exam(pwd, go, js_path, common_package, all_classes_set,
                            old_refined_target_set, new_refined_target_set, refined_target_set,
                            all_classes_set)
     
-    if view_results:
-        print 'opening rendered pages for review ...'
-        # open with Safari on Mac OS
-        # sys_call("open -a /Applications/Safari.app/Contents/MacOS/Safari " + html_out)
-        # open with default app
+    if config.review_after_analysys:
+        print '  Opening rendered pages for review ...'
         sys_call("open " + html_out)
+    else:
+        print '  CSI analysis completed - review at: ' + html_out
