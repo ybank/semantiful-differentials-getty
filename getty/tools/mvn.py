@@ -2,6 +2,8 @@
 
 import subprocess
 
+from tools.os import sys_call
+
 
 # FIXME: support multi-module project
 def path_from_mvn_call(env):
@@ -63,3 +65,12 @@ def junit_torun_str():
         return " ".join([junit_runner] + list(merged_run[junit_runner]))
     else:
         raise NotImplementedError("multiple unhandled test tools are used in this project")
+
+
+# include coverage report for compare
+def generate_coverage_report(go, curr_hash):
+    sys_call("mvn emma:emma", ignore_bad_exit=True)
+    mvn_cmd = "mvn help:evaluate -Dexpression=project.build.directory | grep ^/"
+    emma_dir = subprocess.check_output(mvn_cmd, shell=True).strip() + "/site/emma"
+    target_dir = go + "_getty_emma_" + curr_hash + "_"
+    sys_call(" ".join(["mv", emma_dir, target_dir]), ignore_bad_exit=True)

@@ -252,7 +252,7 @@ def one_info_pass(
 
 
 # one pass template
-def one_inv_pass(cp, junit_torun, go, this_hash, refined_target_set):
+def one_inv_pass(go, cp, junit_torun, this_hash, refined_target_set):
     os.sys_call("git checkout " + this_hash)
     os.sys_call("mvn clean")
     
@@ -345,6 +345,11 @@ def one_inv_pass(cp, junit_torun, go, this_hash, refined_target_set):
         os.remove_many_files(go, "*.inv.gz")
     else:
         os.remove_many_files(go, "*.inv")
+    
+    # include coverage report for compare
+    if config.analyze_test_coverage:
+        mvn.generate_coverage_report(go, this_hash)
+    
     git.clear_temp_checkout(this_hash)
     return all_classes
     
@@ -385,14 +390,14 @@ def visit(junit_path, sys_classpath, agent_path, separate_go, prev_hash, post_ha
     '''
         3-rd pass: checkout prev_commit as detached head, and get invariants for all interesting targets
     '''
-    old_all_classes = one_inv_pass(
-        old_cp, old_junit_torun, go, prev_hash, refined_target_set)
+    old_all_classes = one_inv_pass(go,
+        old_cp, old_junit_torun, prev_hash, refined_target_set)
     
     '''
         4-th pass: checkout post_commit as detached head, and get invariants for all interesting targets
     '''
-    new_all_classes = one_inv_pass(
-        new_cp, new_junit_torun, go, post_hash, refined_target_set)
+    new_all_classes = one_inv_pass(go,
+        new_cp, new_junit_torun, post_hash, refined_target_set)
     
     '''
         prepare to return

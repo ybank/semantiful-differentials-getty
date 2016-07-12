@@ -33,5 +33,8 @@ compress_inv = False
 show_debug_info = True
 show_debug_details = False
 
+# include test coverage report
+analyze_test_coverage = True
+
 # misc
 review_after_analysys = False
