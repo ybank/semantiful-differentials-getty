@@ -1,3 +1,5 @@
+from os import chdir
+
 from tools import ex, git, mvn, os
 
 
@@ -15,7 +17,7 @@ def checkout_build(pwd, commit_hash):
     return bin_path, test_src_rel_path
 
 
-def visit(villa_path, pwd, go, prev_hash, post_hash, pkg_prefix="-"):
+def visit(villa_path, pwd, proj_dir, go, prev_hash, post_hash, pkg_prefix="-"):
     
     print("\n****************************************************************");
     print("        Getty Villa: Semantiful Differential Analyzer");
@@ -35,7 +37,9 @@ def visit(villa_path, pwd, go, prev_hash, post_hash, pkg_prefix="-"):
     run_villa = "java -jar {0} -s {1} {2} {3} {4} {5} {6} -o {7}".format(
         villa_path, diff_out, bin_path, test_src_rel_path, pkg_prefix, prev_hash, post_hash, go)
     print "\n\nstart to run Villa ... \n\n" + run_villa
+    chdir(proj_dir)
     os.sys_call(run_villa)
+    chdir(pwd)
     
     old_changed_methods = ex.read_str_from(go + "_getty_chgmtd_src_old_{0}_.ex".format(prev_hash))
     old_all_methods = ex.read_str_from(go + "_getty_allmtd_src_{0}_.ex".format(prev_hash))
@@ -60,7 +64,9 @@ def visit(villa_path, pwd, go, prev_hash, post_hash, pkg_prefix="-"):
     run_villa = "java -jar {0} -c {1} {2} {3} {4} {5} {6} -o {7}".format(
         villa_path, diff_out, bin_path, test_src_rel_path, pkg_prefix, prev_hash, post_hash, go)
     print "\n\nstart to run Villa ... \n\n" + run_villa
+    chdir(proj_dir)
     os.sys_call(run_villa)
+    chdir(pwd)
     
     new_changed_methods = ex.read_str_from(go + "_getty_chgmtd_src_new_{0}_.ex".format(post_hash))
     new_improved_changed_methods = ex.read_str_from(go + "_getty_chgmtd_src_{0}_{1}_.ex".format(prev_hash, post_hash))
@@ -98,7 +104,9 @@ def visit(villa_path, pwd, go, prev_hash, post_hash, pkg_prefix="-"):
     run_villa = "java -jar {0} -r {1} {2} {3} {4} {5} {6} -o {7}".format(
         villa_path, diff_out, bin_path, test_src_rel_path, pkg_prefix, prev_hash, post_hash, go)
     print "\n\nstart to run Villa ... \n\n" + run_villa
+    chdir(proj_dir)
     os.sys_call(run_villa)
+    chdir(pwd)
     
     old_improved_changed_methods = ex.read_str_from(go + "_getty_chgmtd_src_{1}_{0}_.ex".format(prev_hash, post_hash))
     old_added_changed_methods = ex.read_str_from(go + "_getty_chgmtd_src_gain_{0}_{1}_.ex".format(prev_hash, post_hash))

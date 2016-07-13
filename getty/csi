@@ -77,11 +77,26 @@ def config_env():
     if pwd[-1] != "/":
         pwd += "/"
     
+    proj_dir = pwd
+    dyng_go = pwd[:-1] + ".__getty_output__/"
     # getty output directory - /tmp/__getty_output__/ or ../projectname__getty_output__/
     if pwd == "/":
         go = "/tmp/__getty_output__/"
+        dyng_go = go
     else:
-        go = pwd[:-1] + ".__getty_output__/"
+        # TODO: set a good go
+        curr_dir = pwd
+        middle_path = ""
+        while not (os.path.exists(curr_dir + ".git") and os.path.isdir(curr_dir + ".git")):
+            last_slash = curr_dir[:-1].rindex("/")
+            if last_slash <= 0:
+                raise EnvironmentError("project setting is problematic")
+            else:
+                middle_path = "." + curr_dir[last_slash+1:-1] + middle_path
+                curr_dir = curr_dir[:last_slash+1]
+                proj_dir = curr_dir
+        go = curr_dir[:-1] + middle_path + ".__getty_output__/"
+        
     if os.path.exists(go):
         if not os.path.isdir(go):
             raise EnvironmentError(go + " already exists but is not a directory")
@@ -91,7 +106,7 @@ def config_env():
     # javascript path
     js_path = this_script_dir + "js/"
     
-    return villa_path, junit_path, sys_classpath, agent_path, pwd, go, js_path
+    return villa_path, junit_path, sys_classpath, agent_path, pwd, proj_dir, go, dyng_go, js_path
 
 
 def set_args():
@@ -155,13 +170,12 @@ def set_args():
 if __name__ == "__main__":
     
     ## env config
-    villa_path, junit_path, sys_classpath, agent_path, pwd, go, js_path = config_env()
+    villa_path, junit_path, sys_classpath, agent_path, pwd, proj_dir, go, dyng_go, js_path = config_env()
     
     ## args checking & setting
     prev_hash, post_hash, go_postfix = set_args()
     
     ## set new go folder if needed; keep old go folder for dynamic graph output
-    old_go = go
     go += go_postfix
     if go_postfix != "":
         if os.path.exists(go):
@@ -169,7 +183,7 @@ if __name__ == "__main__":
                 raise EnvironmentError(go + " already exists but is not a directory")
         else:
             os.makedirs(go)
-    separate_go = (old_go, go)
+    separate_go = (dyng_go, go)
     
     '''
         0-th: backup current branch work in stash for the last pass to restore
@@ -177,7 +191,7 @@ if __name__ == "__main__":
     working_branch = get_current_head_branch()
     should_further_recover = backup_and_stash_first()
     # clean up output directory
-    remove_many_files(go, "_getty_*.*")
+    remove_many_files(go, "_getty_*")
     
     '''
         multi-stage analysis: Villa (code) and Center (invariants) 
@@ -192,7 +206,7 @@ if __name__ == "__main__":
          new_inner_dataflow_methods, new_outer_dataflow_methods, \
          new_l2m, new_m2l, \
          old_changed_tests, new_changed_tests = \
-             villa.visit(villa_path, pwd, go, prev_hash, post_hash)",
+             villa.visit(villa_path, pwd, proj_dir, go, prev_hash, post_hash)",
         go + "_getty_x_profile_villa.profile")
 #     old_changed_methods, old_improved_changed_methods, old_added_changed_methods, \
 #         old_all_methods, \
@@ -203,7 +217,7 @@ if __name__ == "__main__":
 #         new_inner_dataflow_methods, new_outer_dataflow_methods, \
 #         new_l2m, new_m2l, \
 #         old_changed_tests, new_changed_tests = \
-#             villa.visit(villa_path, pwd, go, prev_hash, post_hash)
+#             villa.visit(villa_path, pwd, proj_dir, go, prev_hash, post_hash)
 
 #     # DEBUG ONLY
 #     print "Debug info: "

@@ -4,6 +4,7 @@ import re
 import sys
 from functools import partial
 from multiprocessing import Pool
+from os import path, makedirs
 
 import agency
 import config
@@ -224,6 +225,9 @@ def one_info_pass(
                   junit_torun])
     if SHOW_DEBUG_INFO:
         print "\n=== Instrumented testing command to run: \n" + run_instrumented_tests
+    
+    if not path.exists(dyng_go):
+        makedirs(dyng_go)
     os.sys_call(run_instrumented_tests, ignore_bad_exit=True)
 
     os.merge_dyn_files(dyng_go, go, "_getty_dyncg_-hash-_.ex", this_hash)
@@ -348,7 +352,10 @@ def one_inv_pass(go, cp, junit_torun, this_hash, refined_target_set):
     
     # include coverage report for compare
     if config.analyze_test_coverage:
-        mvn.generate_coverage_report(go, this_hash)
+        try:
+            mvn.generate_coverage_report(go, this_hash)
+        except:
+            pass
     
     git.clear_temp_checkout(this_hash)
     return all_classes
