@@ -3,15 +3,15 @@ from os import chdir
 from tools import ex, git, mvn, os
 
 
-def checkout_build(pwd, commit_hash):
+def checkout_build(proj_dir, commit_hash):
     os.sys_call("git checkout " + commit_hash)
     # src_path = path_from_mvn_call("sourceDirectory")
     bin_path = mvn.path_from_mvn_call("outputDirectory")
     test_src_rel_path = mvn.path_from_mvn_call("testSourceDirectory")
-    if test_src_rel_path.startswith(pwd):
-        test_src_rel_path = test_src_rel_path[len(pwd):]
+    if test_src_rel_path.startswith(proj_dir):
+        test_src_rel_path = test_src_rel_path[len(proj_dir):]
     else:
-        raise ValueError("pwd is not a prefix of test src path")
+        raise ValueError("proj_dir is not a prefix of test src path")
     print "current test src path (relative): " + test_src_rel_path + "\n"
     os.sys_call("mvn test -DskipTests")
     return bin_path, test_src_rel_path
@@ -32,7 +32,7 @@ def visit(villa_path, pwd, proj_dir, go, prev_hash, post_hash, pkg_prefix="-"):
         1-st pass: checkout prev_commit as detached head, and get all sets and etc, in simple (bare) mode (-s)
             remember to clear after this pass
     '''
-    bin_path, test_src_rel_path = checkout_build(pwd, prev_hash)
+    bin_path, test_src_rel_path = checkout_build(proj_dir, prev_hash)
     
     run_villa = "java -jar {0} -s {1} {2} {3} {4} {5} {6} -o {7}".format(
         villa_path, diff_out, bin_path, test_src_rel_path, pkg_prefix, prev_hash, post_hash, go)
@@ -59,7 +59,7 @@ def visit(villa_path, pwd, proj_dir, go, prev_hash, post_hash, pkg_prefix="-"):
         2-nd pass: checkout post_commit as detached head, and get all sets and etc, in complex mode (-c)
             remember to clear after this pass
     '''
-    bin_path, test_src_rel_path = checkout_build(pwd, post_hash)
+    bin_path, test_src_rel_path = checkout_build(proj_dir, post_hash)
     
     run_villa = "java -jar {0} -c {1} {2} {3} {4} {5} {6} -o {7}".format(
         villa_path, diff_out, bin_path, test_src_rel_path, pkg_prefix, prev_hash, post_hash, go)
@@ -99,7 +99,7 @@ def visit(villa_path, pwd, proj_dir, go, prev_hash, post_hash, pkg_prefix="-"):
         3-rd pass: checkout prev_commit as detached head, and get all sets and etc, in recovery mode (-r)
             remember to clear after this pass
     '''
-    bin_path, test_src_rel_path = checkout_build(pwd, prev_hash)
+    bin_path, test_src_rel_path = checkout_build(proj_dir, prev_hash)
     
     run_villa = "java -jar {0} -r {1} {2} {3} {4} {5} {6} -o {7}".format(
         villa_path, diff_out, bin_path, test_src_rel_path, pkg_prefix, prev_hash, post_hash, go)
