@@ -33,10 +33,15 @@ def exam(pwd, go, js_path, common_package, all_classes_set,
     
     diff_in = go + "text.diff"
     html_out = go + "sema.diff.html"
+    
+    print 'generating html from diff ...'
     diff_to_html(diff_in, html_out, exclude_headers=False, old_l2m=old_l2m, new_l2m=new_l2m)
+    print 'appending semainfo to the html ....'
     getty_append_semainfo(html_out, refined_targets_parents_set, go, js_path, prev_hash, post_hash, old_l2m, new_l2m)
     
+    print 'initialize csi report ...'
     getty_csi_init(html_out)
+    print 'setting csi target variables ...'
     getty_csi_targets_prep(html_out, go, prev_hash, post_hash, common_package,
                            all_changed_tests, old_changed_tests, new_changed_tests,
                            new_modified_src, new_all_src,
@@ -45,6 +50,7 @@ def exam(pwd, go, js_path, common_package, all_classes_set,
                            new_caller_of, new_callee_of, new_pred_of, new_succ_of,
                            old_refined_target_set, new_refined_target_set, refined_target_set,
                            all_classes_set)
+    print 'csi report page is set.'
     
     if config.review_after_analysys:
         print '  Opening rendered pages for review ...'

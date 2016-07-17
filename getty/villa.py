@@ -5,6 +5,7 @@ from tools import ex, git, mvn, os
 
 def checkout_build(proj_dir, commit_hash):
     os.sys_call("git checkout " + commit_hash)
+    os.sys_call("mvn clean")
     # src_path = path_from_mvn_call("sourceDirectory")
     bin_path = mvn.path_from_mvn_call("outputDirectory")
     test_src_rel_path = mvn.path_from_mvn_call("testSourceDirectory")
