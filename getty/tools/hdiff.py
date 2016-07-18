@@ -734,8 +734,13 @@ def _getty_append_invdiff(html_string, targets, go, prev_hash, curr_hash):
             dstring = from_sys_call_enforce(
                 " ".join(["git diff --unified=0", prev_invs_file_tagged, curr_invs_file_tagged]))
             
-            dstring = __denoise(dstring)
-            dtable = parse_from_memory(dstring, True, False)
+            if len(dstring) <= config.max_diff_size:
+                dstring = __denoise(dstring)
+                dtable = parse_from_memory(dstring, True, False)
+            else:
+                print '   --- too big diff to be shown'
+                dtable = '<div>The differential is too big to be shown</div>'
+            
             anchor = "<br>{{{__getty_invariant_diff__}}}<br>"
             inv_title = "<br>compare inviants for { <b>" + __escape(target) + "</b> }<br>"
             invdiffhtml = \
