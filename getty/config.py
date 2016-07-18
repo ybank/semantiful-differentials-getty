@@ -37,4 +37,6 @@ show_debug_details = False
 analyze_test_coverage = True
 
 # misc
+install_inv_tips = False
+install_diffinv_only = True
 review_after_analysys = False

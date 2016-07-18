@@ -42,6 +42,8 @@ except ImportError:
     raise EnvironmentError(
         "simplediff module is not installed - find it here: https://github.com/paulgb/simplediff\n")
 
+import config
+from analysis import solver
 from tools.daikon import fsformat
 from tools.html import inv_to_html
 from tools.os import from_sys_call_enforce, remove_many_files
@@ -722,31 +724,31 @@ def __prediff_process(file_name, preserve_tag, postfix):
 
 def _getty_append_invdiff(html_string, targets, go, prev_hash, curr_hash):
     for target in sorted(targets, reverse=True):
-        tfs = fsformat(target)
-        
-        prev_invs_file = go + "_getty_inv__" + tfs + "__" + prev_hash + "_.inv.txt"
-        prev_invs_file_tagged = __prediff_process(prev_invs_file, PRSV_LEFT, PRSV_TMP)
-        curr_invs_file = go + "_getty_inv__" + tfs + "__" + curr_hash + "_.inv.txt"
-        curr_invs_file_tagged = __prediff_process(curr_invs_file, PRSV_RIGHT, PRSV_TMP)
-        dstring = from_sys_call_enforce(
-            " ".join(["git diff --unified=0", prev_invs_file_tagged, curr_invs_file_tagged]))
-        
-        dstring = __denoise(dstring)
-        dtable = parse_from_memory(dstring, True, False)
-        anchor = "<br>{{{__getty_invariant_diff__}}}<br>"
-        inv_title = "<br>compare inviants for { <b>" + __escape(target) + "</b> }<br>"
-        invdiffhtml = \
-            "<div id='vsinvs-" + fsformat(target) + "' style='min-width:960px'>" + \
-            inv_title + "\n" + dtable + \
-            ("NO DIFFERENCE" if is_empty(dtable) else "") + \
-            "\n</div>\n"
-        invdiff_out = go + "_getty_inv__" + tfs + "__" + ".inv.diff.html"
-        with open(invdiff_out, 'w') as idout:
-            idout.write(invdiffhtml)
-        replacement = anchor + "\n" + invdiffhtml
-        html_string = html_string.replace(anchor, replacement)
-#     from_sys_call_enforce("rm " + go + "*" + PRSV_TMP)
-    remove_many_files(go, "*.tagged.tmp")
+        if config.install_diffinv_only and solver.is_different(target, go, prev_hash, curr_hash):
+            print '  -- processing inv diff for ' + target
+            tfs = fsformat(target)
+            prev_invs_file = go + "_getty_inv__" + tfs + "__" + prev_hash + "_.inv.txt"
+            prev_invs_file_tagged = __prediff_process(prev_invs_file, PRSV_LEFT, PRSV_TMP)
+            curr_invs_file = go + "_getty_inv__" + tfs + "__" + curr_hash + "_.inv.txt"
+            curr_invs_file_tagged = __prediff_process(curr_invs_file, PRSV_RIGHT, PRSV_TMP)
+            dstring = from_sys_call_enforce(
+                " ".join(["git diff --unified=0", prev_invs_file_tagged, curr_invs_file_tagged]))
+            
+            dstring = __denoise(dstring)
+            dtable = parse_from_memory(dstring, True, False)
+            anchor = "<br>{{{__getty_invariant_diff__}}}<br>"
+            inv_title = "<br>compare inviants for { <b>" + __escape(target) + "</b> }<br>"
+            invdiffhtml = \
+                "<div id='vsinvs-" + fsformat(target) + "' style='min-width:960px'>" + \
+                inv_title + "\n" + dtable + \
+                ("NO DIFFERENCE" if is_empty(dtable) else "") + \
+                "\n</div>\n"
+            invdiff_out = go + "_getty_inv__" + tfs + "__" + ".inv.diff.html"
+            with open(invdiff_out, 'w') as idout:
+                idout.write(invdiffhtml)
+            replacement = anchor + "\n" + invdiffhtml
+            html_string = html_string.replace(anchor, replacement)
+    remove_many_files(go, "*"+PRSV_TMP)
     return html_string
 
 
@@ -797,17 +799,19 @@ def _getty_append_invariants(html_string, targets, go, prev_hash, curr_hash):
 
 def _getty_install_invtips(html_string, prev_hash, curr_hash, go, oldl2m, newl2m):
     newarray = ["\"" + curr_hash + "\""]
-    for pair in newl2m:
-        newarray.append("\"" + __path_to_image(pair[0]) + "\"")
-        newarray.append("\"" + str(pair[1]) + "\"")
-        newarray.append("\"" + fsformat(newl2m[pair]) + "\"")
+    if config.install_inv_tips:
+        for pair in newl2m:
+            newarray.append("\"" + __path_to_image(pair[0]) + "\"")
+            newarray.append("\"" + str(pair[1]) + "\"")
+            newarray.append("\"" + fsformat(newl2m[pair]) + "\"")
     newarray_str = "[" + ", ".join(t for t in newarray) + "]"
     
     oldarray = ["\"" + prev_hash + "\""]
-    for pair in oldl2m:
-        oldarray.append("\"" + __path_to_image(pair[0]) + "\"")
-        oldarray.append("\"" + str(pair[1]) + "\"")
-        oldarray.append("\"" + fsformat(oldl2m[pair]) + "\"")
+    if config.install_inv_tips:
+        for pair in oldl2m:
+            oldarray.append("\"" + __path_to_image(pair[0]) + "\"")
+            oldarray.append("\"" + str(pair[1]) + "\"")
+            oldarray.append("\"" + fsformat(oldl2m[pair]) + "\"")
     oldarray_str = "[" + ", ".join(t for t in oldarray) + "]"
     
     install_line = \
@@ -833,16 +837,24 @@ def getty_append_semainfo(template_file, targets, go, js_path, prev_hash, curr_h
         go = go + "/"
     
     html_string = ""
+    print ' - reading html template ...'
     with open(template_file, 'r') as rf:
         html_string = rf.read()
     
+    print ' - appending invdiffs ...'
     html_string = _getty_append_invdiff(html_string, targets, go, prev_hash, curr_hash)
+    print ' - import javascript libs ...'
     html_string = _import_js(html_string, js_path, go)
 #     html_string = _getty_append_invariants(html_string, targets, go, prev_hash, curr_hash)
+    print ' - inv txt to html (prev) ...'
     inv_to_html(targets, go, prev_hash)
+    print ' - inv txt to html (post) ...'
     inv_to_html(targets, go, curr_hash)
+    
+    print ' - install tooltips and show/hide contents ...'
     html_string = _getty_install_invtips(html_string, prev_hash, curr_hash, go, old_l2m, new_l2m)
     
+    print ' - writing to html ...'
     with open(template_file, 'w') as wf:
         wf.write(html_string)
 

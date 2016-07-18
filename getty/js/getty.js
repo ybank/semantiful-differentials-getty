@@ -325,7 +325,8 @@ function methodInvsCompareDiv(method_name) {
 	theMtd = fsformat(method_name);
 	targetInvComp = $("div#hide-all div#vsinvs-" + theMtd)[0]
 	if (targetInvComp == undefined)
-		return htmlContent = "Choose a neighbor target to show its invariant change";
+		// return htmlContent = "Choose a neighbor target to show its invariant change";
+		compareInvs = "<div>No Invariant Differences</div>";
 	else
 		compareInvs = targetInvComp.outerHTML;
 	left = 
