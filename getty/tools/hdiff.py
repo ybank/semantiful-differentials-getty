@@ -142,10 +142,11 @@ add_cpt, del_cpt = 0, 0
 line1, line2 = 0, 0
 hunk_off1, hunk_size1, hunk_off2, hunk_size2 = 0, 0, 0, 0
 
-
 # Characters we're willing to word wrap on
 WORDBREAK = " \t;.,/):-"
 
+# When the line is too long to be analyzed and shown
+TOO_LONG_MSG = "THIS LINE IS TOO LONG TO BE SHOWN: "
 
 # for temp invariant files for prettier html diff
 PRSV_LEFT = "[a/] -- "
@@ -409,7 +410,7 @@ def add_line(s1, s2, output_file):
     elif s2 == None or s1 == "":
         type_name = "deleted " + preimage
         line1_active_flag = True
-    elif s1 == s2:
+    elif s1 == s2 and not (s1.startswith(TOO_LONG_MSG) and s2.startswith(TOO_LONG_MSG)):
         type_name = "unmodified"
     else:
         type_name = "changed " + postimage
@@ -550,13 +551,21 @@ def parse_input(input_file, output_file, input_file_name, output_file_name,
         if re.match("^\+", l):
             add_cpt += 1
             hunk_size2 -= 1
-            buf.append((None, l[1:]))
+            if len(l) - 1 <= config.max_diff_line_size:
+                buf.append((None, l[1:]))
+            else:
+                too_long_msg = TOO_LONG_MSG + l[1:20]
+                buf.append((None, too_long_msg))
             continue
 
         if re.match("^\-", l):
             del_cpt += 1
             hunk_size1 -= 1
-            buf.append((l[1:], None))
+            if len(l) - 1 <= config.max_diff_line_size:
+                buf.append((l[1:], None))
+            else:
+                too_long_msg = TOO_LONG_MSG + l[1:20]
+                buf.append((too_long_msg, None))
             continue
 
         if re.match("^\ ", l) and hunk_size1 and hunk_size2:
@@ -734,7 +743,7 @@ def _getty_append_invdiff(html_string, targets, go, prev_hash, curr_hash):
             dstring = from_sys_call_enforce(
                 " ".join(["git diff --unified=0", prev_invs_file_tagged, curr_invs_file_tagged]))
             
-            if len(dstring) <= config.max_diff_size:
+            if len(dstring.split("\n")) <= config.max_diff_lines:
                 dstring = __denoise(dstring)
                 dtable = parse_from_memory(dstring, True, False)
             else:

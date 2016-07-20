@@ -9,6 +9,7 @@ import java.util.Set;
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
@@ -187,8 +188,11 @@ public class ASTInspector implements IMethodRecognizer {
 				methodName = ((EnumDeclaration) parent).getName() + separator + methodName;
 				System.out.println("[M] RARE: process enum type and get (maybe intermediate): " + methodName);
 			}
-			else if (className.equals("com.github.javaparser.ast.CompilationUnit")) {				
-				methodName = ((CompilationUnit) parent).getPackage().getName().toString() + "." + methodName;
+			else if (className.equals("com.github.javaparser.ast.CompilationUnit")) {
+				PackageDeclaration pkg = ((CompilationUnit) parent).getPackage();
+				if (pkg != null) {					
+					methodName = pkg.getName().toString() + "." + methodName;
+				}
 			}
 			else {				
 //				System.out.println("[M] unprocessed type: " + className);

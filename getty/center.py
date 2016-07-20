@@ -196,6 +196,7 @@ def one_info_pass(
                          "-Xmx"+config.max_heap, 
                          "-XX:+UseConcMarkSweepGC", 
 #                          "-XX:-UseGCOverheadLimit",
+                         "-XX:-UseSplitVerifier",  # FIXME: JDK 8- only! 
                          ])
     
     os.sys_call("mvn test -DskipTests")
@@ -219,8 +220,7 @@ def one_info_pass(
         print "\n===instrumentation pattern===\n" + instrument_regex + "\n"
     # run tests with instrumentation
     run_instrumented_tests = \
-        " ".join([java_cmd, 
-                  "-XX:-UseSplitVerifier",  # FIXME: JDK 8- only! 
+        " ".join([java_cmd,
                   "-javaagent:" + agent_path + "=\"" + instrument_regex + "\"",
                   junit_torun])
     if SHOW_DEBUG_INFO:
@@ -268,6 +268,7 @@ def one_inv_pass(go, cp, junit_torun, this_hash, refined_target_set):
                          "-Xmx"+config.max_heap, 
                          "-XX:+UseConcMarkSweepGC", 
 #                          "-XX:-UseGCOverheadLimit",
+                         "-XX:-UseSplitVerifier",  # FIXME: JDK 8- only! 
                          ])
     
     os.sys_call("mvn test -DskipTests")
