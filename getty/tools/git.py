@@ -5,8 +5,19 @@ import re
 from tools.os import from_sys_call, sys_call
 
 
-def get_hash_for(which):
-    return from_sys_call("git rev-parse " + which).strip()
+def get_hash(hash_exp, short=True):
+    arg_list = ["git", "rev-parse"]
+    if short:
+        arg_list.append("--short")
+    arg_list.append(hash_exp)
+    return from_sys_call(" ".join(arg_list)).strip()
+
+
+def get_hash_for(which, short=True):
+    if short:
+        return from_sys_call("git rev-parse --short " + which).strip()
+    else:
+        return from_sys_call("git rev-parse " + which).strip()
 
 
 def get_parent_hash():
@@ -21,8 +32,22 @@ def get_parent_hash():
             format(parent, verify_parent))
 
 
-def get_ancestor_hash(index):
-    return from_sys_call("git rev-parse HEAD~" + index).strip()
+def get_ancestor_hash(index, short=True):
+    if short:
+        return from_sys_call("git rev-parse --short HEAD~" + index).strip()
+    else:
+        return from_sys_call("git rev-parse HEAD~" + index).strip()
+
+
+def get_ancestor_hash_for(hash, index=None, short=True):
+    arg_list = ["git", "rev-parse"]
+    if short:
+        arg_list.append("--short")
+    the_hash = hash
+    if index is not None:
+        the_hash = hash + "~" + index
+    arg_list.append(the_hash)
+    return from_sys_call(" ".join(arg_list)).strip()
 
 
 def get_remote_head():

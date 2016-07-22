@@ -16,6 +16,8 @@ from tools.git import (
     backup_and_stash_first,
     get_current_head_branch,
     get_ancestor_hash,
+    get_ancestor_hash_for,
+    get_hash,
     get_hash_for,
     get_remote_head,
     restore_and_pop_last
@@ -32,7 +34,9 @@ def help():
     print "\tCompare HEAD with the given commit, or with the commit of given ancestor index:"
     print "\t  csi < commit | -index >\n"
     print "\tCompare between the given commits: preimage_commit vs. postimage_commit (give issue name optionally):"
-    print "\t  csi < preimage_commit | -preimage_index > < postimage_commit | -postimage_index > [issue:<ISSUE_NAME>]\n"
+    print "\t  csi < preimage_commit > < postimage_commit > [issue:<ISSUE_NAME>]\n"
+    print "\t  csi < ~relative_index > < postimage_commit > [issue:<ISSUE_NAME>]\n"
+    print "\t  csi < -preimage_index > < -postimage_index > [issue:<ISSUE_NAME>]\n"
 
 
 def config_env():
@@ -130,11 +134,20 @@ def set_args():
             prev_hash = sys.argv[1]
             post_hash = get_hash_for("HEAD")
     elif len(sys.argv) == 3 or len(sys.argv) == 4:
-        hash_regex = "[a-z0-9]{5,}"
+        hash_regex = "([a-z0-9]{5,})(~(\d+)){0,1}"
         index_regex = "(^-(\d+))|0"
-        if re.compile(hash_regex).match(sys.argv[1]) and re.compile(hash_regex).match(sys.argv[2]):
-            prev_hash = sys.argv[1]
-            post_hash = sys.argv[2]
+        absolute_index_regex = "^~(\d+)"
+        arg1_groups = re.match(hash_regex, sys.argv[1])
+        arg1_index = re.match(absolute_index_regex, sys.argv[1])
+        arg2_groups = re.match(hash_regex, sys.argv[2])
+        if (arg1_groups or arg1_index) and arg2_groups:
+            post_hash = get_hash(arg2_groups.group(0))
+            if arg1_groups:
+                prev_hash = get_hash(arg1_groups.group(0))
+            elif arg1_index:
+                prev_hash = get_ancestor_hash_for(post_hash, index=arg1_index.group(1))
+            else:
+                raise ValueError("recognized but wrongly formatted 1st argument: " + sys.argv[1])
         elif (re.compile(index_regex).match(sys.argv[1]) or sys.argv[1] == "0") and \
                 (re.compile(index_regex).match(sys.argv[2]) or sys.argv[2] == "0"):
             if sys.argv[1] == "0":
