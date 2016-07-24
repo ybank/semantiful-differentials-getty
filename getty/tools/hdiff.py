@@ -89,7 +89,7 @@ html_hdr = """<!DOCTYPE html>
         span.diffponct {{ color: #B08080 }}
         tr.diffmisc td {{}}
         tr.diffseparator td {{}}
-        tr.invheader > td {{ background: #A0A0A0; color: #C334A2; font-weight: bold }}
+        tr.invheader > td {{ background: #7a7a7a; color: #f0f3cc; font-weight: bold }}
         a.special-neighbor-link {{ color: red }}
         a.hidable-mtd-equal-inv {{ color: gray }}
         a.output-invc-highlight {{ color: red; text-decoration: none }}
