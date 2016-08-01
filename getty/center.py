@@ -118,6 +118,7 @@ def seq_get_invs(target_set_index_pair, java_cmd, junit_torun, go, this_hash):
         daikon_control_opt_list.append("--omit_from_output 0r")
     if config.daikon_format_only:
         daikon_control_opt_list.append("--format Daikon")
+    daikon_control_opt_list.append(config.blacked_daikon_invs_exp)
     daikon_display_args = " ".join(daikon_control_opt_list)
     # run Chicory + Daikon (online) for invariants without trace I/O
     run_chicory_daikon = \

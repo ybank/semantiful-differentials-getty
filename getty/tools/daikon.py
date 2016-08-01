@@ -194,6 +194,34 @@ def dfformat_full_ordered(target_set):
         return parent_pattern + "|" + method_pattern
 
 
+# reformat all methods together so it is recognizable by Daikon filter
+# get more than the method name because we replace "(" with "*"
+def dfformat_full_ordered_more(target_set):
+    parent_interest_set = set()
+    method_interest_set = set()
+    for target in target_set:
+        target = real_name(target)
+        colon_index = target.rfind(":")
+        if colon_index == -1:
+            # includes class and class.*
+            parent_interest_set.add("^" + target.replace(":", ".").replace(".", "\.").replace("$", "\$") + ":")
+        else:
+            possible_parents = target[:colon_index].replace(":", ".")
+            itself = target.replace(":", ".")
+            parent_interest_set.add(("^" + possible_parents + ":").replace(".", "\.").replace("$", "\$"))
+            method_interest_set.add(("^" + itself + "*").replace(".", "\.").replace("$", "\$"))
+    parent_pattern = "|".join(parent_interest_set)
+    method_pattern = "|".join(method_interest_set)
+    if parent_pattern == '' and method_pattern == '':
+        return 'GETTY_WARNING_THIS_PATTERN_SHOULD_NOT_EXIST'
+    elif parent_pattern == '':
+        return method_pattern
+    elif method_pattern == '':
+        return parent_pattern
+    else:
+        return parent_pattern + "|" + method_pattern
+
+
 # extended filter (secure)
 def select_full(target_set):
     interest_set = set()
