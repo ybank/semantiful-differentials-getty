@@ -15,10 +15,9 @@ from tools.ex import save_to
 from tools.git import (
     backup_and_stash_first,
     get_current_head_branch,
+    get_head_ancestor,
     get_ancestor_hash,
-    get_ancestor_hash_for,
     get_hash,
-    get_hash_for,
     get_remote_head,
     restore_and_pop_last
 )
@@ -117,22 +116,22 @@ def set_args():
     go_postfix = ""
     if len(sys.argv) == 1:
         remote_head = get_remote_head()
-        prev_hash = get_hash_for(remote_head)
-        post_hash = get_hash_for("HEAD")
+        prev_hash = get_hash(remote_head)
+        post_hash = get_hash("HEAD")
     elif len(sys.argv) == 2:
         if sys.argv[1] == "-h" or sys.argv[1] == "--help":
             help()
             exit(0)
         elif re.match("^-\d+", sys.argv[1]):
             index = re.match("^-(\d+)", sys.argv[1]).group(1)
-            prev_hash = get_ancestor_hash(index)
-            post_hash = get_hash_for("HEAD")
+            prev_hash = get_head_ancestor(index)
+            post_hash = get_hash("HEAD")
         elif not re.compile("[a-z0-9]{5,}").match(sys.argv[1]):
             help()
             raise ValueError("invalid argument passed: " + sys.argv[1])
         else:
             prev_hash = sys.argv[1]
-            post_hash = get_hash_for("HEAD")
+            post_hash = get_hash("HEAD")
     elif len(sys.argv) == 3 or len(sys.argv) == 4:
         hash_regex = "([a-z0-9]{5,})(~(\d+)){0,1}"
         index_regex = "(^-(\d+))|0"
@@ -145,7 +144,7 @@ def set_args():
             if arg1_groups:
                 prev_hash = get_hash(arg1_groups.group(0))
             elif arg1_index:
-                prev_hash = get_ancestor_hash_for(post_hash, index=arg1_index.group(1))
+                prev_hash = get_ancestor_hash(post_hash, index=arg1_index.group(1))
             else:
                 raise ValueError("recognized but wrongly formatted 1st argument: " + sys.argv[1])
         elif (re.compile(index_regex).match(sys.argv[1]) or sys.argv[1] == "0") and \
@@ -155,13 +154,13 @@ def set_args():
             else:
                 arg1 = sys.argv[1]
             prev_index = re.match(index_regex, arg1).group(2)
-            prev_hash = get_ancestor_hash(prev_index)
+            prev_hash = get_head_ancestor(prev_index)
             if sys.argv[2] == "0":
                 arg2 = "-0"
             else:
                 arg2 = sys.argv[2]
             post_index = re.match(index_regex, arg2).group(2)
-            post_hash = get_ancestor_hash(post_index)
+            post_hash = get_head_ancestor(post_index)
         else:
             help()
             raise ValueError("invalid arguments passed: " + sys.argv[1] + " and " + sys.argv[2])

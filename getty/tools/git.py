@@ -13,33 +13,35 @@ def get_hash(hash_exp, short=True):
     return from_sys_call(" ".join(arg_list)).strip()
 
 
-def get_hash_for(which, short=True):
-    if short:
-        return from_sys_call("git rev-parse --short " + which).strip()
-    else:
-        return from_sys_call("git rev-parse " + which).strip()
+# deprecated
+# def get_hash_for(which, short=True):
+#     if short:
+#         return from_sys_call("git rev-parse --short " + which).strip()
+#     else:
+#         return from_sys_call("git rev-parse " + which).strip()
 
 
-def get_parent_hash():
-    two_hash_str = from_sys_call("git rev-list --max-count=2 --first-parent --topo-order HEAD").strip()
-    current, parent = two_hash_str.split("\n")
-    verify_parent = from_sys_call("git rev-parse HEAD^").strip()
-    if parent == verify_parent:
-        return parent
-    else:
-        raise ValueError(
-            "parent commit hash disagree, rev-list-first-parent-topo-order vs. HEAD^: {0} vs {1}".\
-            format(parent, verify_parent))
+# deprecated
+# def get_parent_hash():
+#     two_hash_str = from_sys_call("git rev-list --max-count=2 --first-parent --topo-order HEAD").strip()
+#     current, parent = two_hash_str.split("\n")
+#     verify_parent = from_sys_call("git rev-parse HEAD^").strip()
+#     if parent == verify_parent:
+#         return parent
+#     else:
+#         raise ValueError(
+#             "parent commit hash disagree, rev-list-first-parent-topo-order vs. HEAD^: {0} vs {1}".\
+#             format(parent, verify_parent))
 
 
-def get_ancestor_hash(index, short=True):
+def get_head_ancestor(index, short=True):
     if short:
         return from_sys_call("git rev-parse --short HEAD~" + index).strip()
     else:
         return from_sys_call("git rev-parse HEAD~" + index).strip()
 
 
-def get_ancestor_hash_for(hash, index=None, short=True):
+def get_ancestor_hash(hash, index=None, short=True):
     arg_list = ["git", "rev-parse"]
     if short:
         arg_list.append("--short")
