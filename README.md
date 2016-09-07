@@ -101,18 +101,18 @@ Like Continuous Integration (CI) that supports effortless testing, CSI provides 
   $ cd dsproj
   ```
   
-  * Review invariant differentials between any two commits! As an example, compare commit `b04fabd` to its parent (`b04fabd~1`) of the example project.
+  * Review invariant differentials between any two commits! As an example, compare commit `3dc01ea` to its parent (`3dc01ea~1`) of the example project.
   
   ```bash
-  $ /path/to/your/getty/deploy/getty/csi b04fabd~1 b04fabd
+  $ /path/to/your/getty/deploy/getty/csi 3dc01ea~1 3dc01ea
   ```
   Or, using its shorter version:
   ```bash
-  $ /path/to/your/getty/deploy/getty/csi ~1 b04fabd
+  $ /path/to/your/getty/deploy/getty/csi ~1 3dc01ea
   ```
   
   After analysis your terminal will tell you where to look at the results. 
-  Typically it is located at `/path/to/your/example/project/sema.diff.html`
+  Typically it is located at `/path/to/your/example/project.__getty_output__/sema.diff.html`
   
   That's it!
   
