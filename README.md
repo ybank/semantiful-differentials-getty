@@ -61,7 +61,6 @@ Like Continuous Integration (CI) that supports effortless testing, CSI provides 
   ```bash
   $ cd /path/to/your/getty/
   $ git clone https://github.com/ybank/semantiful-differentials-getty.git
-  $ /path/to/your/getty/
   ```
   
   * The built version of CSI is under the subdirectory `deploy/getty/`. Try it out:
