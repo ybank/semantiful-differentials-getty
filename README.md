@@ -117,5 +117,5 @@ Like Continuous Integration (CI) that supports effortless testing, CSI provides 
   
   That's it!
   
-###*Using Getty*
+###*Support*
 Please send email to the authors ({yayan, mmenarini, wgg} 'AT' cs 'dot' ucsd 'dot' edu) to discuss Getty, or to post questions.
