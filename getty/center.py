@@ -200,7 +200,9 @@ def one_info_pass(
                          "-XX:-UseSplitVerifier",  # FIXME: JDK 8- only! 
                          ])
     
-    os.sys_call("mvn test -DskipTests")
+    # os.sys_call("mvn test -DskipTests", ignore_bad_exit=True)
+    os.sys_call("mvn test-compile")
+    
     junit_torun = mvn.junit_torun_str()
     if SHOW_DEBUG_INFO:
         print "\n===junit torun===\n" + junit_torun + "\n"
@@ -272,7 +274,9 @@ def one_inv_pass(go, cp, junit_torun, this_hash, refined_target_set):
                          "-XX:-UseSplitVerifier",  # FIXME: JDK 8- only! 
                          ])
     
-    os.sys_call("mvn test -DskipTests")
+    # os.sys_call("mvn test -DskipTests", ignore_bad_exit=True)
+    os.sys_call("mvn test-compile")
+    
     if SHOW_DEBUG_INFO:
         print "\n===junit torun===\n" + junit_torun + "\n"
     
