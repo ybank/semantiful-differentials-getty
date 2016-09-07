@@ -1,4 +1,4 @@
-# semantiful-differentials-getty
+# Getty - Semantiful Differentials
 
 Getty is a tool to support Continuous Semantic Inspection (CSI) for Java projects.
 
