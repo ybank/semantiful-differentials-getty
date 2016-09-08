@@ -398,11 +398,11 @@ var show_test_methods_neighbor = true;
 
 function toggle_show_invequal() {
 	if (show_methods_equal_inv) {
-		$("div#csi-output-menu a#whether-show-invequal").text("Show more methods: NO");
+		$("div#csi-output-menu a#whether-show-invequal").text("Showing more methods: NO");
 		$("a.hidable-mtd-equal-inv").hide();
 		show_methods_equal_inv = false;
 	} else {
-		$("div#csi-output-menu a#whether-show-invequal").text("Show more methods: YES");
+		$("div#csi-output-menu a#whether-show-invequal").text("Showing more methods: YES");
 		$("a.hidable-mtd-equal-inv").show();
 		show_methods_equal_inv = true;
 	}
@@ -411,11 +411,11 @@ function toggle_show_invequal() {
 
 function toggle_show_tests() {
 	if (show_test_methods_neighbor) {
-		$("div#csi-output-menu a#whether-show-tests").text("Show tests: NO");
+		$("div#csi-output-menu a#whether-show-tests").text("Showing tests: NO");
 		$("a.hidable-test-mtd-neighbor").hide();
 		show_test_methods_neighbor = false;
 	} else {
-		$("div#csi-output-menu a#whether-show-tests").text("Show tests: YES");
+		$("div#csi-output-menu a#whether-show-tests").text("Showing tests: YES");
 		$("a.hidable-test-mtd-neighbor").show();
 		show_test_methods_neighbor = true;
 	}

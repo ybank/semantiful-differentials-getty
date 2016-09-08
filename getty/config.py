@@ -25,8 +25,9 @@ max_heap = "16384m"
 omit_redundant_invs = True
 daikon_format_only = True
 disable_known_invs = False
-blocked_daikon_invs = ["daikon.inv.ternary.threeScalar.LinearTernary.enabled",
-                       "daikon.inv.ternary.threeScalar.LinearTernaryFloat.enabled"]
+blocked_daikon_invs = [
+    "daikon.inv.ternary.threeScalar.LinearTernary.enabled",
+    "daikon.inv.ternary.threeScalar.LinearTernaryFloat.enabled"]
 def compose_block_daikon_invs_exp(blacklist):
     exps = []
     for blackout in blacklist:

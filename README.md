@@ -115,6 +115,9 @@ Like Continuous Integration (CI) that supports effortless testing, CSI provides 
   Typically it is located at `/path/to/your/example/project.__getty_output__/sema.diff.html`
   
   That's it!
+
+###*Misc & Screenshot*
+[Here](http://sosa08.ucsd.edu:8000/sema.diff.html) is a screenshot of the source-impact isolated CSI view, for the commit ("#7") we discussed in our submitted CSI paper, which is currently under ICSE's review.
   
 ###*Support*
 Please send email to the authors ({yayan, mmenarini, wgg} 'AT' cs 'dot' ucsd 'dot' edu) to discuss Getty, or to post questions.

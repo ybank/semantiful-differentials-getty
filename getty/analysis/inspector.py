@@ -14,9 +14,9 @@ def getty_csi_init(html_file):
         "{{{__getty_continuous_semantic_inspection__}}}" + \
         "<div id='csi-output-targets'></div>\n" + \
         "<br><div id='csi-output-menu'>" + \
-        "<a href='#' id='whether-show-invequal' onclick='return toggle_show_invequal();'>Show more methods: YES</a>" + \
+        "<a href='#' id='whether-show-invequal' onclick='return toggle_show_invequal();'>Showing more methods: YES</a>" + \
         "&nbsp;&nbsp;&nbsp;&nbsp;" + \
-        "<a href='#' id='whether-show-tests' onclick='return toggle_show_tests();'>Show tests: YES</a>" + \
+        "<a href='#' id='whether-show-tests' onclick='return toggle_show_tests();'>Showing tests: YES</a>" + \
         "</div>" + \
         "<div id='csi-output-neighbors' " + \
         "style='border:4px double gray; padding: 4px 4px 4px 4px; margin: 8px 0 0 0;'>" + \
