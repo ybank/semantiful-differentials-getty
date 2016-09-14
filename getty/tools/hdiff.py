@@ -773,6 +773,8 @@ def __prediff_process(file_name, preserve_tag, postfix):
 
 
 def _getty_append_invdiff(html_string, targets, go, prev_hash, curr_hash):
+    global cached_header
+    global caching_stage
     for target in sorted(targets, reverse=True):
         if config.install_diffinv_only and solver.is_different(target, go, prev_hash, curr_hash):
             print '  -- processing inv diff for ' + target
@@ -784,6 +786,8 @@ def _getty_append_invdiff(html_string, targets, go, prev_hash, curr_hash):
             dstring = from_sys_call_enforce(
                 " ".join(["git diff --unified=0", prev_invs_file_tagged, curr_invs_file_tagged]))
             
+            cached_header = None
+            caching_stage = False
             if len(dstring.split("\n")) <= config.max_diff_lines:
                 dstring = __denoise(dstring)
                 dtable = parse_from_memory(dstring, True, None, with_ln=False)
