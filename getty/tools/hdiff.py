@@ -385,16 +385,22 @@ def add_hunk(output_file, show_hunk_infos):
         output_file.write('<tr class="diffhunk"><td colspan="2">Offset %d, %d lines modified</td>'%(hunk_off1, hunk_size1))
         output_file.write('<td colspan="2">Offset %d, %d lines modified</td></tr>\n'%(hunk_off2, hunk_size2))
     else:
-        # &#8942; - vertical ellipsis
-        output_file.write('<tr class="diffhunk"><td colspan="2">&#8942;</td><td colspan="2">&#8942;</td></tr>')
+        if show_hunk_infos is not None:
+            # &#8942; - vertical ellipsis
+            output_file.write('<tr class="diffhunk"><td colspan="2">&#8942;</td><td colspan="2">&#8942;</td></tr>')
 
 
+cached_header = None
+caching_stage = False
 def add_line(s1, s2, output_file):
     global line1
     global line2
     
     global oldl2m
     global newl2m
+    
+    global cached_header
+    global caching_stage
 
     orig1 = s1
     orig2 = s2
@@ -404,10 +410,10 @@ def add_line(s1, s2, output_file):
 
     if s1 == None and s2 == None:
         type_name = "unmodified"
-    elif s1 == None or s1 == "":
+    elif s1 == None or s1.strip() == "":
         type_name = "added " + postimage
         line2_active_flag = True
-    elif s2 == None or s1 == "":
+    elif s2 == None or s2.strip() == "":
         type_name = "deleted " + preimage
         line1_active_flag = True
     elif s1 == s2 and not (s1.startswith(TOO_LONG_MSG) and s2.startswith(TOO_LONG_MSG)):
@@ -437,8 +443,14 @@ def add_line(s1, s2, output_file):
     
     if (orig1 is not None and orig1.startswith(PRSV_LEFT)) or \
             (orig2 is not None and orig2.startswith(PRSV_RIGHT)):
-        output_file.write(('<tr class="invheader diff%s">' % type_name).encode(encoding))
+        # output_file.write(('<tr class="invheader diff%s">' % type_name).encode(encoding))
+        cached_header = ('<tr class="invheader diff%s">' % type_name).encode(encoding)
+        caching_stage = True
     else:
+        if cached_header is not None:
+            output_file.write(cached_header)
+            cached_header = None
+            caching_stage = False
         if ((orig1 is None or str(orig1).strip() == "") and 
             (orig2 is not None and str(orig2).strip().startswith("================"))) or \
              ((orig2 is None or str(orig2).strip() == "") and 
@@ -449,26 +461,45 @@ def add_line(s1, s2, output_file):
         else:
             output_file.write(('<tr class="diff%s">' % type_name).encode(encoding))
     
-    if s1 != None and s1 != "":
-        output_file.write(('<td class="diffline">%d </td>' % line1).encode(encoding))
-        output_file.write('<td class="diffpresent">'.encode(encoding))
-        output_file.write(convert(s1, linesize=linesize, ponct=1).encode(encoding))
-        output_file.write('</td>')
+    if caching_stage:
+        if s1 != None and s1 != "":
+            cached_header += (('<td class="diffline">%d </td>' % line1).encode(encoding))
+            cached_header += ('<td class="diffpresent">'.encode(encoding))
+            cached_header += (convert(s1, linesize=linesize, ponct=1).encode(encoding))
+            cached_header += ('</td>')
+        else:
+            s1 = ""
+            cached_header += ('<td colspan="2"></td>')
+    
+        if s2 != None and s2 != "":
+            cached_header += (('<td class="diffline">%d </td>'%line2).encode(encoding))
+            cached_header += ('<td class="diffpresent">')
+            cached_header += (convert(s2, linesize=linesize, ponct=1).encode(encoding))
+            cached_header += ('</td>')
+        else:
+            s2 = ""
+            cached_header += ('<td colspan="2"></td>')
+        cached_header += ('</tr>\n')
     else:
-        s1 = ""
-        output_file.write('<td colspan="2"> </td>')
-
-    if s2 != None and s2 != "":
-        output_file.write(('<td class="diffline">%d </td>'%line2).encode(encoding))
-        output_file.write('<td class="diffpresent">')
-        output_file.write(convert(s2, linesize=linesize, ponct=1).encode(encoding))
-        output_file.write('</td>')
-    else:
-        s2 = ""
-        output_file.write('<td colspan="2"></td>')
-
-    output_file.write('</tr>\n')
-
+        if s1 != None and s1 != "":
+            output_file.write(('<td class="diffline">%d </td>' % line1).encode(encoding))
+            output_file.write('<td class="diffpresent">'.encode(encoding))
+            output_file.write(convert(s1, linesize=linesize, ponct=1).encode(encoding))
+            output_file.write('</td>')
+        else:
+            s1 = ""
+            output_file.write('<td colspan="2"></td>')
+    
+        if s2 != None and s2 != "":
+            output_file.write(('<td class="diffline">%d </td>'%line2).encode(encoding))
+            output_file.write('<td class="diffpresent">')
+            output_file.write(convert(s2, linesize=linesize, ponct=1).encode(encoding))
+            output_file.write('</td>')
+        else:
+            s2 = ""
+            output_file.write('<td colspan="2"></td>')
+        output_file.write('</tr>\n')
+    
     if s1 != "":
         line1 += 1
     if s2 != "":
@@ -745,7 +776,7 @@ def _getty_append_invdiff(html_string, targets, go, prev_hash, curr_hash):
             
             if len(dstring.split("\n")) <= config.max_diff_lines:
                 dstring = __denoise(dstring)
-                dtable = parse_from_memory(dstring, True, False)
+                dtable = parse_from_memory(dstring, True, None)
             else:
                 print '   --- too big diff to be shown'
                 dtable = '<div>The differential is too big to be shown</div>'
