@@ -408,12 +408,15 @@ def add_line(s1, s2, output_file):
     line1_active_flag = False
     line2_active_flag = False
 
-    if s1 == None and s2 == None:
+    if s1 is None and s2 is None:
         type_name = "unmodified"
-    elif s1 == None or s1.strip() == "":
+    if (s1 is None or (len(s1) <= 1 and s1.strip() == "")) and \
+            (s2 is None or (len(s2) <= 1 and s2.strip() == "")):
+        type_name = "-ignore"
+    elif (s1 is None or s1.strip() == "") and s2 is not None:
         type_name = "added " + postimage
         line2_active_flag = True
-    elif s2 == None or s2.strip() == "":
+    elif (s2 is None or s2.strip() == "") and s1 is not None:
         type_name = "deleted " + preimage
         line1_active_flag = True
     elif s1 == s2 and not (s1.startswith(TOO_LONG_MSG) and s2.startswith(TOO_LONG_MSG)):
@@ -866,7 +869,7 @@ def _getty_install_invtips(html_string, prev_hash, curr_hash, go, oldl2m, newl2m
         newarray_str + ", " + oldarray_str + ");\n" + \
         "    $(\"div#hide-all\").toggle();\n" + \
         "    $(\"tr.diffhunk\").hide();\n" + \
-        "    $(\"tr.diff-ignore\").hide();\n" + \
+        "    $(\"tr.diff-ignore\").css('display', 'none');\n" + \
         "</script>\n</body>"
     html_string = html_string.replace("</body>", install_line)
     return html_string

@@ -172,7 +172,7 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash, common_package,
         "<div id='csi-output-targets' " + \
         "style='border:4px ridge gray; padding: 4px 4px 4px 4px; margin: 8px 0 0 0;'>" + \
         cpkg_disclaimer + \
-        "<h4 style='margin: 4px 0 8px 0'>Updated Method Targets:</h4>"
+        "<h4 style='margin: 4px 0 8px 0'>Updated Source:</h4>"
     if new_modified_src:
         replacement = ", ".join([__link_to_show_neighbors(t, common_package) for t in new_modified_src])
     else:
