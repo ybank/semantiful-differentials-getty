@@ -1,7 +1,4 @@
 bin/*
 deploy/getty/*
 
-.classpath
-.project
-.pydevproject
 .DS_Store

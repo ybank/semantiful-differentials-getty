@@ -390,9 +390,16 @@ def add_hunk(output_file, show_hunk_infos):
             output_file.write('<tr class="diffhunk"><td colspan="2">&#8942;</td><td colspan="2">&#8942;</td></tr>')
 
 
+def _ln(ln, show):
+    if show:
+        return str(ln)
+    else:
+        return ""
+
+
 cached_header = None
 caching_stage = False
-def add_line(s1, s2, output_file):
+def add_line(s1, s2, output_file, with_ln=True):
     global line1
     global line2
     
@@ -466,7 +473,7 @@ def add_line(s1, s2, output_file):
     
     if caching_stage:
         if s1 != None and s1 != "":
-            cached_header += (('<td class="diffline">%d </td>' % line1).encode(encoding))
+            cached_header += (('<td class="diffline">%s </td>' % _ln(line1, with_ln)).encode(encoding))
             cached_header += ('<td class="diffpresent">'.encode(encoding))
             cached_header += (convert(s1, linesize=linesize, ponct=1).encode(encoding))
             cached_header += ('</td>')
@@ -475,7 +482,7 @@ def add_line(s1, s2, output_file):
             cached_header += ('<td colspan="2"></td>')
     
         if s2 != None and s2 != "":
-            cached_header += (('<td class="diffline">%d </td>'%line2).encode(encoding))
+            cached_header += (('<td class="diffline">%s </td>' % _ln(line2, with_ln)).encode(encoding))
             cached_header += ('<td class="diffpresent">')
             cached_header += (convert(s2, linesize=linesize, ponct=1).encode(encoding))
             cached_header += ('</td>')
@@ -485,7 +492,7 @@ def add_line(s1, s2, output_file):
         cached_header += ('</tr>\n')
     else:
         if s1 != None and s1 != "":
-            output_file.write(('<td class="diffline">%d </td>' % line1).encode(encoding))
+            output_file.write(('<td class="diffline">%s </td>' % _ln(line1, with_ln)).encode(encoding))
             output_file.write('<td class="diffpresent">'.encode(encoding))
             output_file.write(convert(s1, linesize=linesize, ponct=1).encode(encoding))
             output_file.write('</td>')
@@ -494,7 +501,7 @@ def add_line(s1, s2, output_file):
             output_file.write('<td colspan="2"></td>')
     
         if s2 != None and s2 != "":
-            output_file.write(('<td class="diffline">%d </td>'%line2).encode(encoding))
+            output_file.write(('<td class="diffline">%s </td>' % _ln(line2, with_ln)).encode(encoding))
             output_file.write('<td class="diffpresent">')
             output_file.write(convert(s2, linesize=linesize, ponct=1).encode(encoding))
             output_file.write('</td>')
@@ -509,14 +516,14 @@ def add_line(s1, s2, output_file):
         line2 += 1
 
 
-def empty_buffer(output_file):
+def empty_buffer(output_file, with_ln=True):
     global buf
     global add_cpt
     global del_cpt
 
     if del_cpt == 0 or add_cpt == 0:
         for l in buf:
-            add_line(l[0], l[1], output_file)
+            add_line(l[0], l[1], output_file, with_ln=with_ln)
 
     elif del_cpt != 0 and add_cpt != 0:
         l0, l1 = [], []
@@ -532,14 +539,14 @@ def empty_buffer(output_file):
                 s0 = l0[i]
             if i < len(l1):
                 s1 = l1[i]
-            add_line(s0, s1, output_file)
+            add_line(s0, s1, output_file, with_ln=with_ln)
 
     add_cpt, del_cpt = 0, 0
     buf = []
 
 
 def parse_input(input_file, output_file, input_file_name, output_file_name,
-                exclude_headers, show_hunk_infos):
+                exclude_headers, show_hunk_infos, with_ln=True):
     global add_cpt, del_cpt
     global line1, line2
     global hunk_off1, hunk_size1, hunk_off2, hunk_size2
@@ -556,7 +563,7 @@ def parse_input(input_file, output_file, input_file_name, output_file_name,
         
         m = re.match('^--- ([^\s]*)', l)
         if m:
-            empty_buffer(output_file)
+            empty_buffer(output_file, with_ln=with_ln)
             file1 = m.groups()[0]
             while True:
                 l = input_file.readline()
@@ -570,7 +577,7 @@ def parse_input(input_file, output_file, input_file_name, output_file_name,
 
         m = re.match("@@ -(\d+),?(\d*) \+(\d+),?(\d*)", l)
         if m:
-            empty_buffer(output_file)
+            empty_buffer(output_file, with_ln=with_ln)
             hunk_data = map(lambda x:x=="" and 1 or int(x), m.groups())
             hunk_off1, hunk_size1, hunk_off2, hunk_size2 = hunk_data
             line1, line2 = hunk_off1, hunk_off2
@@ -578,7 +585,7 @@ def parse_input(input_file, output_file, input_file_name, output_file_name,
             continue
 
         if hunk_size1 == 0 and hunk_size2 == 0:
-            empty_buffer(output_file)
+            empty_buffer(output_file, with_ln=with_ln)
             add_comment(l, output_file)
             continue
 
@@ -603,16 +610,16 @@ def parse_input(input_file, output_file, input_file_name, output_file_name,
             continue
 
         if re.match("^\ ", l) and hunk_size1 and hunk_size2:
-            empty_buffer(output_file)
+            empty_buffer(output_file, with_ln=with_ln)
             hunk_size1 -= 1
             hunk_size2 -= 1
             buf.append((l[1:], l[1:]))
             continue
         
-        empty_buffer(output_file)
+        empty_buffer(output_file, with_ln=with_ln)
         add_comment(l, output_file)
 
-    empty_buffer(output_file)
+    empty_buffer(output_file, with_ln=with_ln)
     output_file.write(table_footer.encode(encoding))
     if not exclude_headers:
         output_file.write("<br>{{{__getty_invariant_diff__}}}<br>")
@@ -704,11 +711,11 @@ def main():
                 exclude_headers, show_hunk_infos)
 
 
-def parse_from_memory(txt, exclude_headers, show_hunk_infos):
+def parse_from_memory(txt, exclude_headers, show_hunk_infos, with_ln=True):
     " Parses diff from memory and returns a string with html "
     input_stream = StringIO.StringIO(txt)
     output_stream = StringIO.StringIO()
-    parse_input(input_stream, output_stream, '', '', exclude_headers, show_hunk_infos)
+    parse_input(input_stream, output_stream, '', '', exclude_headers, show_hunk_infos, with_ln=with_ln)
     return output_stream.getvalue()
 
 
@@ -779,7 +786,7 @@ def _getty_append_invdiff(html_string, targets, go, prev_hash, curr_hash):
             
             if len(dstring.split("\n")) <= config.max_diff_lines:
                 dstring = __denoise(dstring)
-                dtable = parse_from_memory(dstring, True, None)
+                dtable = parse_from_memory(dstring, True, None, with_ln=False)
             else:
                 print '   --- too big diff to be shown'
                 dtable = '<div>The differential is too big to be shown</div>'
