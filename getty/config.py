@@ -11,7 +11,7 @@ analyze_tests = True
 
 # whether to limit interested into a relatively smaller set
 limit_interest = True
-limit_distance = 3
+limit_distance = 0
 
 # scale parameters
 num_master_workers = 1
@@ -43,7 +43,7 @@ show_debug_info = True
 show_debug_details = False
 
 # include test coverage report
-analyze_test_coverage = True
+analyze_test_coverage = False
 
 # misc
 max_diff_lines = 1000

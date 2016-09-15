@@ -93,6 +93,7 @@ html_hdr = """<!DOCTYPE html>
         a.special-neighbor-link {{ color: red }}
         a.hidable-mtd-equal-inv {{ color: gray }}
         a.output-invc-highlight {{ color: red; text-decoration: none }}
+        div#getty-full-code-diff {{ border:2px solid gray; border-radius:10px; padding:8px; }}
         div#csi-output-targets a:hover {{ background-color: yellow }}
         div#csi-output-neighbors a:hover {{ background-color: yellow }}
         table#neighbors a {{ text-decoration: none; }}
@@ -111,10 +112,13 @@ html_hdr = """<!DOCTYPE html>
 <body>
     <h3>GETTY - SEMANTIFUL DIFFERENTIALS</h3>
     <a href='#' id='getty-advice-title' onclick='return false;'>{{{{{{__getty_advice__}}}}}}</a><br>
-    <a href='#' onclick='$(\"div#hide-all\").toggle();return false;'>show/hide more code and invariant diffs</a>
+    <div id='getty-full-code-diff'><h4 style="margin-top: 0px; margin-bottom: 0px;">Full Code Differentials</h4>
+"""
+
+continue_hdr = """</div>
+    <a href='#' onclick='$(\"div#hide-all\").toggle();return false;' style='display:none;'>Show/Hide Full Invariant Differentials</a>
     <br><br>
-    <div id='hide-all' style='display:block;'>
-    {{{{{{__getty_code_diff__}}}}}}<br>
+    <div id='hide-all' style='display:none;'>
 """
 
 html_footer = """
@@ -546,7 +550,7 @@ def empty_buffer(output_file, with_ln=True):
 
 
 def parse_input(input_file, output_file, input_file_name, output_file_name,
-                exclude_headers, show_hunk_infos, with_ln=True):
+                exclude_headers, show_hunk_infos, with_ln=True, cont=False):
     global add_cpt, del_cpt
     global line1, line2
     global hunk_off1, hunk_size1, hunk_off2, hunk_size2
@@ -621,6 +625,10 @@ def parse_input(input_file, output_file, input_file_name, output_file_name,
 
     empty_buffer(output_file, with_ln=with_ln)
     output_file.write(table_footer.encode(encoding))
+    
+    if cont:
+        output_file.write(continue_hdr)
+    
     if not exclude_headers:
         output_file.write("<br>{{{__getty_invariant_diff__}}}<br>")
         output_file.write("<br>{{{__getty_invariants__}}}<br>")
@@ -719,13 +727,15 @@ def parse_from_memory(txt, exclude_headers, show_hunk_infos, with_ln=True):
     return output_stream.getvalue()
 
 
-def diff_to_html(input_diff_file, output_html_file, exclude_headers=False, old_l2m={}, new_l2m={}):
+def diff_to_html(input_diff_file, output_html_file,
+                 exclude_headers=False, old_l2m={}, new_l2m={},
+                 cont=True):
     global oldl2m
     global newl2m
     oldl2m = old_l2m
     newl2m = new_l2m
     with open(input_diff_file, 'r') as input, open(output_html_file, 'w') as output:
-        parse_input(input, output, '', '', exclude_headers, True)
+        parse_input(input, output, '', '', exclude_headers, True, cont=cont)
 
 
 def __denoise(dstring):
@@ -878,7 +888,6 @@ def _getty_install_invtips(html_string, prev_hash, curr_hash, go, oldl2m, newl2m
         "    installInvTips(" + \
         "\"" + curr_hash + "\", " + "\"" + prev_hash + "\", " + \
         newarray_str + ", " + oldarray_str + ");\n" + \
-        "    $(\"div#hide-all\").toggle();\n" + \
         "    $(\"tr.diffhunk\").hide();\n" + \
         "    $(\"tr.diff-ignore\").css('display', 'none');\n" + \
         "</script>\n</body>"

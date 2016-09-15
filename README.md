@@ -8,11 +8,17 @@ In addition to source code changes, developers are suggested to review semantic 
 Like Continuous Integration (CI) that supports effortless testing, CSI provides change summaries with little effort from developers.
 
 ###*System Requirement*
-  * Unix-like systems (e.g., Mac OS X, 10.10.5+), Linux family (e.g., Ubuntu 14.04+)
-  * [Java SDK 7](http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html)
-  * [Maven 3.x](https://maven.apache.org/) (needs customization, see next section)
-  * [Python 2.7.x](https://www.python.org/) (with `pip`)
-  * [Git 2.2.x](https://git-scm.com/)
+  *  Operating System:
+    *  Unix-like systems (e.g., Mac OS X, 10.10.5+)
+    *  Linux family (e.g., Ubuntu 14.04+)
+    *  Windows 10 Editions, 64-bit with Bash shell (Windows Subsystem for Linux)
+  * Programming Languages and Tools:
+    * [Java (SDK 7)](http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html)
+      * [Maven (3.x)](https://maven.apache.org/) (needs customization, see next section)
+    * [Python (2.7.x)](https://www.python.org/)
+      * [`pip`](https://docs.python.org/2.7/installing/)
+  * Version Control System:
+    * [Git 2.2.x](https://git-scm.com/)
 
 ###*Prep*
   * Confirm system requirements are met: all executables should be set on your path and you can run them without specifying full path. For example:

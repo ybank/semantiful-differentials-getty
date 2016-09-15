@@ -329,19 +329,20 @@ function methodInvsCompareDiv(method_name) {
 		compareInvs = "<div>No Invariant Differences</div>";
 	else
 		compareInvs = targetInvComp.outerHTML;
-	left = 
-		"width:49%;height:400px;background-color: #5A5F5A;" + 
-		"display:inline-block;position:relative;border:2px dotted #A8BBA8;";
-	preInvs = 
-		"<iframe src='./_getty_inv__" + theMtd + "__" + prev_hash + "_.inv.html' " +
-		"class='invtip' style='" + left + "'></iframe>";
-	right = 
-		"width:49%;height:400px;background-color: #5A5F5A;" + 
-		"display:inline-block;position:absolute;right:15px;border:2px dotted #A8BBA8;";
-	postInvs = 
-		"<iframe src='./_getty_inv__" + theMtd + "__" + post_hash + "_.inv.html' " +
-		"class='invtip' style='" + right + "'></iframe>";
-	return htmlContent = compareInvs + "<br>" + preInvs + postInvs;
+//	left = 
+//		"width:49%;height:400px;background-color: #5A5F5A;" + 
+//		"display:inline-block;position:relative;border:2px dotted #A8BBA8;";
+//	preInvs = 
+//		"<iframe src='./_getty_inv__" + theMtd + "__" + prev_hash + "_.inv.html' " +
+//		"class='invtip' style='" + left + "'></iframe>";
+//	right = 
+//		"width:49%;height:400px;background-color: #5A5F5A;" + 
+//		"display:inline-block;position:absolute;right:15px;border:2px dotted #A8BBA8;";
+//	postInvs = 
+//		"<iframe src='./_getty_inv__" + theMtd + "__" + post_hash + "_.inv.html' " +
+//		"class='invtip' style='" + right + "'></iframe>";
+//	return htmlContent = compareInvs + "<br>" + preInvs + postInvs;
+	return htmlContent = compareInvs + "<br>";
 }
 
 var neighborhood_table =
@@ -398,11 +399,11 @@ var show_test_methods_neighbor = true;
 
 function toggle_show_invequal() {
 	if (show_methods_equal_inv) {
-		$("div#csi-output-menu a#whether-show-invequal").text("Showing more methods: NO");
+		$("div#csi-output-menu a#whether-show-invequal").text("Showing More Methods: NO");
 		$("a.hidable-mtd-equal-inv").hide();
 		show_methods_equal_inv = false;
 	} else {
-		$("div#csi-output-menu a#whether-show-invequal").text("Showing more methods: YES");
+		$("div#csi-output-menu a#whether-show-invequal").text("Showing More Methods: YES");
 		$("a.hidable-mtd-equal-inv").show();
 		show_methods_equal_inv = true;
 	}
@@ -411,11 +412,11 @@ function toggle_show_invequal() {
 
 function toggle_show_tests() {
 	if (show_test_methods_neighbor) {
-		$("div#csi-output-menu a#whether-show-tests").text("Showing tests: NO");
+		$("div#csi-output-menu a#whether-show-tests").text("Showing Tests: NO");
 		$("a.hidable-test-mtd-neighbor").hide();
 		show_test_methods_neighbor = false;
 	} else {
-		$("div#csi-output-menu a#whether-show-tests").text("Showing tests: YES");
+		$("div#csi-output-menu a#whether-show-tests").text("Showing Tests: YES");
 		$("a.hidable-test-mtd-neighbor").show();
 		show_test_methods_neighbor = true;
 	}
