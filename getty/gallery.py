@@ -52,7 +52,7 @@ def exam(pwd, go, js_path, common_package, all_classes_set,
                            all_classes_set)
     print 'csi report page is set.'
     
-    if config.review_after_analysys:
+    if config.review_auto_open:
         print '  Opening rendered pages for review ...'
         sys_call("open " + html_out)
     else:

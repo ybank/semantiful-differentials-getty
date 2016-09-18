@@ -406,6 +406,7 @@ def _ln(ln, show):
 
 cached_header = None
 caching_stage = False
+ignore_all_ws = False
 def add_line(s1, s2, output_file, with_ln=True):
     global line1
     global line2
@@ -415,6 +416,7 @@ def add_line(s1, s2, output_file, with_ln=True):
     
     global cached_header
     global caching_stage
+    global ignore_all_ws
 
     orig1 = s1
     orig2 = s2
@@ -426,7 +428,10 @@ def add_line(s1, s2, output_file, with_ln=True):
         type_name = "unmodified"
     if (s1 is None or (len(s1) <= 1 and s1.strip() == "")) and \
             (s2 is None or (len(s2) <= 1 and s2.strip() == "")):
-        type_name = "-ignore"
+        if ignore_all_ws:
+            type_name = "-ignore"
+        else:
+            type_name = "unmodified"
     elif (s1 is None or s1.strip() == "") and s2 is not None:
         type_name = "added " + postimage
         line2_active_flag = True
@@ -788,6 +793,8 @@ def __prediff_process(file_name, preserve_tag, postfix):
 def _getty_append_invdiff(html_string, targets, go, prev_hash, curr_hash):
     global cached_header
     global caching_stage
+    global ignore_all_ws
+    ignore_all_ws = True
     for target in sorted(targets, reverse=True):
         if config.install_diffinv_only and solver.is_different(target, go, prev_hash, curr_hash):
             print '  -- processing inv diff for ' + target
@@ -821,6 +828,7 @@ def _getty_append_invdiff(html_string, targets, go, prev_hash, curr_hash):
             replacement = anchor + "\n" + invdiffhtml
             html_string = html_string.replace(anchor, replacement)
     remove_many_files(go, "*"+PRSV_TMP)
+    ignore_all_ws = False
     return html_string
 
 
@@ -891,8 +899,13 @@ def _getty_install_invtips(html_string, prev_hash, curr_hash, go, oldl2m, newl2m
     else:
         js_show_src = ""
     
+    if config.review_with_ins:
+        js_show_inv = "    show_full_invariant = true;\n"
+    else:
+        js_show_inv = ""
+    
     install_line = \
-        "<script>\n" + js_show_src + \
+        "<script>\n" + js_show_src + js_show_inv + \
         "    installInvTips(" + \
         "\"" + curr_hash + "\", " + "\"" + prev_hash + "\", " + \
         newarray_str + ", " + oldarray_str + ");\n" + \

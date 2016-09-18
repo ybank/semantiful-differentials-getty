@@ -48,10 +48,13 @@ analyze_test_coverage = False
 # profile performance
 profile_performance = True
 
+# review options
+review_with_src = True
+review_with_ins = True
+review_auto_open = False
+
 # misc
 max_diff_lines = 1000
 max_diff_line_size = 1000
 install_inv_tips = False
 install_diffinv_only = True
-review_with_src = True
-review_after_analysys = False
