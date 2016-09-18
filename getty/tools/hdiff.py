@@ -112,6 +112,9 @@ html_hdr = """<!DOCTYPE html>
 <body>
     <h3>GETTY - SEMANTIFUL DIFFERENTIALS</h3>
     <a href='#' id='getty-advice-title' onclick='return false;'>{{{{{{__getty_advice__}}}}}}</a><br>
+    <div style='padding-left:4px; padding-bottom:4px;'>
+        <a href='#' onclick='$(\"div#getty-full-code-diff\").toggle();return false;'>Show/Hide All Code Changes</a>
+    </div>
     <div id='getty-full-code-diff'><h4 style="margin-top: 0px; margin-bottom: 0px;">Full Code Differentials</h4>
 """
 
@@ -883,8 +886,13 @@ def _getty_install_invtips(html_string, prev_hash, curr_hash, go, oldl2m, newl2m
             oldarray.append("\"" + fsformat(oldl2m[pair]) + "\"")
     oldarray_str = "[" + ", ".join(t for t in oldarray) + "]"
     
+    if config.review_with_src:
+        js_show_src = "    show_source_code = true;\n"
+    else:
+        js_show_src = ""
+    
     install_line = \
-        "<script>\n" + \
+        "<script>\n" + js_show_src + \
         "    installInvTips(" + \
         "\"" + curr_hash + "\", " + "\"" + prev_hash + "\", " + \
         newarray_str + ", " + oldarray_str + ");\n" + \

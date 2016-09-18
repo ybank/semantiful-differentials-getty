@@ -299,6 +299,8 @@ var post_affected_callee_of;  // = new buckets.Dictionary();
 var post_affected_pred_of;  // = new buckets.Dictionary();
 var post_affected_succ_of;  // = new buckets.Dictionary();
 
+var show_source_code = false;
+
 function real_name(s) {
 	colon_index = s.lastIndexOf(":");
 	if (colon_index == -1)
@@ -329,20 +331,31 @@ function methodInvsCompareDiv(method_name) {
 		compareInvs = "<div>No Invariant Differences</div>";
 	else
 		compareInvs = targetInvComp.outerHTML;
-//	left = 
-//		"width:49%;height:400px;background-color: #5A5F5A;" + 
-//		"display:inline-block;position:relative;border:2px dotted #A8BBA8;";
-//	preInvs = 
-//		"<iframe src='./_getty_inv__" + theMtd + "__" + prev_hash + "_.inv.html' " +
-//		"class='invtip' style='" + left + "'></iframe>";
-//	right = 
-//		"width:49%;height:400px;background-color: #5A5F5A;" + 
-//		"display:inline-block;position:absolute;right:15px;border:2px dotted #A8BBA8;";
-//	postInvs = 
-//		"<iframe src='./_getty_inv__" + theMtd + "__" + post_hash + "_.inv.html' " +
-//		"class='invtip' style='" + right + "'></iframe>";
-//	return htmlContent = compareInvs + "<br>" + preInvs + postInvs;
-	return htmlContent = compareInvs + "<br>";
+	if (show_source_code) {		
+		left = 
+			"width:49%;height:400px;background-color: #5A5F5A;" + 
+			"display:inline-block;position:relative;border:2px dotted #A8BBA8;";
+		// legacy - used to show invariants 
+//		preInvs = 
+//			"<iframe src='./_getty_inv__" + theMtd + "__" + prev_hash + "_.inv.html' " +
+//			"class='invtip' style='" + left + "'></iframe>";
+		preInvs = 
+			"<iframe src='./_getty_inv__" + theMtd + "__" + prev_hash + "_.inv.html' " +
+			"class='invtip' style='" + left + "'></iframe>";
+		right = 
+			"width:49%;height:400px;background-color: #5A5F5A;" + 
+			"display:inline-block;position:absolute;right:15px;border:2px dotted #A8BBA8;";
+		// legacy - used to show invariants
+//		postInvs = 
+//			"<iframe src='./_getty_inv__" + theMtd + "__" + post_hash + "_.inv.html' " +
+//			"class='invtip' style='" + right + "'></iframe>";
+		postInvs = 
+			"<iframe src='./_getty_inv__" + theMtd + "__" + post_hash + "_.inv.html' " +
+			"class='invtip' style='" + right + "'></iframe>";
+		return htmlContent = compareInvs + "<br>" + preInvs + postInvs;
+	} else {		
+		return htmlContent = compareInvs + "<br>";
+	}
 }
 
 var neighborhood_table =

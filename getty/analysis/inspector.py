@@ -14,7 +14,7 @@ def getty_csi_init(html_file):
 #         "{{{__getty_continuous_semantic_inspection__}}}" + \
         "<div id='csi-output-targets'></div>\n" + \
         "<br><div id='csi-output-menu'>" + \
-        "<div style='padding-left:4px;'><a href='#' id='whether-show-invequal' onclick='return toggle_show_invequal();'>Showing More Methods: YES</a>" + \
+        "<div style='padding-left:8px;'><a href='#' id='whether-show-invequal' onclick='return toggle_show_invequal();'>Showing More Methods: YES</a>" + \
         "&nbsp;&nbsp;&nbsp;&nbsp;" + \
         "<a href='#' id='whether-show-tests' onclick='return toggle_show_tests();'>Showing Tests: YES</a></div>" + \
         "</div>" + \
@@ -184,7 +184,7 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash, common_package,
     else:
         tests_replacement = "<span>None</span>"
     inv_change_update = \
-        "<br><br><h4 style='margin: 4px 0 8px 0'>Invariant changed:</h4>"
+        "<br><br><h4 style='margin: 4px 0 8px 0'>Invariant Changed:</h4>"
     if all_whose_inv_changed or all_whose_clsobj_inv_changed:
         if all_whose_inv_changed:
             invch_mtd_replacement = "<span>Methods: </span>" + ", ".join(
