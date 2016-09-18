@@ -62,17 +62,17 @@ Like Continuous Integration (CI) that supports effortless testing, CSI provides 
   ```
 
 ###*Using Getty*
-  * Clone Getty project, choose your own `/path/to/your/getty/`
+  * Clone Getty project, choose your own `/path/to/your/Getty/`. After this step you should see a directory named `semantiful-differentials-getty`
   
   ```bash
-  $ cd /path/to/your/semantiful-differentials-getty/
+  $ cd /path/to/your/Getty/
   $ git clone https://github.com/ybank/semantiful-differentials-getty.git
   ```
   
   * If you are using Eclipse, the project should build automatically and the built version of CSI is under the subdirectory `bin/`. Otherwise, and more generally, you can use the path to CSI in source: `getty/csi`. The following example use the latter case.
   
   ```bash
-  $ /path/to/your/semantiful-differentials-getty/getty/csi --help
+  $ /path/to/your/Getty/semantiful-differentials-getty/getty/csi --help
   villa.jar path: /your/path/to/villa.jar
   junit-x-getty.jar path: /your/path/to/junit-4.12-getty.jar
   jdyncg-0.1-getty-dycg-agent.jar path: /your/path/to/jdyncg-0.4-getty-dycg-agent.jar
@@ -108,11 +108,11 @@ Like Continuous Integration (CI) that supports effortless testing, CSI provides 
   * Review invariant differentials between any two commits! As an example, compare commit `3dc01ea` to its parent (`3dc01ea~1`) of the example project.
   
   ```bash
-  $ /path/to/your/getty/deploy/getty/csi 3dc01ea~1 3dc01ea
+  $ /path/to/your/Getty/semantiful-differentials-getty/getty/csi 3dc01ea~1 3dc01ea
   ```
   Or, using its shorter version:
   ```bash
-  $ /path/to/your/getty/deploy/getty/csi ~1 3dc01ea
+  $ /path/to/your/Getty/semantiful-differentials-getty/getty/csi ~1 3dc01ea
   ```
   
   After analysis your terminal will tell you where to look at the results. 

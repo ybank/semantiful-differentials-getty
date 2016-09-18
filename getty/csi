@@ -11,7 +11,6 @@ import config
 import gallery
 import villa
 from tools import profiler
-from tools.ex import save_to
 from tools.git import (
     backup_and_stash_first,
     get_current_head_branch,
@@ -24,7 +23,7 @@ from tools.git import (
 from tools.os import cwd, remove_many_files
 
 
-def help():
+def show_help():
     print "\n== Usage ==\n"
     print "\tGet help:"
     print "\t  csi < -h | --help >\n"
@@ -120,14 +119,14 @@ def set_args():
         post_hash = get_hash("HEAD")
     elif len(sys.argv) == 2:
         if sys.argv[1] == "-h" or sys.argv[1] == "--help":
-            help()
+            show_help()
             exit(0)
         elif re.match("^-\d+", sys.argv[1]):
             index = re.match("^-(\d+)", sys.argv[1]).group(1)
             prev_hash = get_head_ancestor(index)
             post_hash = get_hash("HEAD")
         elif not re.compile("[a-z0-9]{5,}").match(sys.argv[1]):
-            help()
+            show_help()
             raise ValueError("invalid argument passed: " + sys.argv[1])
         else:
             prev_hash = sys.argv[1]
@@ -162,7 +161,7 @@ def set_args():
             post_index = re.match(index_regex, arg2).group(2)
             post_hash = get_head_ancestor(post_index)
         else:
-            help()
+            show_help()
             raise ValueError("invalid arguments passed: " + sys.argv[1] + " and " + sys.argv[2])
         if len(sys.argv) == 4:
             issue_specific_regex = "issue:(.*)"
@@ -170,7 +169,7 @@ def set_args():
             if mts:
                 go_postfix = mts.group(1) + "_" + prev_hash + "_" + post_hash + "/"
             else:
-                help()
+                show_help()
                 raise ValueError("last argument should be: [issue:...]")
     else:
         raise ValueError("number of arguments should be 0~3")
