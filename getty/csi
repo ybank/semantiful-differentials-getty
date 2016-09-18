@@ -208,28 +208,30 @@ if __name__ == "__main__":
     '''
         multi-stage analysis: Villa (code) and Center (invariants) 
     '''
-    profiler.run_and_report(
-        "old_changed_methods, old_improved_changed_methods, old_added_changed_methods, \
-         old_all_methods, \
-         old_inner_dataflow_methods, old_outer_dataflow_methods, \
-         old_l2m, old_m2l, \
-         new_changed_methods, new_improved_changed_methods, new_removed_changed_methods, \
-         new_all_methods, \
-         new_inner_dataflow_methods, new_outer_dataflow_methods, \
-         new_l2m, new_m2l, \
-         old_changed_tests, new_changed_tests = \
-             villa.visit(villa_path, pwd, proj_dir, go, prev_hash, post_hash)",
-        go + "_getty_x_profile_villa.profile")
-#     old_changed_methods, old_improved_changed_methods, old_added_changed_methods, \
-#         old_all_methods, \
-#         old_inner_dataflow_methods, old_outer_dataflow_methods, \
-#         old_l2m, old_m2l, \
-#         new_changed_methods, new_improved_changed_methods, new_removed_changed_methods, \
-#         new_all_methods, \
-#         new_inner_dataflow_methods, new_outer_dataflow_methods, \
-#         new_l2m, new_m2l, \
-#         old_changed_tests, new_changed_tests = \
-#             villa.visit(villa_path, pwd, proj_dir, go, prev_hash, post_hash)
+    if config.profile_performance:
+        profiler.run_and_report(
+            "old_changed_methods, old_improved_changed_methods, old_added_changed_methods, \
+             old_all_methods, \
+             old_inner_dataflow_methods, old_outer_dataflow_methods, \
+             old_l2m, old_m2l, \
+             new_changed_methods, new_improved_changed_methods, new_removed_changed_methods, \
+             new_all_methods, \
+             new_inner_dataflow_methods, new_outer_dataflow_methods, \
+             new_l2m, new_m2l, \
+             old_changed_tests, new_changed_tests = \
+                 villa.visit(villa_path, pwd, proj_dir, go, prev_hash, post_hash)",
+            go + "_getty_x_profile_villa.profile")
+    else:
+        old_changed_methods, old_improved_changed_methods, old_added_changed_methods, \
+            old_all_methods, \
+            old_inner_dataflow_methods, old_outer_dataflow_methods, \
+            old_l2m, old_m2l, \
+            new_changed_methods, new_improved_changed_methods, new_removed_changed_methods, \
+            new_all_methods, \
+            new_inner_dataflow_methods, new_outer_dataflow_methods, \
+            new_l2m, new_m2l, \
+            old_changed_tests, new_changed_tests = \
+                villa.visit(villa_path, pwd, proj_dir, go, prev_hash, post_hash)
 
 #     # DEBUG ONLY
 #     print "Debug info: "
@@ -253,16 +255,18 @@ if __name__ == "__main__":
     new_test_set = set()
     new_refined_target_set = set()
     
-    profiler.run_and_report(
-        "common_package, all_classes_set, old_test_set, old_refined_target_set, new_test_set, new_refined_target_set = \
-             center.visit(junit_path, sys_classpath, agent_path, separate_go, prev_hash, post_hash, targets, \
-             old_improved_changed_methods, old_changed_tests, old_inner_dataflow_methods, old_outer_dataflow_methods, \
-             new_improved_changed_methods, new_changed_tests, new_inner_dataflow_methods, new_outer_dataflow_methods)",
-        go + "_getty_x_profile_center.profile")
-#     common_package, all_classes_set, old_test_set, old_refined_target_set, new_test_set, new_refined_target_set = \
-#         center.visit(junit_path, sys_classpath, agent_path, separate_go, prev_hash, post_hash, targets,
-#                      old_improved_changed_methods, old_changed_tests, old_inner_dataflow_methods, old_outer_dataflow_methods, 
-#                      new_improved_changed_methods, new_changed_tests, new_inner_dataflow_methods, new_outer_dataflow_methods)
+    if config.profile_performance:
+        profiler.run_and_report(
+            "common_package, all_classes_set, old_test_set, old_refined_target_set, new_test_set, new_refined_target_set = \
+                 center.visit(junit_path, sys_classpath, agent_path, separate_go, prev_hash, post_hash, targets, \
+                 old_improved_changed_methods, old_changed_tests, old_inner_dataflow_methods, old_outer_dataflow_methods, \
+                 new_improved_changed_methods, new_changed_tests, new_inner_dataflow_methods, new_outer_dataflow_methods)",
+            go + "_getty_x_profile_center.profile")
+    else:
+        common_package, all_classes_set, old_test_set, old_refined_target_set, new_test_set, new_refined_target_set = \
+            center.visit(junit_path, sys_classpath, agent_path, separate_go, prev_hash, post_hash, targets,
+                         old_improved_changed_methods, old_changed_tests, old_inner_dataflow_methods, old_outer_dataflow_methods, 
+                         new_improved_changed_methods, new_changed_tests, new_inner_dataflow_methods, new_outer_dataflow_methods)
     
     old_caller_of, old_callee_of = agency.caller_callee(go, prev_hash)
     old_pred_of, old_succ_of = agency.pred_succ(go, prev_hash)
@@ -289,23 +293,25 @@ if __name__ == "__main__":
         optional: csi view results
     '''
     all_changed_tests = list(set(old_changed_tests + new_changed_tests))
-    profiler.run_and_report(
-        "gallery.exam(pwd, go, js_path, common_package, all_classes_set, \
-             targets, new_refined_target_set, old_refined_target_set, \
-             new_improved_changed_methods, new_all_methods, \
-             new_caller_of, new_callee_of, new_pred_of, new_succ_of, \
-             old_caller_of, old_callee_of, old_pred_of, old_succ_of, \
-             all_changed_tests, old_changed_tests, new_changed_tests, \
-             old_test_set, new_test_set, \
-             prev_hash, post_hash, old_l2m, new_l2m, old_m2l, new_m2l)",
-        go + "_getty_x_profile_gallery.profile")
-#     gallery.exam(pwd, go, js_path, common_package, all_classes_set, \
-#                  targets, new_refined_target_set, old_refined_target_set, \
-#                  new_improved_changed_methods, new_all_methods, \
-#                  new_caller_of, new_callee_of, new_pred_of, new_succ_of, \
-#                  old_caller_of, old_callee_of, old_pred_of, old_succ_of, \
-#                  all_changed_tests, old_changed_tests, new_changed_tests, \
-#                  old_test_set, new_test_set, \
-#                  prev_hash, post_hash, old_l2m, new_l2m, old_m2l, new_m2l)
+    if config.profile_performance:
+        profiler.run_and_report(
+            "gallery.exam(pwd, go, js_path, common_package, all_classes_set, \
+                 targets, new_refined_target_set, old_refined_target_set, \
+                 new_improved_changed_methods, new_all_methods, \
+                 new_caller_of, new_callee_of, new_pred_of, new_succ_of, \
+                 old_caller_of, old_callee_of, old_pred_of, old_succ_of, \
+                 all_changed_tests, old_changed_tests, new_changed_tests, \
+                 old_test_set, new_test_set, \
+                 prev_hash, post_hash, old_l2m, new_l2m, old_m2l, new_m2l)",
+            go + "_getty_x_profile_gallery.profile")
+    else:
+        gallery.exam(pwd, go, js_path, common_package, all_classes_set, \
+                     targets, new_refined_target_set, old_refined_target_set, \
+                     new_improved_changed_methods, new_all_methods, \
+                     new_caller_of, new_callee_of, new_pred_of, new_succ_of, \
+                     old_caller_of, old_callee_of, old_pred_of, old_succ_of, \
+                     all_changed_tests, old_changed_tests, new_changed_tests, \
+                     old_test_set, new_test_set, \
+                     prev_hash, post_hash, old_l2m, new_l2m, old_m2l, new_m2l)
     
     print 'Quit Getty.'

@@ -45,6 +45,9 @@ show_debug_details = False
 # include test coverage report
 analyze_test_coverage = False
 
+# profile performance
+profile_performance = True
+
 # misc
 max_diff_lines = 1000
 max_diff_line_size = 1000

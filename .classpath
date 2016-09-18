@@ -2,6 +2,7 @@
 <classpath>
 	<classpathentry kind="src" path="java/src"/>
 	<classpathentry kind="src" path="java/test"/>
+	<classpathentry kind="src" output="bin" path="getty"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
 	<classpathentry kind="lib" path="java/lib/bcel-5.2.jar" sourcepath="java/lib/src/bcel-5.2.zip"/>
 	<classpathentry kind="lib" path="java/lib/daikon.jar" sourcepath="java/lib/src/daikon-5.3.3.3.zip"/>

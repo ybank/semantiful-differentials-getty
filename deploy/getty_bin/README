@@ -1,5 +1,0 @@
-scripts, .pyc, and .jar
-
-getty
-*.pyc
-lib/*.jar

@@ -65,19 +65,17 @@ Like Continuous Integration (CI) that supports effortless testing, CSI provides 
   * Clone Getty project, choose your own `/path/to/your/getty/`
   
   ```bash
-  $ cd /path/to/your/getty/
+  $ cd /path/to/your/semantiful-differentials-getty/
   $ git clone https://github.com/ybank/semantiful-differentials-getty.git
   ```
   
-  * The built version of CSI is under the subdirectory `deploy/getty/`. Try it out:
+  * If you are using Eclipse, the project should build automatically and the built version of CSI is under the subdirectory `bin/`. Otherwise, and more generally, you can use the path to CSI in source: `getty/csi`. The following example use the latter case.
   
   ```bash
-  $ /path/to/your/getty/deploy/getty/csi --help
+  $ /path/to/your/semantiful-differentials-getty/getty/csi --help
   villa.jar path: /your/path/to/villa.jar
   junit-x-getty.jar path: /your/path/to/junit-4.12-getty.jar
   jdyncg-0.1-getty-dycg-agent.jar path: /your/path/to/jdyncg-0.4-getty-dycg-agent.jar
-  
-  System classpath is complete
   
   == Usage ==
   

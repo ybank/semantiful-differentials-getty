@@ -1,4 +1,4 @@
 java/bin/*
-deploy/getty/*
+bin/*
 
 .DS_Store
