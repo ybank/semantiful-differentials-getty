@@ -324,6 +324,26 @@ function fsformat(s) {
 	return s.replace(":", "_", "g").replace("$", "_", "g").replace(/\./g, '_');
 }
 
+function name_to_path(m, hash_value) {
+	colon_index = m.lastIndexOf(":");
+	dollar_index = m.indexOf("$");
+	var rel_path;
+	if (colon_index != -1) {  // this is a method
+		if (dollar_index == -1) {  // not an inner one
+			rel_path = m.substring(0, colon_index).replace(/\./g, "/");
+		} else {  // an inner one
+			rel_path = m.substring(0, dollar_index).replace(/\./g, "/");
+		}
+	} else {  // this is a class
+		if (dollar_index == -1) {  // not an inner one
+			rel_path = m.replace(/\./g, "/");
+		} else {  // an inner one
+			rel_path = m.substring(0, dollar_index).replace(/\./g, "/");
+		}
+	}
+	return "./_getty_allcode_" + hash_value + "_/" + rel_path + ".java";
+}
+
 function methodInvsCompareDiv(method_name) {
 	theMtd = fsformat(method_name);
 	targetInvComp = $("div#hide-all div#vsinvs-" + theMtd)[0]
@@ -343,20 +363,21 @@ function methodInvsCompareDiv(method_name) {
 		var preSrcs = "", postSrcs = "";
 		if (show_full_invariant) {
 			// legacy - used to show invariants 
-			preInvs = 
+			preInvs =
 				"<iframe src='./_getty_inv__" + theMtd + "__" + prev_hash + "_.inv.html' " +
 				"class='invtip' style='" + left + "'></iframe>";
 			// legacy - used to show invariants
-			postInvs = 
+			postInvs =
 				"<iframe src='./_getty_inv__" + theMtd + "__" + post_hash + "_.inv.html' " +
 				"class='invtip' style='" + right + "'></iframe>";
 		}
-		if (show_source_code) {			
+		if (show_source_code) {
+			console.log(method_name);
 			preSrcs = "<br>" +
-				"<iframe src='./_getty_inv__" + theMtd + "__" + prev_hash + "_.inv.html' " +
+				"<iframe src='" + name_to_path(method_name, prev_hash) + "' " +
 				"class='srctip' style='" + left + "'></iframe>";
-			postSrcs = 
-				"<iframe src='./_getty_inv__" + theMtd + "__" + post_hash + "_.inv.html' " +
+			postSrcs =
+				"<iframe src='" + name_to_path(method_name, post_hash) + "' " +
 				"class='srctip' style='" + right + "'></iframe>";
 		}
 		return htmlContent = compareInvs + "<br>" + preInvs + postInvs + preSrcs + postSrcs;

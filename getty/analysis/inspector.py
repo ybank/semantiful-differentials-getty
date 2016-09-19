@@ -20,10 +20,10 @@ def getty_csi_init(html_file):
         "</div>" + \
         "<div id='csi-output-neighbors' " + \
         "style='border:2px dotted lightgray; padding: 4px 4px 4px 4px; margin: 8px 0 0 0; border-radius: 8px;'>" + \
-        "Choose a target to show its affected neighbors</div>\n" + \
+        "Choose a method/class from above to show its invocation neighbors</div>\n" + \
         "<div id='csi-output-invcomp' " + \
         "style='border:2px solid gray; padding: 4px 4px 4px 4px; margin: 8px 0 0 0; border-radius: 8px;'>" + \
-        "Choose a neighbor target to show its invariant change</div>")
+        "Invariant differentials will be shown here</div>")
     with open(html_file, 'w') as wf:
         wf.write(html_string)
 

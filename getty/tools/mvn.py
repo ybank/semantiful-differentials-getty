@@ -45,8 +45,26 @@ def full_classpath(junit_path, sys_classpath, bin_output, test_output):
 # do not handle the case when a project uses more than one testing tools (junit3 and junit4, or even testng)
 # IMPROVE: handle the above case, by creating multiple trace files and merge for invariants
 def junit_torun_str():
-    mvn_cmd = "mvn org.apache.maven.plugins:maven-surefire-plugin:2.19.2-SNAPSHOT:test | grep ^__for__getty__\ __junit"
-    output = subprocess.check_output(mvn_cmd, shell=True).strip().split("\n")
+#     mvn_cmd = "mvn org.apache.maven.plugins:maven-surefire-plugin:2.19.2-SNAPSHOT:test | grep ^__for__getty__\ __junit"
+#     output = subprocess.check_output(mvn_cmd, shell=True).strip().split("\n")
+    mvn_cmd = "mvn org.apache.maven.plugins:maven-surefire-plugin:2.19.2-SNAPSHOT:test | grep __for__getty__\ __junit"
+    output_raw = subprocess.check_output(mvn_cmd, shell=True).strip()
+    start_index = output_raw.index("__for__getty__ __junit")
+    if start_index == -1:
+        raise
+    elif start_index == 0:
+        print "\nNormal customized surefire output starting at index 0"
+        output = output_raw.split("\n")
+    elif start_index == 10:
+        print "\nCustomized surefire output starting at index 10, possibly with WARNING:"
+        print output_raw
+        output = output_raw[start_index:].split("\n")
+    elif start_index > 10:
+        print "\nCustomized surefire output starting at an abnormal index: " + str(start_index)
+        print output_raw
+        output = output_raw[start_index:].split("\n")
+    else:
+        raise
     merged_run = {}
     for junit_torun in output:
         junit_torun = junit_torun.strip()

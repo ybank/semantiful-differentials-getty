@@ -187,6 +187,15 @@ def one_info_pass(
     if SHOW_DEBUG_INFO:
         print "\n===full classpath===\n" + cp + "\n"
     
+    print "\ncopying all code to specific directory ...\n"
+    all_code_dirs = [mvn.path_from_mvn_call("sourceDirectory"),
+                     # mvn.path_from_mvn_call("scriptSourceDirectory"),
+                     mvn.path_from_mvn_call("testSourceDirectory")]
+    getty_code_store = go + '_getty_allcode_' + this_hash + '_/'
+    makedirs(getty_code_store)
+    for adir in all_code_dirs:
+        os.sys_call(" ".join(["cp -r", adir + "/*", getty_code_store]), ignore_bad_exit=True)
+    
     if config.use_special_junit_for_dyn:
         info_junit_path = os.rreplace(junit_path, config.default_junit_version, config.special_junit_version, 1)
         infocp = mvn.full_classpath(info_junit_path, sys_classpath, bin_path, test_bin_path)
