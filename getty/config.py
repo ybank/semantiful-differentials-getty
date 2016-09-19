@@ -49,8 +49,6 @@ analyze_test_coverage = False
 profile_performance = True
 
 # review options
-review_with_src = True
-review_with_ins = True
 review_auto_open = False
 
 # misc

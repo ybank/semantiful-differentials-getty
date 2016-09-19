@@ -299,9 +299,6 @@ var post_affected_callee_of;  // = new buckets.Dictionary();
 var post_affected_pred_of;  // = new buckets.Dictionary();
 var post_affected_succ_of;  // = new buckets.Dictionary();
 
-var show_source_code = false;
-var show_full_invariant = false;
-
 function real_name(s) {
 	colon_index = s.lastIndexOf(":");
 	if (colon_index == -1)
@@ -344,46 +341,91 @@ function name_to_path(m, hash_value) {
 	return "./_getty_allcode_" + hash_value + "_/" + rel_path + ".java";
 }
 
+function show_src_or_inv(which) {
+	if (which == "inv") {
+		$('iframe.srctip').hide();
+		$('iframe.invtip').css("display", "inline-block");
+		$('a.src-inv-button-link').css("color", "gray");
+		$('a#src_inv_btn_4inv').css("color", "blue");
+	} else if (which == "src") {
+		$('iframe.invtip').hide();
+		$('iframe.srctip').css("display", "inline-block");
+		$('a.src-inv-button-link').css("color", "gray");
+		$('a#src_inv_btn_4src').css("color", "blue");
+	} else {
+		$('iframe.invtip').hide();
+		$('iframe.srctip').hide();
+		$('a.src-inv-button-link').css("color", "gray");
+		$('a#src_inv_btn_4none').css("color", "blue");
+	}
+	return false;
+}
+
+function create_src_or_inv_button_link(thetype, theid) {
+	var theparam;
+	var thetext;
+	var thecolor;
+	if (thetype == "inv") {
+		theparam = "inv";
+		thetext = "Complete Invariants";
+		thecolor = "gray";
+	} else if (thetype == "src") {
+		theparam = "src";
+		thetext = "Source Code";
+		thecolor = "gray";
+	} else {
+		theparam = "none";
+		thetext = "Invariant Diff Only";
+		thecolor = "blue";
+	}
+	return "<a href='#' class='src-inv-button-link' id='" + theid + "' " +
+		"style=\"-webkit-appearance:button;-moz-appearance:button;appearance:button;" +
+		"text-decoration:none;color:" + thecolor + ";padding:5px 15px;\"" +
+		"onclick='return show_src_or_inv(\"" + theparam + "\");'>" + thetext + "</a>";
+}
+
 function methodInvsCompareDiv(method_name) {
 	theMtd = fsformat(method_name);
 	targetInvComp = $("div#hide-all div#vsinvs-" + theMtd)[0]
+	
 	if (targetInvComp == undefined)
 		// return htmlContent = "Choose a neighbor target to show its invariant change";
 		compareInvs = "<div>No Invariant Differences</div>";
 	else
 		compareInvs = targetInvComp.outerHTML;
-	if (show_source_code || show_full_invariant) {		
-		left = 
-			"width:49%;height:400px;background-color: #5A5F5A;" + 
-			"display:inline-block;position:relative;border:2px dotted #A8BBA8;";
-		right = 
-			"width:49%;height:400px;background-color: #5A5F5A;" + 
-			"display:inline-block;position:absolute;right:15px;border:2px dotted #A8BBA8;";
-		var preInvs = "", postInvs = "";
-		var preSrcs = "", postSrcs = "";
-		if (show_full_invariant) {
-			// legacy - used to show invariants 
-			preInvs =
-				"<iframe src='./_getty_inv__" + theMtd + "__" + prev_hash + "_.inv.html' " +
-				"class='invtip' style='" + left + "'></iframe>";
-			// legacy - used to show invariants
-			postInvs =
-				"<iframe src='./_getty_inv__" + theMtd + "__" + post_hash + "_.inv.html' " +
-				"class='invtip' style='" + right + "'></iframe>";
-		}
-		if (show_source_code) {
-			console.log(method_name);
-			preSrcs = "<br>" +
-				"<iframe src='" + name_to_path(method_name, prev_hash) + "' " +
-				"class='srctip' style='" + left + "'></iframe>";
-			postSrcs =
-				"<iframe src='" + name_to_path(method_name, post_hash) + "' " +
-				"class='srctip' style='" + right + "'></iframe>";
-		}
-		return htmlContent = compareInvs + "<br>" + preInvs + postInvs + preSrcs + postSrcs;
-	} else {		
-		return htmlContent = compareInvs + "<br>";
-	}
+	
+	var preInvs = "", postInvs = "";
+	var preSrcs = "", postSrcs = "";
+	ileft =
+		"width:49%;height:400px;background-color:#5A5F5A;" +
+		"display:none;position:relative;border:2px dotted #A8BBA8;";
+	iright =
+		"width:49%;height:400px;background-color:#5A5F5A;" +
+		"display:none;position:absolute;right:15px;border:2px dotted #A8BBA8;";
+	preInvs =
+		"<iframe src='./_getty_inv__" + theMtd + "__" + prev_hash + "_.inv.html' " +
+		"class='invtip' style='" + ileft + "'></iframe>";
+	postInvs =
+		"<iframe src='./_getty_inv__" + theMtd + "__" + post_hash + "_.inv.html' " +
+		"class='invtip' style='" + iright + "'></iframe>";
+	sleft =
+		"width:49%;height:400px;background-color:lightgray;" +
+		"display:none;position:relative;border:2px dotted #A8BBA8;";
+	sright =
+		"width:49%;height:400px;background-color:lightgray;" +
+		"display:none;position:absolute;right:15px;border:2px dotted #A8BBA8;";
+	preSrcs =
+		"<iframe src='" + name_to_path(method_name, prev_hash) + "' " +
+		"class='srctip' style='" + sleft + "'></iframe>";
+	postSrcs =
+		"<iframe src='" + name_to_path(method_name, post_hash) + "' " +
+		"class='srctip' style='" + sright + "'></iframe>";
+	mitabs = "<div>" +
+		[create_src_or_inv_button_link("inv", "src_inv_btn_4inv"),
+		 create_src_or_inv_button_link("src", "src_inv_btn_4src"),
+		 create_src_or_inv_button_link("none", "src_inv_btn_4none")
+		].join("&nbsp;&nbsp;&nbsp;") + "</div>";
+	return compareInvs + "<br>" + mitabs + "<br>" + preInvs + postInvs + preSrcs + postSrcs;
 }
 
 var neighborhood_table =

@@ -115,7 +115,8 @@ html_hdr = """<!DOCTYPE html>
     <div style='padding-left:4px; padding-bottom:4px;'>
         <a href='#' onclick='$(\"div#getty-full-code-diff\").toggle();return false;'>Show/Hide All Code Changes</a>
     </div>
-    <div id='getty-full-code-diff'><h4 style="margin-top: 0px; margin-bottom: 0px;">Full Code Differentials</h4>
+    <div id='getty-full-code-diff' style="display:none;">
+        <h4 style="margin-top:0px;margin-bottom:0px;">Full Code Differentials</h4>
 """
 
 continue_hdr = """</div>
@@ -345,7 +346,7 @@ def add_comment(s, output_file):
     if re.match("^diff --git", s):
         output_file.write(('<tr><td>&nbsp</td></tr>\n<tr class="diffmisc"><td colspan="4">%s</td></tr>\n'%convert(s)).encode(encoding))
     else:
-        output_file.write(('<tr class="diffmisc"><td colspan="4">%s</td></tr>\n'%convert(s)).encode(encoding))
+        output_file.write(('<tr class="diffmisc"><td colspan="4"></td></tr>\n').encode(encoding))
 
 
 def __path_to_image(fpath):
@@ -894,18 +895,8 @@ def _getty_install_invtips(html_string, prev_hash, curr_hash, go, oldl2m, newl2m
             oldarray.append("\"" + fsformat(oldl2m[pair]) + "\"")
     oldarray_str = "[" + ", ".join(t for t in oldarray) + "]"
     
-    if config.review_with_src:
-        js_show_src = "    show_source_code = true;\n"
-    else:
-        js_show_src = ""
-    
-    if config.review_with_ins:
-        js_show_inv = "    show_full_invariant = true;\n"
-    else:
-        js_show_inv = ""
-    
     install_line = \
-        "<script>\n" + js_show_src + js_show_inv + \
+        "<script>\n" + \
         "    installInvTips(" + \
         "\"" + curr_hash + "\", " + "\"" + prev_hash + "\", " + \
         newarray_str + ", " + oldarray_str + ");\n" + \
