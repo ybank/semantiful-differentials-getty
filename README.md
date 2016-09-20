@@ -116,7 +116,8 @@ Like Continuous Integration (CI) that supports effortless testing, CSI provides 
   ```
   
   After analysis your terminal will tell you where to look at the results. 
-  Typically it is located at `/path/to/your/example/project.__getty_output__/sema.diff.html`
+  Typically it is located at `/path/to/your/example/project.__getty_output__/sema.diff.html`.
+  For best viewing results, [Chrome](https://www.google.com/chrome/) and [Firefox](https://www.mozilla.org/en-US/firefox/new/) are recommanded to open the rendered html page. Safari and IE are not currently recommended.
   
   That's it!
 
