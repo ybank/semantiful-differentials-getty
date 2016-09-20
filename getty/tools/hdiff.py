@@ -121,14 +121,13 @@ html_hdr = """<!DOCTYPE html>
 
 continue_hdr = """</div>
     <a href='#' onclick='$(\"div#hide-all\").toggle();return false;' style='display:none;'>Show/Hide Full Invariant Differentials</a>
-    <br><br>
     <div id='hide-all' style='display:none;'>
 """
 
 html_footer = """
 </div>
 <footer>
-    <p><br>--------<br>Modified at {1}. Getty - Semantiful Differentials.    </p>
+    <p><br>--------<br>Generated at {1}. Getty - Semantiful Differentials.    </p>
 </footer>
 </body>
 </html>
@@ -160,6 +159,10 @@ TOO_LONG_MSG = "THIS LINE IS TOO LONG TO BE SHOWN: "
 PRSV_LEFT = "[a/] -- "
 PRSV_RIGHT = "[b/] -- "
 PRSV_TMP = ".tagged.tmp"
+
+# for matching invariant point headers
+header_regex = "^(.*\[.*(a|b).*/.*\].*-.*-).*:.*:.*:.*"
+orig_header_regex = "^(\[(a|b)/\] -- ).*:::(ENTER|EXIT|CLASS|OBJECT|THROW).*"
 
 
 def is_empty(table):
@@ -384,8 +387,11 @@ def add_filename(f1, f2, output_file):
     postimage = __filepath_to_image(f2)
     prefile = (f1[2:] if not f1.startswith("/") else f1)
     postfile = (f2[2:] if not f2.startswith("/") else f2)
-    output_file.write(("<tr><th colspan='2'>%s</th>"%convert(f1, linesize=linesize)).encode(encoding))
-    output_file.write(("<th colspan='2'>%s</th></tr>\n"%convert(f2, linesize=linesize)).encode(encoding))
+    
+    display1 = f1 if f1 != "BEFORE" else "removed invariants"
+    output_file.write(("<tr><th colspan='2'>%s</th>"%convert(display1, linesize=linesize)).encode(encoding))
+    display2 = f2 if f2 != "AFTER" else "added invariants"
+    output_file.write(("<th colspan='2'>%s</th></tr>\n"%convert(display2, linesize=linesize)).encode(encoding))
 
 
 def add_hunk(output_file, show_hunk_infos):
@@ -483,6 +489,15 @@ def add_line(s1, s2, output_file, with_ln=True):
             output_file.write(('<tr class="diff-ignore diff%s">' % type_name).encode(encoding))
         else:
             output_file.write(('<tr class="diff%s">' % type_name).encode(encoding))
+    
+    om1 = re.match(orig_header_regex, str(orig1))
+    if om1:
+        m1 = re.match(header_regex, str(s1))
+        s1 = str(s1)[len(m1.group(1)):].strip()
+    om2 = re.match(orig_header_regex, str(orig2))
+    if om2:
+        m2 = re.match(header_regex, str(s2))
+        s2 = str(s2)[len(m2.group(1)):].strip()
     
     if caching_stage:
         if s1 != None and s1 != "":

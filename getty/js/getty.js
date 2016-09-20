@@ -415,10 +415,10 @@ function methodInvsCompareDiv(method_name) {
 		"width:49%;height:400px;background-color:lightgray;" +
 		"display:none;position:absolute;right:15px;border:2px dotted #A8BBA8;";
 	preSrcs =
-		"<iframe src='" + name_to_path(method_name, prev_hash) + "' " +
+		"<iframe id='i-left-src' src='" + name_to_path(method_name, prev_hash) + "' " +
 		"class='srctip' style='" + sleft + "'></iframe>";
 	postSrcs =
-		"<iframe src='" + name_to_path(method_name, post_hash) + "' " +
+		"<iframe id='i-right-src' src='" + name_to_path(method_name, post_hash) + "' " +
 		"class='srctip' style='" + sright + "'></iframe>";
 	mitabs = "<div>" +
 		[create_src_or_inv_button_link("inv", "src_inv_btn_4inv"),
