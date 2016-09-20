@@ -8,7 +8,7 @@ inv_html_header = """<!-- inv html header -->
     pre .str { color: #EC7600; }
     pre .kwd { color: #93C763; }
     pre .com { color: #66747B; }
-    pre .typ { color: #678CB1; }
+    pre .typ { color: #AAC9E8; }
     pre .lit { color: #FACD22; }
     pre .pun { color: #F1F2F3; }
     pre .pln { color: #F1F2F3; }
@@ -28,7 +28,6 @@ inv_html_header = """<!-- inv html header -->
         margin-bottom: 0;
         padding-left: 24px;
     }
-
     li.L0, li.L1, li.L2, li.L3, li.L4, li.L5, li.L6, li.L7, li.L8, li.L9 {
         color: #555;
         list-style-type: decimal !important;
@@ -81,7 +80,6 @@ src_html_header = """<!-- src html header -->
     pre .atv { color: #ffa0a0 }
     pre .dec { color: #98fb98 }
     body { margin: 0 !important; }
-
     ol.linenums { margin-top: 0; margin-bottom: 0; color: #AEAEAE }
     li.L0,li.L1,li.L2,li.L3,li.L5,li.L6,li.L7,li.L8,li.L9 {
       list-style-type: decimal !important;
@@ -112,7 +110,7 @@ def _target_to_path(method_name):
 
 def _to_real_footer(levels):
     levelstr = ""
-    for i in range(levels):
+    for _ in range(levels):
         levelstr += "../"
     return src_html_footer.replace("=LEVELS=", levelstr)
 

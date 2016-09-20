@@ -35,7 +35,7 @@
 #   Detect if the character is "printable" for whatever definition,
 #   and display those directly.
 
-import sys, re, htmlentitydefs, getopt, StringIO, codecs, datetime
+import sys, re, htmlentitydefs, getopt, StringIO, codecs, datetime, difflib
 try:
     from simplediff import diff, string_diff
 except ImportError:
@@ -806,6 +806,20 @@ def __prediff_process(file_name, preserve_tag, postfix):
     return new_file_name
 
 
+def __prediff_process_in_memory(file_name, preserve_tag):
+    try:
+        with open(file_name, 'r') as rf:
+            content = rf.read()
+            new_content = []
+            for line in content.split("\n"):
+                if re.match(".*:::(ENTER|EXIT|CLASS|OBJECT|THROW).*", line):
+                    line = preserve_tag + line
+                new_content.append(line + "\n")
+            return new_content
+    except IOError:
+        return ['<DOES NOT EXIST>']
+
+
 def _getty_append_invdiff(html_string, targets, go, prev_hash, curr_hash):
     global cached_header
     global caching_stage
@@ -816,12 +830,20 @@ def _getty_append_invdiff(html_string, targets, go, prev_hash, curr_hash):
             print '  -- processing inv diff for ' + target
             tfs = fsformat(target)
             prev_invs_file = go + "_getty_inv__" + tfs + "__" + prev_hash + "_.inv.out"
-            prev_invs_file_tagged = __prediff_process(prev_invs_file, PRSV_LEFT, PRSV_TMP)
             curr_invs_file = go + "_getty_inv__" + tfs + "__" + curr_hash + "_.inv.out"
-            curr_invs_file_tagged = __prediff_process(curr_invs_file, PRSV_RIGHT, PRSV_TMP)
-            dstring = from_sys_call_enforce(
-                " ".join(["git diff --unified=0", prev_invs_file_tagged, curr_invs_file_tagged]))
             
+            if config.use_tmp_files:
+                prev_invs_file_tagged = __prediff_process(prev_invs_file, PRSV_LEFT, PRSV_TMP)
+                curr_invs_file_tagged = __prediff_process(curr_invs_file, PRSV_RIGHT, PRSV_TMP)
+                dstring = from_sys_call_enforce(
+                    " ".join(["git diff --unified=0", prev_invs_file_tagged, curr_invs_file_tagged]))
+            else:
+                prev_invs_tagged = __prediff_process_in_memory(prev_invs_file, PRSV_LEFT)
+                curr_invs_tagged = __prediff_process_in_memory(curr_invs_file, PRSV_RIGHT)
+                dstring = "diff --git a/invariants b/invariants\n"
+                for ln in difflib.unified_diff(prev_invs_tagged, curr_invs_tagged, n=0):
+                    dstring += ln
+
             cached_header = None
             caching_stage = False
             if len(dstring.split("\n")) <= config.max_diff_lines:
@@ -843,7 +865,8 @@ def _getty_append_invdiff(html_string, targets, go, prev_hash, curr_hash):
                 idout.write(invdiffhtml)
             replacement = anchor + "\n" + invdiffhtml
             html_string = html_string.replace(anchor, replacement)
-    remove_many_files(go, "*"+PRSV_TMP)
+    if config.use_tmp_files:
+        remove_many_files(go, "*"+PRSV_TMP)
     ignore_all_ws = False
     return html_string
 

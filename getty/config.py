@@ -55,5 +55,6 @@ code_syntax_highlight = True
 # misc
 max_diff_lines = 1000
 max_diff_line_size = 1000
+use_tmp_files = False
 install_inv_tips = False
 install_diffinv_only = True
