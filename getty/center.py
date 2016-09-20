@@ -8,7 +8,7 @@ from os import path, makedirs
 
 import agency
 import config
-from tools import daikon, git, mvn, os, profiler
+from tools import daikon, git, html, mvn, os, profiler
 
 
 SHOW_DEBUG_INFO = config.show_debug_info
@@ -408,6 +408,9 @@ def visit(junit_path, sys_classpath, agent_path, separate_go, prev_hash, post_ha
         middle pass: set common interests
     '''
     refined_target_set = old_refined_target_set | new_refined_target_set
+    if config.code_syntax_highlight:
+        html.src_to_html(refined_target_set, go, prev_hash)
+        html.src_to_html(refined_target_set, go, post_hash)
     
     '''
         3-rd pass: checkout prev_commit as detached head, and get invariants for all interesting targets

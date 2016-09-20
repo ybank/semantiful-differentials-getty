@@ -850,12 +850,9 @@ def _getty_append_invdiff(html_string, targets, go, prev_hash, curr_hash):
 
 def _import_js(html_string, js_path, go):
     import_script = "<script type=\"text/javascript\" src=\"{0}\"></script>"
-#     import_jquery = import_script.format(js_path + "jquery-1.2.6.js")
-#     import_simpletip = import_script.format(js_path + "jquery.simpletip-1.3.1.js")
-#     import_buckets = import_script.format(js_path + "buckets.min.js")
-#     import_getty = import_script.format(js_path + "getty.js")
     last_import = []
-    for jslib in ["jquery-1.2.6.js", "jquery.simpletip-1.3.1.js", "buckets.min.js", "getty.js"]:
+    for jslib in ["jquery-1.2.6.js", "jquery.simpletip-1.3.1.js",
+                  "run_prettify.js", "buckets.min.js", "getty.js"]:
         from_sys_call_enforce(" ".join(["cp", js_path + jslib, go + jslib]))
         last_import.append(import_script.format(jslib))
     last_import.append("</body>")

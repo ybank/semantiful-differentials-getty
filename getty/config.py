@@ -50,6 +50,7 @@ profile_performance = True
 
 # review options
 review_auto_open = False
+code_syntax_highlight = True
 
 # misc
 max_diff_lines = 1000

@@ -409,10 +409,10 @@ function methodInvsCompareDiv(method_name) {
 		"<iframe src='./_getty_inv__" + theMtd + "__" + post_hash + "_.inv.html' " +
 		"class='invtip' style='" + iright + "'></iframe>";
 	sleft =
-		"width:49%;height:400px;background-color:lightgray;" +
+		"width:49%;height:400px;" +
 		"display:none;position:relative;border:2px dotted #A8BBA8;";
 	sright =
-		"width:49%;height:400px;background-color:lightgray;" +
+		"width:49%;height:400px;" +
 		"display:none;position:absolute;right:15px;border:2px dotted #A8BBA8;";
 	preSrcs =
 		"<iframe id='i-left-src' src='" + name_to_path(method_name, prev_hash) + "' " +
