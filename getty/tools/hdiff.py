@@ -815,9 +815,9 @@ def _getty_append_invdiff(html_string, targets, go, prev_hash, curr_hash):
         if config.install_diffinv_only and solver.is_different(target, go, prev_hash, curr_hash):
             print '  -- processing inv diff for ' + target
             tfs = fsformat(target)
-            prev_invs_file = go + "_getty_inv__" + tfs + "__" + prev_hash + "_.inv.txt"
+            prev_invs_file = go + "_getty_inv__" + tfs + "__" + prev_hash + "_.inv.out"
             prev_invs_file_tagged = __prediff_process(prev_invs_file, PRSV_LEFT, PRSV_TMP)
-            curr_invs_file = go + "_getty_inv__" + tfs + "__" + curr_hash + "_.inv.txt"
+            curr_invs_file = go + "_getty_inv__" + tfs + "__" + curr_hash + "_.inv.out"
             curr_invs_file_tagged = __prediff_process(curr_invs_file, PRSV_RIGHT, PRSV_TMP)
             dstring = from_sys_call_enforce(
                 " ".join(["git diff --unified=0", prev_invs_file_tagged, curr_invs_file_tagged]))
@@ -874,10 +874,10 @@ def _getty_append_invariants(html_string, targets, go, prev_hash, curr_hash):
     html_string = html_string.replace("</body>", "<script>\n</script>\n</body>")
     for target in sorted(targets):
         tfs = fsformat(target)
-        prev_invs_file = go + "_getty_inv__" + tfs + "__" + prev_hash + "_.inv.txt"
+        prev_invs_file = go + "_getty_inv__" + tfs + "__" + prev_hash + "_.inv.out"
         with open(prev_invs_file, 'r') as prevf:
             prev_invs = prevf.read()
-        curr_invs_file = go + "_getty_inv__" + tfs + "__" + curr_hash + "_.inv.txt"
+        curr_invs_file = go + "_getty_inv__" + tfs + "__" + curr_hash + "_.inv.out"
         with open(curr_invs_file, 'r') as currf:
             curr_invs = currf.read()
         # html replacement

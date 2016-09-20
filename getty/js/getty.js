@@ -128,13 +128,13 @@ function methodInvsComparePage(theMtd, prev, post) {
 		"width:48%;height:400px;background-color: #5A5F5A;" + 
 		"display:inline-block;position:relative;border:2px dotted #A8BBA8;";
 	preInvs = 
-		"<iframe src='./_getty_inv__" + theMtd + "__" + prev + "_.inv.html' " +
+		"<iframe src='./_getty_inv__" + theMtd + "__" + prev + "_.inv.out' " +
 				"class='invtip' style='" + left + "'></iframe>";
 	right = 
 		"width:48%;height:400px;background-color: #5A5F5A;" + 
 		"display:inline-block;position:absolute;right:15px;border:2px dotted #A8BBA8;";
 	postInvs = 
-		"<iframe src='./_getty_inv__" + theMtd + "__" + post + "_.inv.html' " +
+		"<iframe src='./_getty_inv__" + theMtd + "__" + post + "_.inv.out' " +
 				"class='invtip' style='" + right + "'></iframe>";
 	htmlContent = compareInvs + "<br>" + preInvs + postInvs;
 	return "<body>" + htmlContent + "</body>";
@@ -247,13 +247,13 @@ function reportTipFor(theMtd, prev, post) {
 			"width:48%;height:400px;background-color: #5A5F5A;" + 
 			"display:inline-block;position:relative;border:2px dotted #A8BBA8;";
 		preInvs = 
-			"<iframe src='./_getty_inv__" + theMtd + "__" + prev + "_.inv.html' " +
+			"<iframe src='./_getty_inv__" + theMtd + "__" + prev + "_.inv.out' " +
 					"class='invtip' style='" + left + "'></iframe>";
 		right = 
 			"width:48%;height:400px;background-color: #5A5F5A;" + 
 			"display:inline-block;position:absolute;right:15px;border:2px dotted #A8BBA8;";
 		postInvs = 
-			"<iframe src='./_getty_inv__" + theMtd + "__" + post + "_.inv.html' " +
+			"<iframe src='./_getty_inv__" + theMtd + "__" + post + "_.inv.out' " +
 					"class='invtip' style='" + right + "'></iframe>";
 		htmlContent = compareInvs + "<br>" + preInvs + postInvs;
 		return "<body>" + htmlContent + "</body>";
@@ -397,22 +397,22 @@ function methodInvsCompareDiv(method_name) {
 	var preInvs = "", postInvs = "";
 	var preSrcs = "", postSrcs = "";
 	ileft =
-		"width:49%;height:400px;background-color:#5A5F5A;" +
+		"width:49%;height:400px;background-color:#000;" +
 		"display:none;position:relative;border:2px dotted #A8BBA8;";
 	iright =
-		"width:49%;height:400px;background-color:#5A5F5A;" +
+		"width:49%;height:400px;background-color:#000;" +
 		"display:none;position:absolute;right:15px;border:2px dotted #A8BBA8;";
 	preInvs =
-		"<iframe src='./_getty_inv__" + theMtd + "__" + prev_hash + "_.inv.html' " +
+		"<iframe src='./_getty_inv__" + theMtd + "__" + prev_hash + "_.inv.out' " +
 		"class='invtip' style='" + ileft + "'></iframe>";
 	postInvs =
-		"<iframe src='./_getty_inv__" + theMtd + "__" + post_hash + "_.inv.html' " +
+		"<iframe src='./_getty_inv__" + theMtd + "__" + post_hash + "_.inv.out' " +
 		"class='invtip' style='" + iright + "'></iframe>";
 	sleft =
-		"width:49%;height:400px;" +
+		"width:49%;height:400px;background-color:#333;" +
 		"display:none;position:relative;border:2px dotted #A8BBA8;";
 	sright =
-		"width:49%;height:400px;" +
+		"width:49%;height:400px;background-color:#333;" +
 		"display:none;position:absolute;right:15px;border:2px dotted #A8BBA8;";
 	preSrcs =
 		"<iframe id='i-left-src' src='" + name_to_path(method_name, prev_hash) + "' " +

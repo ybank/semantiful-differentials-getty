@@ -84,7 +84,7 @@ def sort_txt_inv(out_file):
 #             " ".join([java_cmd, "daikon.PrintInvariants", \
 #                       "--ppt-select-pattern=\'"+daikon.dfformat(tgt)+"\'", \
 #                       go+"_getty_inv_"+this_hash+"_."+index+".inv.gz"])
-#         out_file = go+"_getty_inv__"+target_ff+"__"+this_hash+"_.inv.txt"
+#         out_file = go+"_getty_inv__"+target_ff+"__"+this_hash+"_.inv.out"
 #         print "\n=== Daikon:PrintInvs command to run: \n" + run_printinv
 #         os.sys_call(run_printinv + " > " + out_file, ignore_bad_exit=True)
 #         sort_txt_inv(out_file)
@@ -156,7 +156,7 @@ def seq_get_invs(target_set_index_pair, java_cmd, junit_torun, go, this_hash):
         total_count = len(target_set)
     for tgt in target_set:
         target_ff = daikon.fsformat(tgt)
-        out_file = go+"_getty_inv__"+target_ff+"__"+this_hash+"_.inv.txt"
+        out_file = go+"_getty_inv__"+target_ff+"__"+this_hash+"_.inv.out"
         run_printinv = \
             " ".join([java_cmd, "daikon.PrintInvariants", "--format Daikon", \
                       "--ppt-select-pattern=\'"+daikon.dfformat(tgt)+"\'", \
