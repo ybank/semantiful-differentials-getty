@@ -46,7 +46,7 @@ show_debug_details = False
 analyze_test_coverage = False
 
 # profile performance
-profile_performance = True
+profile_performance = False
 
 # review options
 review_auto_open = False

@@ -476,30 +476,35 @@ def add_line(s1, s2, output_file, with_ln=True):
         cached_header = ('<tr class="invheader diff%s">' % type_name).encode(encoding)
         caching_stage = True
     else:
-        if cached_header is not None:
-            output_file.write(cached_header)
-            cached_header = None
-            caching_stage = False
         if ((orig1 is None or str(orig1).strip() == "") and 
             (orig2 is not None and str(orig2).strip().startswith("================"))) or \
              ((orig2 is None or str(orig2).strip() == "") and 
               (orig1 is not None and str(orig1).strip().startswith("================"))) or \
              (orig1 is None and orig2 is not None and str(orig2).strip() == "") or \
-             (orig2 is None and orig1 is not None and str(orig1).strip() == ""):
-            output_file.write(('<tr class="diff-ignore diff%s">' % type_name).encode(encoding))
+             (orig2 is None and orig1 is not None and str(orig1).strip() == "") or \
+             (ignore_all_ws and str(orig1).strip() == "" and str(orig2).strip() == ""):
+            if caching_stage:
+                cached_header += (('<tr class="diff-ignore diff%s">' % type_name).encode(encoding))
+            else:
+                output_file.write(('<tr class="diff-ignore diff%s">' % type_name).encode(encoding))
         else:
+            if cached_header is not None:
+                output_file.write(cached_header)
+                cached_header = None
+            if caching_stage:
+                caching_stage = False
             output_file.write(('<tr class="diff%s">' % type_name).encode(encoding))
-    
-    om1 = re.match(orig_header_regex, str(orig1))
-    if om1:
-        m1 = re.match(header_regex, str(s1))
-        s1 = str(s1)[len(m1.group(1)):].strip()
-    om2 = re.match(orig_header_regex, str(orig2))
-    if om2:
-        m2 = re.match(header_regex, str(s2))
-        s2 = str(s2)[len(m2.group(1)):].strip()
-    
+
     if caching_stage:
+        om1 = re.match(orig_header_regex, str(orig1))
+        if om1:
+            m1 = re.match(header_regex, str(s1))
+            s1 = str(s1)[len(m1.group(1)):].strip()
+        om2 = re.match(orig_header_regex, str(orig2))
+        if om2:
+            m2 = re.match(header_regex, str(s2))
+            s2 = str(s2)[len(m2.group(1)):].strip()
+
         if s1 != None and s1 != "":
             cached_header += (('<td class="diffline">%s </td>' % _ln(line1, with_ln)).encode(encoding))
             cached_header += ('<td class="diffpresent">'.encode(encoding))
@@ -508,7 +513,7 @@ def add_line(s1, s2, output_file, with_ln=True):
         else:
             s1 = ""
             cached_header += ('<td colspan="2"></td>')
-    
+
         if s2 != None and s2 != "":
             cached_header += (('<td class="diffline">%s </td>' % _ln(line2, with_ln)).encode(encoding))
             cached_header += ('<td class="diffpresent">')
