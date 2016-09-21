@@ -39,7 +39,7 @@ inv_html_header = """<!-- inv html header -->
 <pre class="prettyprint linenums"><code>
 """
 
-inv_html_footer = """<!-- src html footer -->
+inv_html_footer = """
 </code></pre><script src="./run_prettify.js"></script>
 """
 
@@ -88,7 +88,7 @@ src_html_header = """<!-- src html header -->
 </style>
 <pre class="prettyprint linenums"><code>"""
 
-src_html_footer = """<!-- src html footer -->
+src_html_footer = """
 </code></pre><script src="../=LEVELS=run_prettify.js"></script>
 """
 

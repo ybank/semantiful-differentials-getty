@@ -70,7 +70,9 @@ html_hdr = """<!DOCTYPE html>
     <meta name="generator" content="diff2html.py (http://git.droids-corp.org/gitweb/?p=diff2html)" />
     <!--meta name="author" content="Fill in" /-->
     <title>Semantiful Differentials{0}</title>
-    <link rel="shortcut icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAgMAAABinRfyAAAACVBMVEXAAAAAgAD///+K/HwIAAAAJUlEQVQI12NYBQQM2IgGBQ4mCIEQW7oyK4phampkGIQAc1G1AQCRxCNbyW92oQAAAABJRU5ErkJggg==" type="image/png" />
+    <link rel="shortcut icon"
+        href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAgMAAABinRfyAAAACVBMVEXAAAAAgAD///+K/HwIAAAAJUlEQVQI12NYBQQM2IgGBQ4mCIEQW7oyK4phampkGIQAc1G1AQCRxCNbyW92oQAAAABJRU5ErkJggg=="
+        type="image/png" />
     <meta property="dc:language" content="{5}" />
     <!--meta property="dc:date" content="{3}" /-->
     <meta property="dc:modified" content="{4}" />
@@ -112,15 +114,15 @@ html_hdr = """<!DOCTYPE html>
 <body>
     <h3>GETTY - SEMANTIFUL DIFFERENTIALS</h3>
     <a href='#' id='getty-advice-title' onclick='return false;'>{{{{{{__getty_advice__}}}}}}</a><br>
-    <div style='padding-left:4px; padding-bottom:4px;'>
-        <a href='#' onclick='$(\"div#getty-full-code-diff\").toggle();return false;'>Show/Hide All Code Changes</a>
-    </div>
+    <a href='#' style='padding-left:4px; padding-bottom:4px;'
+        onclick='$(\"div#getty-full-code-diff\").toggle();return false;'>Show/Hide All Code Changes</a>
     <div id='getty-full-code-diff' style="display:none;">
         <h4 style="margin-top:0px;margin-bottom:0px;">Full Code Differentials</h4>
 """
 
 continue_hdr = """</div>
-    <a href='#' onclick='$(\"div#hide-all\").toggle();return false;' style='display:none;'>Show/Hide Full Invariant Differentials</a>
+    <a href='#' style='padding-left:4px; display:none;'
+        onclick='$(\"div#hide-all\").toggle();return false;'>Show/Hide Full Invariant Differentials</a>
     <div id='hide-all' style='display:none;'>
 """
 

@@ -44,6 +44,7 @@ def __link_to_show_neighbors(t, common_package, style_class=None):
     tname = t
     if common_package != '':
         tname = t[len(common_package)+1:]
+    tname = tname.replace("<", "&lt;").replace(">", "&gt;")
     return "<a href='#' id='" + aid + "' class='" + cls + "' onclick='" + js_cmd + "'>" + tname + "</a>"
 
 

@@ -449,10 +449,12 @@ var common_package = '';
 var common_prefix_length = 0;
 
 function bolden_for_modified(method_name) {
+	display_name =
+		method_name.substring(common_prefix_length).replace("<", "&lt;", "g").replace(">", "&gt;", "g");
 	if (all_modified_targets.contains(method_name))
-		return "<b><u>" + method_name.substring(common_prefix_length) + "</u></b>";
+		return "<b><u>" + display_name + "</u></b>";
 	else
-		return method_name.substring(common_prefix_length);
+		return display_name;
 }
 
 function relative_count_format(map_post, map_prev, affected_method) {
