@@ -42,8 +42,8 @@ def remove_file(file_path):
 
 
 # remove a lot of files - use with care!
-def remove_many_files(dir, ptn):
-    sys_call("find " + dir +" -name \"" + ptn + "\" -print0 | xargs -0 rm -rf", ignore_bad_exit=True)
+def remove_many_files(path, ptn):
+    sys_call("find " + path +" -name \"" + ptn + "\" -print0 | xargs -0 rm -rf", ignore_bad_exit=True)
 
 
 # helper to replace last occurrence of a string to something else

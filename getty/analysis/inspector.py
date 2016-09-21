@@ -6,7 +6,6 @@ from tools.daikon import fsformat
 
 
 def getty_csi_init(html_file):
-    html_string = ""
     with open(html_file, 'r') as rf:
         html_string = rf.read()
     html_string = html_string.replace(
@@ -160,8 +159,7 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash, common_package,
     for cls in all_classes_set:
         if is_different(cls, go, prev_hash, post_hash):
             all_whose_clsobj_inv_changed.add(cls)
-    
-    html_string = ""
+
     with open(html_file, 'r') as rf:
         html_string = rf.read()
     targets_place_holder = "<div id='csi-output-targets'></div>"

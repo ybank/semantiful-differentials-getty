@@ -420,12 +420,12 @@ function methodInvsCompareDiv(method_name) {
 	postSrcs =
 		"<iframe id='i-right-src' src='" + name_to_path(method_name, post_hash) + "' " +
 		"class='srctip' style='" + sright + "'></iframe>";
-	mitabs = "<div>" +
+	mitabs = "<div style='margin-bottom:8px;'>" +
 		[create_src_or_inv_button_link("inv", "src_inv_btn_4inv"),
 		 create_src_or_inv_button_link("src", "src_inv_btn_4src"),
 		 create_src_or_inv_button_link("none", "src_inv_btn_4none")
 		].join("&nbsp;&nbsp;&nbsp;") + "</div>";
-	return compareInvs + "<br>" + mitabs + "<br>" + preInvs + postInvs + preSrcs + postSrcs;
+	return compareInvs + "<br>" + mitabs + preInvs + postInvs + preSrcs + postSrcs;
 }
 
 var neighborhood_table =
