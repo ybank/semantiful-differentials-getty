@@ -19,7 +19,7 @@ def view(pwd, go, js_path, targets, new_all_cccs, prev_hash, post_hash, old_l2m,
 #     sys_call("open " + html_out)
 
 
-def exam(pwd, go, js_path, common_package, all_classes_set,
+def exam(iso, pwd, go, js_path, common_package, all_classes_set,
          targets, new_refined_target_set, old_refined_target_set,
          new_modified_src, new_all_src,
          new_caller_of, new_callee_of, new_pred_of, new_succ_of,

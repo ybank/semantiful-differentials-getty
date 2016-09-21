@@ -377,8 +377,8 @@ def one_inv_pass(go, cp, junit_torun, this_hash, refined_target_set):
     
 
 # the main entrance
-def visit(junit_path, sys_classpath, agent_path, separate_go, prev_hash, post_hash, targets,
-          old_changed_methods, old_changed_tests, old_inner_dataflow_methods, old_outer_dataflow_methods, 
+def visit(junit_path, sys_classpath, agent_path, separate_go, prev_hash, post_hash, targets, iso,
+          old_changed_methods, old_changed_tests, old_inner_dataflow_methods, old_outer_dataflow_methods,
           new_changed_methods, new_changed_tests, new_inner_dataflow_methods, new_outer_dataflow_methods):
     
     dyng_go = separate_go[0]
