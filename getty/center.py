@@ -438,6 +438,8 @@ def visit(junit_path, sys_classpath, agent_path, separate_go, prev_hash, post_ha
         middle pass: set common interests
     '''
     refined_target_set = old_refined_target_set | new_refined_target_set
+    if config.analyze_tests:
+        refined_target_set = refined_target_set | set(old_changed_tests) | set(new_changed_tests)
     if config.code_syntax_highlight:
         html.src_to_html(refined_target_set, go, prev_hash)
         html.src_to_html(refined_target_set, go, post_hash)
@@ -475,4 +477,5 @@ def visit(junit_path, sys_classpath, agent_path, separate_go, prev_hash, post_ha
             common_package = old_common_package
     
     print 'Center analysis is completed.'
-    return common_package, all_classes_set, old_test_set, old_refined_target_set, new_test_set, new_refined_target_set
+    return common_package, all_classes_set, refined_target_set, \
+        old_test_set, old_refined_target_set, new_test_set, new_refined_target_set

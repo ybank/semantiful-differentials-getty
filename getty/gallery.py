@@ -20,7 +20,8 @@ def view(pwd, go, js_path, targets, new_all_cccs, prev_hash, post_hash, old_l2m,
 
 
 def exam(iso, pwd, go, js_path, common_package, all_classes_set,
-         targets, new_refined_target_set, old_refined_target_set,
+         targets, all_refined_target_set,
+         new_refined_target_set, old_refined_target_set,
          new_modified_src, new_all_src,
          new_caller_of, new_callee_of, new_pred_of, new_succ_of,
          old_caller_of, old_callee_of, old_pred_of, old_succ_of,
@@ -28,8 +29,7 @@ def exam(iso, pwd, go, js_path, common_package, all_classes_set,
          old_test_set, new_test_set,
          prev_hash, post_hash, old_l2m, new_l2m, old_m2l, new_m2l):
     
-    refined_target_set = new_refined_target_set | old_refined_target_set
-    refined_targets_parents_set = refined_target_set | all_classes_set
+    refined_targets_parents_set = all_refined_target_set | all_classes_set
     
     diff_in = go + "text.diff"
     html_out = go + "sema.diff.html"
@@ -48,7 +48,7 @@ def exam(iso, pwd, go, js_path, common_package, all_classes_set,
                            old_test_set, new_test_set,
                            old_caller_of, old_callee_of, old_pred_of, old_succ_of,
                            new_caller_of, new_callee_of, new_pred_of, new_succ_of,
-                           old_refined_target_set, new_refined_target_set, refined_target_set,
+                           old_refined_target_set, new_refined_target_set, all_refined_target_set,
                            all_classes_set)
     print 'csi report page is set.'
     

@@ -259,13 +259,13 @@ if __name__ == "__main__":
     
     if config.profile_performance:
         profiler.run_and_report(
-            "common_package, all_classes_set, old_test_set, old_refined_target_set, new_test_set, new_refined_target_set = \
+            "common_package, all_classes_set, all_refined_target_set, old_test_set, old_refined_target_set, new_test_set, new_refined_target_set = \
                  center.visit(junit_path, sys_classpath, agent_path, separate_go, prev_hash, post_hash, targets, iso, \
                  old_improved_changed_methods, old_changed_tests, old_inner_dataflow_methods, old_outer_dataflow_methods, \
                  new_improved_changed_methods, new_changed_tests, new_inner_dataflow_methods, new_outer_dataflow_methods)",
             go + "_getty_x_profile_center.profile")
     else:
-        common_package, all_classes_set, old_test_set, old_refined_target_set, new_test_set, new_refined_target_set = \
+        common_package, all_classes_set, all_refined_target_set, old_test_set, old_refined_target_set, new_test_set, new_refined_target_set = \
             center.visit(junit_path, sys_classpath, agent_path, separate_go, prev_hash, post_hash, targets, iso,
                          old_improved_changed_methods, old_changed_tests, old_inner_dataflow_methods, old_outer_dataflow_methods, 
                          new_improved_changed_methods, new_changed_tests, new_inner_dataflow_methods, new_outer_dataflow_methods)
@@ -298,7 +298,8 @@ if __name__ == "__main__":
     if config.profile_performance:
         profiler.run_and_report(
             "gallery.exam(iso, pwd, go, js_path, common_package, all_classes_set, \
-                 targets, new_refined_target_set, old_refined_target_set, \
+                 targets, all_refined_target_set, \
+                 new_refined_target_set, old_refined_target_set, \
                  new_improved_changed_methods, new_all_methods, \
                  new_caller_of, new_callee_of, new_pred_of, new_succ_of, \
                  old_caller_of, old_callee_of, old_pred_of, old_succ_of, \
@@ -309,7 +310,8 @@ if __name__ == "__main__":
     else:
         gallery.exam(
             iso, pwd, go, js_path, common_package, all_classes_set,
-            targets, new_refined_target_set, old_refined_target_set,
+            targets, all_refined_target_set,
+            new_refined_target_set, old_refined_target_set,
             new_improved_changed_methods, new_all_methods,
             new_caller_of, new_callee_of, new_pred_of, new_succ_of,
             old_caller_of, old_callee_of, old_pred_of, old_succ_of,

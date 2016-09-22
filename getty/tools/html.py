@@ -21,6 +21,8 @@ inv_html_header = """<!-- inv html header -->
         background: #000;
         font-family:'Droid Sans Mono','CPMono_v07','Droid Sans';
         font-size: 9pt;
+        word-wrap: break-word;
+        white-space: pre-wrap;
     }
     body { margin: 0 !important; }
     ol.linenums {
@@ -66,6 +68,8 @@ src_html_header = """<!-- src html header -->
         background-color: #333;
         border: none !important;
         font-size: 9pt;
+        word-wrap: break-word;
+        white-space: pre-wrap;
     }
     pre .nocode { background-color: none; color: #000 }
     pre .str { color: #ffa0a0 }

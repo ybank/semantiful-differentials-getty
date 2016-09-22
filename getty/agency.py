@@ -67,9 +67,9 @@ def _neighbor_for(target, the_map):
         return set()
 
 
-def refine_targets(target_set, test_set, 
+def refine_targets(target_set, test_set,
                    caller_of, callee_of, pred_of, succ_of,
-                   changed_methods, changed_tests, 
+                   changed_methods, changed_tests,
                    inner_dataflow_methods, outer_dataflow_methods):
     refined_target_set = deepcopy(target_set)
     if config.analyze_tests:
