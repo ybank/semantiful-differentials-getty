@@ -41,13 +41,13 @@ def get_head_ancestor(index, short=True):
         return from_sys_call("git rev-parse HEAD~" + index).strip()
 
 
-def get_ancestor_hash(hash, index=None, short=True):
+def get_ancestor_hash(ahash, index=None, short=True):
     arg_list = ["git", "rev-parse"]
     if short:
         arg_list.append("--short")
-    the_hash = hash
+    the_hash = ahash
     if index is not None:
-        the_hash = hash + "~" + index
+        the_hash = ahash + "~" + index
     arg_list.append(the_hash)
     return from_sys_call(" ".join(arg_list)).strip()
 

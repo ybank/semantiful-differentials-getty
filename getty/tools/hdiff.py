@@ -36,11 +36,7 @@
 #   and display those directly.
 
 import sys, re, htmlentitydefs, getopt, StringIO, codecs, datetime, difflib
-try:
-    from simplediff import diff, string_diff
-except ImportError:
-    raise EnvironmentError(
-        "simplediff module is not installed - find it here: https://github.com/paulgb/simplediff\n")
+from simplediff import diff
 
 import config
 from analysis import solver
@@ -192,7 +188,7 @@ def linediff(s, t):
         t = unicode(reduce(lambda x, y:x+y, [ sane(c) for c in t ]))
 
     m, n = len(s), len(t)
-    d = [[(0, 0) for i in range(n+1)] for i in range(m+1)]
+    d = [[(0, 0) for _ in range(n+1)] for _ in range(m+1)]
 
 
     d[0][0] = (0, (0, 0))
@@ -765,8 +761,8 @@ def diff_to_html(input_diff_file, output_html_file,
     global newl2m
     oldl2m = old_l2m
     newl2m = new_l2m
-    with open(input_diff_file, 'r') as input, open(output_html_file, 'w') as output:
-        parse_input(input, output, '', '', exclude_headers, True, cont=cont)
+    with open(input_diff_file, 'r') as inputf, open(output_html_file, 'w') as outputf:
+        parse_input(inputf, outputf, '', '', exclude_headers, True, cont=cont)
 
 
 def __denoise(dstring):
@@ -827,51 +823,68 @@ def __prediff_process_in_memory(file_name, preserve_tag):
         return ['<DOES NOT EXIST>']
 
 
-def _getty_append_invdiff(html_string, targets, go, prev_hash, curr_hash):
+def __generate_append_diff(target, diff_type, prev_invf, post_invf, diff_htmlf):
     global cached_header
     global caching_stage
+    if diff_type not in ["", "ti4o", "ti4n", "si"]:
+        raise ValueError("diff_type must be one of '', 'ti4o', 'ti4n', and 'si'")
+    if config.use_tmp_files:
+        prev_invs_file_tagged = __prediff_process(prev_invf, PRSV_LEFT, PRSV_TMP)
+        curr_invs_file_tagged = __prediff_process(post_invf, PRSV_RIGHT, PRSV_TMP)
+        dstring = from_sys_call_enforce(
+            " ".join(["git diff --unified=0", prev_invs_file_tagged, curr_invs_file_tagged]))
+    else:
+        prev_invs_tagged = __prediff_process_in_memory(prev_invf, PRSV_LEFT)
+        curr_invs_tagged = __prediff_process_in_memory(post_invf, PRSV_RIGHT)
+        dstring = "diff --git a/invariants b/invariants\n"
+        for ln in difflib.unified_diff(prev_invs_tagged, curr_invs_tagged, n=0):
+            dstring += ln
+
+    cached_header = None
+    caching_stage = False
+    if len(dstring.split("\n")) <= config.max_diff_lines:
+        dstring = __denoise(dstring)
+        dtable = parse_from_memory(dstring, True, None, with_ln=False)
+    else:
+        print '   --- too big diff to be shown'
+        dtable = '<div>The differential is too big to be shown</div>'
+    
+    inv_title = "<br>compare inviants for { <b>" + __escape(target) + "</b> }<br>"
+    if diff_type != "":
+        diff_type += "-"
+    invdiffhtml = \
+        "<div id='vsinvs-" + diff_type + fsformat(target) + "' style='min-width:960px'>" + \
+        inv_title + "\n" + dtable + \
+        ("NO DIFFERENCE" if is_empty(dtable) else "") + \
+        "\n</div>\n"
+    with open(diff_htmlf, 'w') as idout:
+        idout.write(invdiffhtml)
+    return invdiffhtml
+
+
+def _getty_append_invdiff(html_string, targets, go, prev_hash, curr_hash, iso):
     global ignore_all_ws
     ignore_all_ws = True
     for target in sorted(targets, reverse=True):
         if config.install_diffinv_only and solver.is_different(target, go, prev_hash, curr_hash):
             print '  -- processing inv diff for ' + target
             tfs = fsformat(target)
-            prev_invs_file = go + "_getty_inv__" + tfs + "__" + prev_hash + "_.inv.out"
-            curr_invs_file = go + "_getty_inv__" + tfs + "__" + curr_hash + "_.inv.out"
-            
-            if config.use_tmp_files:
-                prev_invs_file_tagged = __prediff_process(prev_invs_file, PRSV_LEFT, PRSV_TMP)
-                curr_invs_file_tagged = __prediff_process(curr_invs_file, PRSV_RIGHT, PRSV_TMP)
-                dstring = from_sys_call_enforce(
-                    " ".join(["git diff --unified=0", prev_invs_file_tagged, curr_invs_file_tagged]))
-            else:
-                prev_invs_tagged = __prediff_process_in_memory(prev_invs_file, PRSV_LEFT)
-                curr_invs_tagged = __prediff_process_in_memory(curr_invs_file, PRSV_RIGHT)
-                dstring = "diff --git a/invariants b/invariants\n"
-                for ln in difflib.unified_diff(prev_invs_tagged, curr_invs_tagged, n=0):
-                    dstring += ln
-
-            cached_header = None
-            caching_stage = False
-            if len(dstring.split("\n")) <= config.max_diff_lines:
-                dstring = __denoise(dstring)
-                dtable = parse_from_memory(dstring, True, None, with_ln=False)
-            else:
-                print '   --- too big diff to be shown'
-                dtable = '<div>The differential is too big to be shown</div>'
-            
-            anchor = "<br>{{{__getty_invariant_diff__}}}<br>"
-            inv_title = "<br>compare inviants for { <b>" + __escape(target) + "</b> }<br>"
-            invdiffhtml = \
-                "<div id='vsinvs-" + fsformat(target) + "' style='min-width:960px'>" + \
-                inv_title + "\n" + dtable + \
-                ("NO DIFFERENCE" if is_empty(dtable) else "") + \
-                "\n</div>\n"
-            invdiff_out = go + "_getty_inv__" + tfs + "__" + ".inv.diff.html"
-            with open(invdiff_out, 'w') as idout:
-                idout.write(invdiffhtml)
-            replacement = anchor + "\n" + invdiffhtml
-            html_string = html_string.replace(anchor, replacement)
+            osot_invf = go + "_getty_inv__" + tfs + "__" + prev_hash + "_.inv.out"
+            nsnt_invf = go + "_getty_inv__" + tfs + "__" + curr_hash + "_.inv.out"
+            invdiff_outft = go + "_getty_inv__" + tfs + "__" + ".inv.diff.html"
+            diff_settings = [("", osot_invf, nsnt_invf, invdiff_outft)]
+            if iso:
+                osnt_invf = go + "_getty_inv__" + tfs + "__" + prev_hash + "_" + curr_hash + "_.inv.out"
+                nsot_invf = go + "_getty_inv__" + tfs + "__" + curr_hash + "_" + prev_hash + "_.inv.out"
+                diff_settings += [
+                    ("si", osnt_invf, nsnt_invf, invdiff_outft[:-10]+"si.inv.out"),
+                    ("ti4o", osot_invf, osnt_invf, invdiff_outft[:-10]+"ti4o.inv.out"),
+                    ("ti4n", nsot_invf, nsnt_invf, invdiff_outft[:-10]+"ti4n.inv.out")]
+            for ds in diff_settings:
+                anchor = "<br>{{{__getty_invariant_diff__}}}<br>"
+                replacement = anchor + "\n" + \
+                    __generate_append_diff(target, ds[0], ds[1], ds[2], ds[3])
+                html_string = html_string.replace(anchor, replacement)
     if config.use_tmp_files:
         remove_many_files(go, "*"+PRSV_TMP)
     ignore_all_ws = False
@@ -949,7 +962,8 @@ def _getty_install_invtips(html_string, prev_hash, curr_hash, go, oldl2m, newl2m
     return html_string
 
 
-def getty_append_semainfo(template_file, targets, go, js_path, prev_hash, curr_hash, old_l2m, new_l2m):
+def getty_append_semainfo(template_file, targets, go, js_path,
+                          prev_hash, curr_hash, old_l2m, new_l2m, iso):
     global oldl2m
     global newl2m
     oldl2m = old_l2m
@@ -958,13 +972,12 @@ def getty_append_semainfo(template_file, targets, go, js_path, prev_hash, curr_h
     if not go.endswith("/"):
         go = go + "/"
     
-    html_string = ""
     print ' - reading html template ...'
     with open(template_file, 'r') as rf:
         html_string = rf.read()
     
     print ' - appending invdiffs ...'
-    html_string = _getty_append_invdiff(html_string, targets, go, prev_hash, curr_hash)
+    html_string = _getty_append_invdiff(html_string, targets, go, prev_hash, curr_hash, iso)
     print ' - import javascript libs ...'
     html_string = _import_js(html_string, js_path, go)
 #     html_string = _getty_append_invariants(html_string, targets, go, prev_hash, curr_hash)

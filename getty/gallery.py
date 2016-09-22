@@ -37,7 +37,8 @@ def exam(iso, pwd, go, js_path, common_package, all_classes_set,
     print 'generating html from diff ...'
     diff_to_html(diff_in, html_out, exclude_headers=False, old_l2m=old_l2m, new_l2m=new_l2m)
     print 'appending semainfo to the html ....'
-    getty_append_semainfo(html_out, refined_targets_parents_set, go, js_path, prev_hash, post_hash, old_l2m, new_l2m)
+    getty_append_semainfo(html_out, refined_targets_parents_set, go, js_path,
+                          prev_hash, post_hash, old_l2m, new_l2m, iso)
     
     print 'initialize csi report ...'
     getty_csi_init(html_out)
