@@ -86,7 +86,6 @@ def config_env():
         go = "/tmp/__getty_output__/"
         dyng_go = go
     else:
-        # TODO: set a good go
         curr_dir = pwd
         middle_path = ""
         while not (os.path.exists(curr_dir + ".git") and os.path.isdir(curr_dir + ".git")):
@@ -96,7 +95,7 @@ def config_env():
             else:
                 middle_path = "." + curr_dir[last_slash+1:-1] + middle_path
                 curr_dir = curr_dir[:last_slash+1]
-                proj_dir = curr_dir
+        proj_dir = curr_dir
         go = curr_dir[:-1] + middle_path + ".__getty_output__/"
         
     if os.path.exists(go):

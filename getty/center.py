@@ -268,8 +268,10 @@ def one_info_pass(
 
 
 # one pass template
-def one_inv_pass(go, cp, junit_torun, this_hash, refined_target_set):
-    os.sys_call("git checkout " + this_hash)
+def one_inv_pass(go, cp, junit_torun, this_hash, refined_target_set, analysis_only=False):
+    if not analysis_only:
+        os.sys_call("git checkout " + this_hash)
+    
     os.sys_call("mvn clean")
     
     if SHOW_DEBUG_INFO:
@@ -344,9 +346,10 @@ def one_inv_pass(go, cp, junit_torun, this_hash, refined_target_set):
             num_processes += 1
         
         max_parallel_processes = config.num_slave_workers
-        profiler.log_csv(["class_count", "process_count", "max_parallel_processes", "slave_load"], 
-                         [[num_keys, num_processes, max_parallel_processes, slave_load]],
-                         go + "_getty_y_elastic_count_" + this_hash + "_.profile.readable")
+        if not analysis_only:
+            profiler.log_csv(["class_count", "process_count", "max_parallel_processes", "slave_load"],
+                             [[num_keys, num_processes, max_parallel_processes, slave_load]],
+                             go + "_getty_y_elastic_count_" + this_hash + "_.profile.readable")
         
         input_pool = Pool(max_parallel_processes)
         input_pool.map(seq_func, target_set_inputs)
@@ -366,14 +369,41 @@ def one_inv_pass(go, cp, junit_torun, this_hash, refined_target_set):
         os.remove_many_files(go, "*.inv")
     
     # include coverage report for compare
-    if config.analyze_test_coverage:
+    if config.analyze_test_coverage and not analysis_only:
         try:
             mvn.generate_coverage_report(go, this_hash)
         except:
             pass
     
-    git.clear_temp_checkout(this_hash)
+    if not analysis_only:
+        git.clear_temp_checkout(this_hash)
+    
     return all_classes
+
+
+def mixed_passes(go, refined_target_set, prev_hash, post_hash,
+                 old_cp, new_cp, old_junit_torun, new_junit_torun):
+    # checkout old commit, then checkout new tests
+    os.sys_call("git checkout " + prev_hash)
+    new_test_path = mvn.path_from_mvn_call("testSourceDirectory")
+    os.sys_call(" ".join(["git", "checkout", post_hash, new_test_path]))
+#     # may need to check whether it is compilable, return code?
+#     os.sys_call("mvn clean test-compile")
+    one_inv_pass(go, new_cp, new_junit_torun,
+                 prev_hash + "_" + post_hash,
+                 refined_target_set, analysis_only=True)
+    git.clear_temp_checkout(prev_hash)
+    
+    # checkout old commit, then checkout new src
+    os.sys_call("git checkout " + prev_hash)
+    new_src_path = mvn.path_from_mvn_call("sourceDirectory")
+    os.sys_call(" ".join(["git", "checkout", post_hash, new_src_path]))
+#     # may need to check whether it is compilable, return code?
+#     os.sys_call("mvn clean test-compile")
+    one_inv_pass(go, new_cp, old_junit_torun,
+                 post_hash + "_" + prev_hash,
+                 refined_target_set, analysis_only=True)
+    git.clear_temp_checkout(prev_hash)
     
 
 # the main entrance
@@ -385,7 +415,7 @@ def visit(junit_path, sys_classpath, agent_path, separate_go, prev_hash, post_ha
     go = separate_go[1]
     
     print("\n****************************************************************");
-    print("        Getty Center: Semantiful Differential Analyzer");
+    print("        Getty Center: Semantiful Differential Analyzer            ");
     print("****************************************************************\n");
     
     '''
@@ -423,6 +453,13 @@ def visit(junit_path, sys_classpath, agent_path, separate_go, prev_hash, post_ha
     '''
     new_all_classes = one_inv_pass(go,
         new_cp, new_junit_torun, post_hash, refined_target_set)
+    
+    '''
+        more passes: checkout mixed commits as detached head, and get invariants for all interesting targets
+    '''
+    if iso:
+        mixed_passes(go, refined_target_set, prev_hash, post_hash,
+                     old_cp, new_cp, old_junit_torun, new_junit_torun)
     
     '''
         prepare to return

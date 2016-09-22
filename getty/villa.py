@@ -21,7 +21,7 @@ def checkout_build(proj_dir, commit_hash):
 def visit(villa_path, pwd, proj_dir, go, prev_hash, post_hash, pkg_prefix="-"):
     
     print("\n****************************************************************");
-    print("        Getty Villa: Semantiful Differential Analyzer");
+    print("        Getty Villa: Semantiful Differential Analyzer             ");
     print("****************************************************************\n");
     
     print "current working directory: " + pwd + "\n"
