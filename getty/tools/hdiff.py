@@ -928,9 +928,9 @@ def _getty_append_invdiff(html_string, targets, go, prev_hash, curr_hash, iso):
                 osnt_invf = go + "_getty_inv__" + tfs + "__" + prev_hash + "_" + curr_hash + "_.inv.out"
                 nsot_invf = go + "_getty_inv__" + tfs + "__" + curr_hash + "_" + prev_hash + "_.inv.out"
                 diff_settings += [
-                    ("si", osnt_invf, nsnt_invf, invdiff_outft[:-10]+"si.inv.out"),
-                    ("ti4o", osot_invf, osnt_invf, invdiff_outft[:-10]+"ti4o.inv.out"),
-                    ("ti4n", nsot_invf, nsnt_invf, invdiff_outft[:-10]+"ti4n.inv.out")]
+                    ("si", osnt_invf, nsnt_invf, invdiff_outft[:-10]+".si.diff.out"),
+                    ("ti4o", osot_invf, osnt_invf, invdiff_outft[:-10]+".ti4o.diff.out"),
+                    ("ti4n", nsot_invf, nsnt_invf, invdiff_outft[:-10]+".ti4n.diff.out")]
             for ds in diff_settings:
                 anchor = "<br>{{{__getty_invariant_diff__}}}<br>"
                 replacement = anchor + "\n" + \
