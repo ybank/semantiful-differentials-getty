@@ -80,7 +80,8 @@ html_hdr = """<!DOCTYPE html>
             border-collapse:collapse;
             width: 100%;
             font-size:0.75em;
-            font-family: Lucida Console, monospace
+            font-family: Lucida Console, monospace;
+            table-layout: fixed;
         }}
         td.line {{ color:#8080a0 }}
         table.diff tr td.diffpresent {{ word-wrap: break-word; white-space: pre-wrap; width: 49%; }}
@@ -392,10 +393,14 @@ def convert(s, linesize=0, ponct=0):
 
 
 def add_comment(s, output_file):
+    ln_td = "<td colspan='1' style='width:1%'>"
+    content_td = "<td colspan='1' style='width:49%'>"
+    fixed_layout_first_row = ln_td + content_td + ln_td + content_td
     if re.match("^diff --git", s):
-        output_file.write(('<tr><td>&nbsp</td></tr>\n<tr class="diffmisc"><td colspan="4">%s</td></tr>\n'%convert(s)).encode(encoding))
+        output_file.write(
+            ('<tr class="diffmisc">' + fixed_layout_first_row + '%s</td></tr>\n'%convert(s)).encode(encoding))
     else:
-        output_file.write(('<tr class="diffmisc"><td colspan="4"></td></tr>\n').encode(encoding))
+        output_file.write(('<tr class="diffmisc">' + fixed_layout_first_row + '</td></tr>\n').encode(encoding))
 
 
 def __path_to_image(fpath):
