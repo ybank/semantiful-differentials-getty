@@ -50,7 +50,7 @@ def exam(iso, pwd, go, js_path, common_package, all_classes_set,
                            old_caller_of, old_callee_of, old_pred_of, old_succ_of,
                            new_caller_of, new_callee_of, new_pred_of, new_succ_of,
                            old_refined_target_set, new_refined_target_set, all_refined_target_set,
-                           all_classes_set)
+                           all_classes_set, iso)
     print 'csi report page is set.'
     
     if config.review_auto_open:

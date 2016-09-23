@@ -1,7 +1,7 @@
 # CSI inspection page section
 
 import config
-from analysis.solver import is_different
+from analysis.solver import is_different, is_possibly_different
 from tools.daikon import fsformat
 
 
@@ -156,7 +156,7 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash, common_package,
                            old_caller_of, old_callee_of, old_pred_of, old_succ_of,
                            new_caller_of, new_callee_of, new_pred_of, new_succ_of,
                            old_refined_target_set, new_refined_target_set, refined_target_set,
-                           all_classes_set):
+                           all_classes_set, iso):
     # TODO: 
     #   Consider to use new_refined_target_set, old_refined_target_set for better results
     
@@ -168,13 +168,21 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash, common_package,
     else:
         all_considered = set(new_all_src)
     for mtd in all_considered:
-        if is_different(mtd, go, prev_hash, post_hash):
-            all_whose_inv_changed.add(mtd);
+        if iso:
+            if is_possibly_different(mtd, go, prev_hash, post_hash):
+                all_whose_inv_changed.add(mtd);
+        else:
+            if is_different(mtd, go, prev_hash, post_hash):
+                all_whose_inv_changed.add(mtd);
     
     all_whose_clsobj_inv_changed = set()
     for cls in all_classes_set:
-        if is_different(cls, go, prev_hash, post_hash):
-            all_whose_clsobj_inv_changed.add(cls)
+        if iso:
+            if is_possibly_different(cls, go, prev_hash, post_hash):
+                all_whose_clsobj_inv_changed.add(cls)
+        else:
+            if is_different(cls, go, prev_hash, post_hash):
+                all_whose_clsobj_inv_changed.add(cls)
 
     with open(html_file, 'r') as rf:
         html_string = rf.read()

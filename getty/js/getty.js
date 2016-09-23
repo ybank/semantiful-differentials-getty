@@ -497,7 +497,8 @@ function iso_type_reset(it) {
 	$('a.csi-iso-ctrl-group').css("color", "gray");
 	$('a#csi-iso-link-' + it).css("color", "blue");
 	iso_type = it;
-	output_inv_diff();
+	if (current_method_name != "")
+		output_inv_diff();
 	return false;
 }
 

@@ -75,8 +75,16 @@ html_hdr = """<!DOCTYPE html>
     <meta name="description" content="{2}" />
     <meta property="dc:abstract" content="{2}" />
     <style>
-        table {{ border:0px; border-collapse:collapse; width: 100%; font-size:0.75em; font-family: Lucida Console, monospace }}
+        table {{
+            border:0px;
+            border-collapse:collapse;
+            width: 100%;
+            font-size:0.75em;
+            font-family: Lucida Console, monospace
+        }}
         td.line {{ color:#8080a0 }}
+        table.diff tr td.diffpresent {{ word-wrap: break-word; white-space: pre-wrap; width: 49%; }}
+        table.diff tr td.diffpresent span {{ word-wrap: break-word; white-space: pre-wrap; }}
         th {{ background: black; color: white }}
         tr.diffunmodified > td {{ background: #D0D0E0 }}
         tr.diffhunk > td {{ background: #A0A0A0 }}
