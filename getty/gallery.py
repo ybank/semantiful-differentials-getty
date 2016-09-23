@@ -41,7 +41,7 @@ def exam(iso, pwd, go, js_path, common_package, all_classes_set,
                           prev_hash, post_hash, old_l2m, new_l2m, iso)
     
     print 'initialize csi report ...'
-    getty_csi_init(html_out)
+    getty_csi_init(html_out, iso)
     print 'setting csi target variables ...'
     getty_csi_targets_prep(html_out, go, prev_hash, post_hash, common_package,
                            all_changed_tests, old_changed_tests, new_changed_tests,

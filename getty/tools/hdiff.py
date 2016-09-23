@@ -91,9 +91,49 @@ html_hdr = """<!DOCTYPE html>
         a.special-neighbor-link {{ color: red }}
         a.hidable-mtd-equal-inv {{ color: gray }}
         a.output-invc-highlight {{ color: red; text-decoration: none }}
-        div#getty-full-code-diff {{ border:2px solid gray; border-radius:10px; padding:8px; }}
+        a.csi-iso-ctrl-group {{
+            -webkit-appearance: button;
+            -moz-appearance: button;
+            appearance: button;
+            text-decoration: none;
+            padding: 4px 8px;
+            margin: 0 2px 0 2px;
+        }}
+        a.src-inv-button-link {{
+            -webkit-appearance: button;
+            -moz-appearance: button;
+            appearance: button;
+            text-decoration: none;
+            padding: 4px 12px;
+            margin-left: 2px;
+        }}
+        div#getty-full-code-diff {{
+            border:2px solid gray;
+            order-radius:10px;
+            padding:8px;
+        }}
+        div#csi-output-targets {{
+            border: 4px ridge gray;
+            padding: 4px 4px 4px 4px;
+            margin: 8px 0 0 0;
+            border-radius: 10px;
+        }}
         div#csi-output-targets a:hover {{ background-color: yellow }}
+        div#csi-output-menu {{ padding: 4px 0 0 4px; }}
+        div#csi-output-neighbors-outer {{
+            border:2px dotted lightgray;
+            padding: 4px 4px 4px 4px;
+            margin: 8px 0 0 0;
+            border-radius: 8px;
+        }}
         div#csi-output-neighbors a:hover {{ background-color: yellow }}
+        div#csi-output-invcomp-outer {{
+            border: 2px solid gray;
+            padding: 4px 4px 4px 4px;
+            margin: 8px 0 0 0;
+            border-radius: 8px;
+        }}
+        div.inv-cmp-title {{ margin-top: 8px; }}
         table#neighbors a {{ text-decoration: none; }}
         .tooltip {{
             position: absolute;
@@ -826,8 +866,8 @@ def __prediff_process_in_memory(file_name, preserve_tag):
 def __generate_append_diff(target, diff_type, prev_invf, post_invf, diff_htmlf):
     global cached_header
     global caching_stage
-    if diff_type not in ["", "ti4o", "ti4n", "si"]:
-        raise ValueError("diff_type must be one of '', 'ti4o', 'ti4n', and 'si'")
+    if diff_type not in ["ni", "ti4o", "ti4n", "si"]:
+        raise ValueError("diff_type must be one of 'ni', 'ti4o', 'ti4n', and 'si'")
     if config.use_tmp_files:
         prev_invs_file_tagged = __prediff_process(prev_invf, PRSV_LEFT, PRSV_TMP)
         curr_invs_file_tagged = __prediff_process(post_invf, PRSV_RIGHT, PRSV_TMP)
@@ -849,11 +889,9 @@ def __generate_append_diff(target, diff_type, prev_invf, post_invf, diff_htmlf):
         print '   --- too big diff to be shown'
         dtable = '<div>The differential is too big to be shown</div>'
     
-    inv_title = "<br>compare inviants for { <b>" + __escape(target) + "</b> }<br>"
-    if diff_type != "":
-        diff_type += "-"
+    inv_title = "<div class='inv-cmp-title'>compare inviants for { <b>" + __escape(target) + "</b> }</div>"
     invdiffhtml = \
-        "<div id='vsinvs-" + diff_type + fsformat(target) + "' style='min-width:960px'>" + \
+        "<div id='vsinvs-" + diff_type + "-" + fsformat(target) + "' style='min-width:960px'>" + \
         inv_title + "\n" + dtable + \
         ("NO DIFFERENCE" if is_empty(dtable) else "") + \
         "\n</div>\n"
@@ -872,7 +910,7 @@ def _getty_append_invdiff(html_string, targets, go, prev_hash, curr_hash, iso):
             osot_invf = go + "_getty_inv__" + tfs + "__" + prev_hash + "_.inv.out"
             nsnt_invf = go + "_getty_inv__" + tfs + "__" + curr_hash + "_.inv.out"
             invdiff_outft = go + "_getty_inv__" + tfs + "__" + ".inv.diff.html"
-            diff_settings = [("", osot_invf, nsnt_invf, invdiff_outft)]
+            diff_settings = [("ni", osot_invf, nsnt_invf, invdiff_outft)]
             if iso:
                 osnt_invf = go + "_getty_inv__" + tfs + "__" + prev_hash + "_" + curr_hash + "_.inv.out"
                 nsot_invf = go + "_getty_inv__" + tfs + "__" + curr_hash + "_" + prev_hash + "_.inv.out"
@@ -933,7 +971,7 @@ def _getty_append_invariants(html_string, targets, go, prev_hash, curr_hash):
     return html_string
 
 
-def _getty_install_invtips(html_string, prev_hash, curr_hash, go, oldl2m, newl2m):
+def _getty_install_invtips(html_string, prev_hash, curr_hash, go, oldl2m, newl2m, iso):
     newarray = ["\"" + curr_hash + "\""]
     if config.install_inv_tips:
         for pair in newl2m:
@@ -950,8 +988,13 @@ def _getty_install_invtips(html_string, prev_hash, curr_hash, go, oldl2m, newl2m
             oldarray.append("\"" + fsformat(oldl2m[pair]) + "\"")
     oldarray_str = "[" + ", ".join(t for t in oldarray) + "]"
     
+    iso_setup = ""
+    if iso:
+        iso_setup = "    isolation = true;\n"
+    
     install_line = \
         "<script>\n" + \
+        iso_setup + \
         "    installInvTips(" + \
         "\"" + curr_hash + "\", " + "\"" + prev_hash + "\", " + \
         newarray_str + ", " + oldarray_str + ");\n" + \
@@ -987,7 +1030,7 @@ def getty_append_semainfo(template_file, targets, go, js_path,
     inv_to_html(targets, go, curr_hash)
     
     print ' - install tooltips and show/hide contents ...'
-    html_string = _getty_install_invtips(html_string, prev_hash, curr_hash, go, old_l2m, new_l2m)
+    html_string = _getty_install_invtips(html_string, prev_hash, curr_hash, go, old_l2m, new_l2m, iso)
     
     print ' - writing to html ...'
     with open(template_file, 'w') as wf:

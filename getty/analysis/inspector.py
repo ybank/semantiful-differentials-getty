@@ -5,27 +5,42 @@ from analysis.solver import is_different
 from tools.daikon import fsformat
 
 
-def getty_csi_init(html_file):
-    with open(html_file, 'r') as rf:
-        html_string = rf.read()
-    html_string = html_string.replace(
-        "<a href='#' id='getty-advice-title' onclick='return false;'>{{{__getty_advice__}}}</a>",
-#         "{{{__getty_continuous_semantic_inspection__}}}" + \
-        "<div id='csi-output-targets'></div>\n" + \
-        "<br><div id='csi-output-menu'>" + \
-        "<div style='padding-left:8px;'>" + \
-        "<a href='#' id='whether-show-invequal' onclick='return toggle_show_invequal();'>Showing More Methods: YES</a>" + \
-        "&nbsp;&nbsp;&nbsp;&nbsp;" + \
-        "<a href='#' id='whether-show-tests' onclick='return toggle_show_tests();'>Showing Tests: YES</a></div>" + \
-        "</div>" + \
-        "<div id='csi-output-neighbors' " + \
-        "style='border:2px dotted lightgray; padding: 4px 4px 4px 4px; margin: 8px 0 0 0; border-radius: 8px;'>" + \
-        "Choose a method/class from above to show its invocation neighbors</div>\n" + \
-        "<div id='csi-output-invcomp' " + \
-        "style='border:2px solid gray; padding: 4px 4px 4px 4px; margin: 8px 0 0 0; border-radius: 8px;'>" + \
-        "Invariant differentials will be shown here</div>")
-    with open(html_file, 'w') as wf:
-        wf.write(html_string)
+def getty_csi_init(html_file, iso):
+    with open(html_file, 'r+') as f:
+        html_string = f.read()
+        anchor = "<a href='#' id='getty-advice-title' onclick='return false;'>{{{__getty_advice__}}}</a>"
+        isolation_ctrl = "<div id='csi-iso-ctrl' style='display:none;'><p>No Impact Isolation</p></div>\n"
+        if iso:
+            iso_links = ""
+            for iso_type, iso_text, tcolor in [("ni", "No Impact Isolation", "blue"),
+                                               ("si", "Source Change Impact", "gray"),
+                                               ("ti4o", "Test Change Impact (for OLD Source)", "gray"),
+                                               ("ti4n", "Test Change Impact (for NEW Source)", "gray")]:
+                iso_links += \
+                        "    <a id='csi-iso-link-" + iso_type + "' class='csi-iso-ctrl-group' href='#' " + \
+                        " style='color: " + tcolor + ";' " + \
+                        "onclick='return iso_type_reset(\"" + iso_type + "\");'>" + iso_text + "</a>"
+            isolation_ctrl = "<div id='csi-iso-ctrl' style='margin-top:10px;'>" + iso_links + "</div>\n"
+        html_string = html_string.replace(anchor,
+            "<div id='csi-output-targets'></div>\n" + \
+            "<div id='csi-output-neighbors-outer'>" + \
+            "  <div id='csi-output-menu'>" + \
+            "    <a href='#' id='whether-show-invequal' onclick='return toggle_show_invequal();'>Showing More Methods: YES</a>" + \
+            "&nbsp;&nbsp;&nbsp;&nbsp;" + \
+            "    <a href='#' id='whether-show-tests' onclick='return toggle_show_tests();'>Showing Tests: YES</a>" + \
+            "  </div>\n" + \
+            "  <div id='csi-output-neighbors'>" + \
+            "    <div style='padding: 8px 0 4px 4px;'>Choose a method/class from above to show its invocation neighbors" + \
+            "    </div>\n" + \
+            "  </div>\n" + \
+            "</div>\n" + \
+            "<div id='csi-output-invcomp-outer'>" + isolation_ctrl + \
+            "  <div id='csi-output-invcomp'>" + \
+            "    <div style='padding: 8px 0 4px 4px;'>Invariant differentials will be shown here" + \
+            "</div></div></div>")
+        f.seek(0)
+        f.truncate()
+        f.write(html_string)
 
 
 def __set_all_with_tests(new_all, map_of_map):
@@ -169,10 +184,7 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash, common_package,
         cpkg_disclaimer = "<h4 style='margin: 4px 0 8px 0'>Common Package: " + common_package + "</h4>"
     replace_footer = "</div>"
     replace_header = \
-        "<div id='csi-output-targets' " + \
-        "style='border:4px ridge gray; padding: 4px 4px 4px 4px; margin: 8px 0 0 0; border-radius: 10px;'>" + \
-        cpkg_disclaimer + \
-        "<h4 style='margin: 4px 0 8px 0'>Updated Source:</h4>"
+        "<div id='csi-output-targets'>" + cpkg_disclaimer + "<h4 style='margin: 4px 0 8px 0'>Updated Source:</h4>"
     if new_modified_src:
         replacement = ", ".join([__link_to_show_neighbors(t, common_package) for t in new_modified_src])
     else:
