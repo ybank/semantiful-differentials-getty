@@ -453,8 +453,9 @@ function update_neighbor(method_name, direction, ref_var, ref_prev_var) {
 	$('table#neighbors td#neighbor-' + direction).html(html_content);
 }
 
-function output_inv_diff(method_name) {
-	$('div#csi-output-invcomp').html(methodInvsCompareDiv(method_name));
+var current_method_name = "";
+function output_inv_diff() {
+	$('div#csi-output-invcomp').html(methodInvsCompareDiv(current_method_name));
 	show_src_or_inv(invdiff_display_with);
 }
 
@@ -478,7 +479,8 @@ function structure_neighbors(method_name) {
 	update_neighbor(method_name, 'south', post_affected_callee_of, prev_affected_callee_of);
 	update_neighbor(method_name, 'west', post_affected_pred_of, prev_affected_pred_of);
 	update_neighbor(method_name, 'east', post_affected_succ_of, prev_affected_succ_of);
-	output_inv_diff(method_name);
+	current_method_name = method_name;
+	output_inv_diff();
 	selected_show_hide();
 	return false;
 }
@@ -494,6 +496,8 @@ function activateNeighbors(method_name) {
 function iso_type_reset(it) {
 	$('a.csi-iso-ctrl-group').css("color", "gray");
 	$('a#csi-iso-link-' + it).css("color", "blue");
+	iso_type = it;
+	output_inv_diff();
 	return false;
 }
 
