@@ -1042,6 +1042,11 @@ def getty_append_semainfo(template_file, targets, go, js_path,
     print ' - inv txt to html (post) ...'
     inv_to_html(targets, go, curr_hash)
     
+    if iso:
+        print ' - mixed inv txt to html ...'
+        inv_to_html(targets, go, prev_hash + "_" + curr_hash)
+        inv_to_html(targets, go, curr_hash + "_" + prev_hash)
+    
     print ' - install tooltips and show/hide contents ...'
     html_string = _getty_install_invtips(html_string, prev_hash, curr_hash, go, old_l2m, new_l2m, iso)
     

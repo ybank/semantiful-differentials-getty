@@ -9,6 +9,8 @@ var isolation = false;
 var iso_type = "ni";
 var invdiff_display_with = "none";
 
+var current_method_name = "";
+
 function methodInvsComparePage(theMtd, prev, post) {
 	compareInvs = $("div#hide-all div#vsinvs-" + iso_type + "-" + theMtd)[0].outerHTML;
 	left = 
@@ -231,6 +233,35 @@ function name_to_path(m, hash_value) {
 function show_src_or_inv(which) {
 	if (which == "inv") {
 		$('iframe.srctip').hide();
+		tfs = fsformat(current_method_name)
+		switch (iso_type) {
+			case "ni":
+				$('iframe#iinvprev').attr('src',
+						"./_getty_inv__" + tfs + "__" + prev_hash + "_.inv.out");
+				$('iframe#iinvpost').attr('src',
+						"./_getty_inv__" + tfs + "__" + post_hash + "_.inv.out");
+				break;
+			case "si":
+				$('iframe#iinvprev').attr('src',
+						"./_getty_inv__" + tfs + "__" + prev_hash + "_" + post_hash + "_.inv.out");
+				$('iframe#iinvpost').attr('src',
+						"./_getty_inv__" + tfs + "__" + post_hash + "_.inv.out");
+				break;
+			case "ti4o":
+				$('iframe#iinvprev').attr('src',
+						"./_getty_inv__" + tfs + "__" + prev_hash + "_.inv.out");
+				$('iframe#iinvpost').attr('src',
+						"./_getty_inv__" + tfs + "__" + prev_hash + "_" + post_hash + "_.inv.out");
+				break;
+			case "ti4n":
+				$('iframe#iinvprev').attr('src',
+						"./_getty_inv__" + tfs + "__" + post_hash + "_" + prev_hash + "_.inv.out");
+				$('iframe#iinvpost').attr('src',
+						"./_getty_inv__" + tfs + "__" + post_hash + "_.inv.out");
+				break;
+			default:
+				console.log("incorrect iso_type: " + iso_type);
+		}
 		$('iframe.invtip').css("display", "inline-block");
 		$('a.src-inv-button-link').css("color", "gray");
 		$('a#src_inv_btn_4inv').css("color", "blue");
@@ -286,10 +317,10 @@ function methodInvsCompareDiv(method_name) {
 		"width:49%;height:400px;background-color:#000;" +
 		"display:none;position:absolute;right:15px;border:2px dotted #A8BBA8;";
 	preInvs =
-		"<iframe src='./_getty_inv__" + theMtd + "__" + prev_hash + "_.inv.out' " +
+		"<iframe id='iinvprev' name='iinvprev' src='./_getty_inv__" + theMtd + "__" + prev_hash + "_.inv.out' " +
 		"class='invtip' style='" + ileft + "'></iframe>";
 	postInvs =
-		"<iframe src='./_getty_inv__" + theMtd + "__" + post_hash + "_.inv.out' " +
+		"<iframe id='iinvpost' name='iinvpost' src='./_getty_inv__" + theMtd + "__" + post_hash + "_.inv.out' " +
 		"class='invtip' style='" + iright + "'></iframe>";
 	sleft =
 		"width:49%;height:400px;background-color:#333;" +
@@ -453,7 +484,6 @@ function update_neighbor(method_name, direction, ref_var, ref_prev_var) {
 	$('table#neighbors td#neighbor-' + direction).html(html_content);
 }
 
-var current_method_name = "";
 function output_inv_diff() {
 	$('div#csi-output-invcomp').html(methodInvsCompareDiv(current_method_name));
 	show_src_or_inv(invdiff_display_with);
