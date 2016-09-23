@@ -1,0 +1,43 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>edu.ucla.cs.compilers</groupId>
+  <artifactId>jtb</artifactId>
+  <packaging>jar</packaging>
+  <version>1.3.2</version>
+  <name>Java Tree Builder</name>
+  <url>http://compilers.cs.ucla.edu/jtb/</url>
+  <description>JTB is a syntax tree builder to be used with the Java Compiler Compiler (JavaCC)
+    parser generator.</description>
+  <scm>
+    <connection>none</connection>
+  </scm>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.5</source>
+          <target>1.5</target>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifest>
+              <mainClass>EDU.purdue.jtb.JTB</mainClass>
+              <packageName>EDU.purdue.jtb</packageName>
+            </manifest>
+            <manifestEntries>
+              <Sealed>true</Sealed>
+            </manifestEntries>
+          </archive>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

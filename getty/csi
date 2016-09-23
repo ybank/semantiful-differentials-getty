@@ -106,8 +106,10 @@ def config_env():
     
     # javascript path
     js_path = this_script_dir + "js/"
+    cust_mvn_repo = this_script_dir + "lib/repository"
     
-    return villa_path, junit_path, sys_classpath, agent_path, pwd, proj_dir, go, dyng_go, js_path
+    return villa_path, junit_path, sys_classpath, agent_path, \
+        pwd, proj_dir, go, dyng_go, js_path, cust_mvn_repo
 
 
 def set_args():
@@ -184,7 +186,8 @@ def set_args():
 if __name__ == "__main__":
     
     ## env config
-    villa_path, junit_path, sys_classpath, agent_path, pwd, proj_dir, go, dyng_go, js_path = config_env()
+    villa_path, junit_path, sys_classpath, agent_path, \
+        pwd, proj_dir, go, dyng_go, js_path, cust_mvn_repo = config_env()
     
     ## args checking & setting
     prev_hash, post_hash, go_postfix, iso = set_args()
@@ -260,13 +263,13 @@ if __name__ == "__main__":
     if config.profile_performance:
         profiler.run_and_report(
             "common_package, all_classes_set, all_refined_target_set, old_test_set, old_refined_target_set, new_test_set, new_refined_target_set = \
-                 center.visit(junit_path, sys_classpath, agent_path, separate_go, prev_hash, post_hash, targets, iso, \
+                 center.visit(junit_path, sys_classpath, agent_path, cust_mvn_repo, separate_go, prev_hash, post_hash, targets, iso, \
                  old_improved_changed_methods, old_changed_tests, old_inner_dataflow_methods, old_outer_dataflow_methods, \
                  new_improved_changed_methods, new_changed_tests, new_inner_dataflow_methods, new_outer_dataflow_methods)",
             go + "_getty_x_profile_center.profile")
     else:
         common_package, all_classes_set, all_refined_target_set, old_test_set, old_refined_target_set, new_test_set, new_refined_target_set = \
-            center.visit(junit_path, sys_classpath, agent_path, separate_go, prev_hash, post_hash, targets, iso,
+            center.visit(junit_path, sys_classpath, agent_path, cust_mvn_repo, separate_go, prev_hash, post_hash, targets, iso,
                          old_improved_changed_methods, old_changed_tests, old_inner_dataflow_methods, old_outer_dataflow_methods, 
                          new_improved_changed_methods, new_changed_tests, new_inner_dataflow_methods, new_outer_dataflow_methods)
     

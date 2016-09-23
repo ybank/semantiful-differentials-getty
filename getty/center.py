@@ -176,7 +176,7 @@ def seq_get_invs(target_set_index_pair, java_cmd, junit_torun, go, this_hash):
 
 # one pass template
 def one_info_pass(
-        junit_path, sys_classpath, agent_path, dyng_go, go, this_hash, target_set,
+        junit_path, sys_classpath, agent_path, cust_mvn_repo, dyng_go, go, this_hash, target_set,
         changed_methods, changed_tests, inner_dataflow_methods, outer_dataflow_methods):
     os.sys_call("git checkout " + this_hash)
     os.sys_call("mvn clean")
@@ -212,7 +212,7 @@ def one_info_pass(
     # os.sys_call("mvn test -DskipTests", ignore_bad_exit=True)
     os.sys_call("mvn test-compile")
     
-    junit_torun = mvn.junit_torun_str()
+    junit_torun = mvn.junit_torun_str(cust_mvn_repo)
     if SHOW_DEBUG_INFO:
         print "\n===junit torun===\n" + junit_torun + "\n"
     
@@ -407,7 +407,7 @@ def mixed_passes(go, refined_target_set, prev_hash, post_hash,
     
 
 # the main entrance
-def visit(junit_path, sys_classpath, agent_path, separate_go, prev_hash, post_hash, targets, iso,
+def visit(junit_path, sys_classpath, agent_path, cust_mvn_repo, separate_go, prev_hash, post_hash, targets, iso,
           old_changed_methods, old_changed_tests, old_inner_dataflow_methods, old_outer_dataflow_methods,
           new_changed_methods, new_changed_tests, new_inner_dataflow_methods, new_outer_dataflow_methods):
     
@@ -423,7 +423,7 @@ def visit(junit_path, sys_classpath, agent_path, separate_go, prev_hash, post_ha
     '''
     old_common_package, old_test_set, old_refined_target_set, old_cp, old_junit_torun = \
         one_info_pass(
-            junit_path, sys_classpath, agent_path, dyng_go, go, prev_hash, targets,
+            junit_path, sys_classpath, agent_path, cust_mvn_repo, dyng_go, go, prev_hash, targets,
             old_changed_methods, old_changed_tests, old_inner_dataflow_methods, old_outer_dataflow_methods)
     
     '''
@@ -431,7 +431,7 @@ def visit(junit_path, sys_classpath, agent_path, separate_go, prev_hash, post_ha
     '''
     new_common_package, new_test_set, new_refined_target_set, new_cp, new_junit_torun = \
         one_info_pass(
-            junit_path, sys_classpath, agent_path, dyng_go, go, post_hash, targets,
+            junit_path, sys_classpath, agent_path, cust_mvn_repo, dyng_go, go, post_hash, targets,
             new_changed_methods, new_changed_tests, new_inner_dataflow_methods, new_outer_dataflow_methods)
     
     '''

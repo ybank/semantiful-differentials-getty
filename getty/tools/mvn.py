@@ -44,10 +44,12 @@ def full_classpath(junit_path, sys_classpath, bin_output, test_output):
 # get junit version, runner, and test classes
 # do not handle the case when a project uses more than one testing tools (junit3 and junit4, or even testng)
 # IMPROVE: handle the above case, by creating multiple trace files and merge for invariants
-def junit_torun_str():
+def junit_torun_str(cust_mvn_repo):
 #     mvn_cmd = "mvn org.apache.maven.plugins:maven-surefire-plugin:2.19.2-SNAPSHOT:test | grep ^__for__getty__\ __junit"
 #     output = subprocess.check_output(mvn_cmd, shell=True).strip().split("\n")
-    mvn_cmd = "mvn org.apache.maven.plugins:maven-surefire-plugin:2.19.2-SNAPSHOT:test | grep __for__getty__\ __junit"
+    mvn_cmd = "mvn -Dmaven.repo.local=" + cust_mvn_repo + \
+        " org.apache.maven.plugins:maven-surefire-plugin:2.19.2-SNAPSHOT:test" + \
+        " | " + "grep __for__getty__\ __junit"
     output_raw = subprocess.check_output(mvn_cmd, shell=True).strip()
     start_index = output_raw.index("__for__getty__ __junit")
     if start_index == -1:
