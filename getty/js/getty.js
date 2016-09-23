@@ -7,6 +7,7 @@ var post_hash = "";
 
 var isolation = false;
 var iso_type = "ni";
+var invdiff_display_with = "none";
 
 function methodInvsComparePage(theMtd, prev, post) {
 	compareInvs = $("div#hide-all div#vsinvs-" + iso_type + "-" + theMtd)[0].outerHTML;
@@ -244,28 +245,25 @@ function show_src_or_inv(which) {
 		$('a.src-inv-button-link').css("color", "gray");
 		$('a#src_inv_btn_4none').css("color", "blue");
 	}
+	invdiff_display_with = which;
 	return false;
 }
 
 function create_src_or_inv_button_link(thetype, theid) {
 	var theparam;
 	var thetext;
-	var thecolor;
 	if (thetype == "inv") {
 		theparam = "inv";
 		thetext = "Complete Invariants";
-		thecolor = "gray";
 	} else if (thetype == "src") {
 		theparam = "src";
 		thetext = "Source Code";
-		thecolor = "gray";
 	} else {
 		theparam = "none";
 		thetext = "Invariant Diff Only";
-		thecolor = "blue";
 	}
 	return "<a href='#' class='src-inv-button-link' id='" + theid + "' " +
-		"style=\"color:" + thecolor + ";\"" +
+		"style=\"color:" + ((thetype == invdiff_display_with) ? "blue" : "gray") + ";\"" +
 		"onclick='return show_src_or_inv(\"" + theparam + "\");'>" + thetext + "</a>";
 }
 
@@ -457,6 +455,7 @@ function update_neighbor(method_name, direction, ref_var, ref_prev_var) {
 
 function output_inv_diff(method_name) {
 	$('div#csi-output-invcomp').html(methodInvsCompareDiv(method_name));
+	show_src_or_inv(invdiff_display_with);
 }
 
 function selected_show_hide() {
