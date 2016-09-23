@@ -2,6 +2,7 @@
 
 import subprocess
 
+import config
 from tools.os import sys_call
 
 
@@ -47,7 +48,10 @@ def full_classpath(junit_path, sys_classpath, bin_output, test_output):
 def junit_torun_str(cust_mvn_repo):
 #     mvn_cmd = "mvn org.apache.maven.plugins:maven-surefire-plugin:2.19.2-SNAPSHOT:test | grep ^__for__getty__\ __junit"
 #     output = subprocess.check_output(mvn_cmd, shell=True).strip().split("\n")
-    mvn_cmd = "mvn -Dmaven.repo.local=" + cust_mvn_repo + \
+    local_repo = ""
+    if config.effortless_mvn_setup:
+        local_repo = " -Dmaven.repo.local=" + cust_mvn_repo
+    mvn_cmd = "mvn" + local_repo + \
         " org.apache.maven.plugins:maven-surefire-plugin:2.19.2-SNAPSHOT:test" + \
         " | " + "grep __for__getty__\ __junit"
     output_raw = subprocess.check_output(mvn_cmd, shell=True).strip()

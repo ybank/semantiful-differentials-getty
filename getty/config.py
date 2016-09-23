@@ -42,6 +42,10 @@ compress_inv = False
 show_debug_info = True
 show_debug_details = False
 
+# effortless mvn setup
+# BETA - unstable to set it True
+effortless_mvn_setup = False
+
 # include test coverage report
 analyze_test_coverage = False
 
