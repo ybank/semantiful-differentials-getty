@@ -16,7 +16,6 @@ Like Continuous Integration (CI) that supports effortless testing, CSI provides 
     * [Java (SDK 7)](http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html)
       * [Maven (3.x)](https://maven.apache.org/) (needs customization, see next section)
     * [Python (2.7.x)](https://www.python.org/)
-      * [`pip`](https://docs.python.org/2.7/installing/)
   * Version Control System:
     * [Git 2.2.x](https://git-scm.com/)
 
@@ -31,9 +30,6 @@ Like Continuous Integration (CI) that supports effortless testing, CSI provides 
   
   $ python --version
   Python 2.7.11
-  
-  $ pip --version
-  pip 8.0.2 from /Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages (python 2.7)
   
   $ mvn -v
   Apache Maven 3.2.1 (ea8b2b07643dbb1b84b6d16e1f08391b666bc1e9; 2014-02-14T09:37:52-08:00)
@@ -53,12 +49,6 @@ Like Continuous Integration (CI) that supports effortless testing, CSI provides 
   $ git clone https://github.com/ybank/maven-surefire-getty.git
   $ cd maven-surefire-getty
   $ mvn install -DskipTests -Drat.skip=true -Dcheckstyle.skip=true -Dmaven.plugin.skip=true
-  ```
-
-  * Install simplediff tool
-
-  ```bash
-  $ pip install simplediff
   ```
 
 ###*Using Getty*

@@ -36,13 +36,13 @@
 #   and display those directly.
 
 import sys, re, htmlentitydefs, getopt, StringIO, codecs, datetime, difflib
-from simplediff import diff
 
 import config
 from analysis import solver
 from tools.daikon import fsformat
 from tools.html import inv_to_html
 from tools.os import from_sys_call_enforce, remove_many_files
+from tools.diffutil import diff
 
 
 # minimum line size, we add a zero-sized breakable space every
@@ -52,7 +52,7 @@ tabsize = 8
 show_CR = False
 encoding = "utf-8"
 lang = "en"
-algorithm = 0
+algorithm = 1
 
 desc = "File comparison"
 dtnow = datetime.datetime.now()
@@ -301,7 +301,8 @@ def diff_changed(old, new):
     con = {'=': (lambda x: x),
            '+': (lambda x: DIFFON + x + DIFFOFF),
            '-': (lambda x: '')}
-    return "".join([(con[a])("".join(b)) for a, b in diff(old, new)])
+    diff_result = diff(old, new)
+    return "".join([(con[a])("".join(b)) for a, b in diff_result])
 
 
 def diff_changed_ts(old, new):
@@ -325,7 +326,10 @@ def word_diff(old, new):
         of `diff`)
     '''
     separator_pattern = '(\W+)';
-    return diff(re.split(separator_pattern, old, flags=re.UNICODE), re.split(separator_pattern, new, flags=re.UNICODE))
+    subject_a = re.split(separator_pattern, old, flags=re.UNICODE)
+    subject_b = re.split(separator_pattern, new, flags=re.UNICODE)
+    diff_result = diff(subject_a, subject_b)
+    return diff_result
 
 
 def diff_changed_words(old, new):
@@ -733,7 +737,7 @@ stdout may not work with UTF-8, instead use -o option.
    -l linesize set maximum line size is there is no word break (default 20)
    -r          show \\r characters
    -k          show hunk infos
-   -a algo     line diff algorithm (0: linediff characters, 1: word, 2: simplediff characters) (default 0)
+   -a algo     line diff algorithm (0: linediff characters, 1: word, 2: simplediff characters) (default 1)
    -h          show help and exit
 '''
 
