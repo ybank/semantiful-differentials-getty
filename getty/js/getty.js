@@ -295,7 +295,7 @@ function create_src_or_inv_button_link(thetype, theid) {
 	}
 	return "<a href='#' class='src-inv-button-link' id='" + theid + "' " +
 		"style=\"color:" + ((thetype == invdiff_display_with) ? "blue" : "gray") + ";\"" +
-		"onclick='return show_src_or_inv(\"" + theparam + "\");'>" + thetext + "</a>";
+		"onclick='return show_src_or_inv(\"" + theparam + "\");'><b>" + thetext + "</b></a>";
 }
 
 function methodInvsCompareDiv(method_name) {

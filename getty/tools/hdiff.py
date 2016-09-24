@@ -108,6 +108,11 @@ html_hdr = """<!DOCTYPE html>
             padding: 4px 8px;
             margin: 0 2px 0 2px;
         }}
+        span#iso-type-listing {{
+            font-family: sans-serif;
+            margin-left: 16px;
+            margin-right: 4px;
+        }}
         a.src-inv-button-link {{
             -webkit-appearance: button;
             -moz-appearance: button;
@@ -157,7 +162,7 @@ html_hdr = """<!DOCTYPE html>
     </style>
 </head>
 <body>
-    <h3>GETTY - SEMANTIFUL DIFFERENTIALS</h3>
+    <a name='top'><h3>GETTY - SEMANTIFUL DIFFERENTIALS</h3></a>
     <a href='#' id='getty-advice-title' onclick='return false;'>{{{{{{__getty_advice__}}}}}}</a><br>
     <a href='#' style='padding-left:4px; padding-bottom:4px;'
         onclick='$(\"div#getty-full-code-diff\").toggle();return false;'>Show/Hide All Code Changes</a>
@@ -1011,6 +1016,8 @@ def _getty_install_invtips(html_string, prev_hash, curr_hash, go, oldl2m, newl2m
     
     install_line = \
         "<script>\n" + \
+        "    window.history.forward(1);\n" + \
+        "    window.onbeforeunload = function() { return true; };\n" + \
         iso_setup + \
         "    installInvTips(" + \
         "\"" + curr_hash + "\", " + "\"" + prev_hash + "\", " + \
