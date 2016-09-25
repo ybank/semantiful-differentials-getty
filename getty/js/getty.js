@@ -12,8 +12,6 @@ var invdiff_display_with = "none";
 var current_method_name = "";
 
 function install_msg_tips(cmsg, glink) {
-	console.log(cmsg);
-	console.log(glink);
 	config_obj = {
 		position: ["150", "0"],
 		persistent: true, focus: true,

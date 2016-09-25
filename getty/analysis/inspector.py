@@ -12,17 +12,26 @@ def getty_csi_init(html_file, iso):
         isolation_ctrl = "<div id='csi-iso-ctrl' style='display:none;'><p>No Impact Isolation</p></div>\n"
         if iso:
             iso_links = ""
-            for iso_type, iso_text, tcolor in [("ni", "No Impact Isolation", "blue"),
-                                               ("si", "Source Change", "gray"),
-                                               ("ti4o", "Test Change (for OLD Source)", "gray"),
-                                               ("ti4n", "Test Change (for NEW Source)", "gray")]:
+            for iso_type, iso_text, tcolor, tiptext in [
+                        ("ni", "No Impact Isolation", "blue", "old src & tests\nvs.\nnew src & tests"),
+                        ("si", "Source Change", "gray", "old src vs. new src\n(with same tests)"),
+                        ("ti4o", "Test Change (for OLD Source)", "gray", "old tests vs. new tests\n(both for old src)"),
+                        ("ti4n", "Test Change (for NEW Source)", "gray", "old tests vs. new tests\n(both for new src)")]:
                 iso_links += \
                         "    <a id='csi-iso-link-" + iso_type + "' class='csi-iso-ctrl-group' href='#' " + \
                         " style='color: " + tcolor + ";' " + \
-                        "onclick='return iso_type_reset(\"" + iso_type + "\");'><b>" + iso_text + "</b></a>\n"
+                        "onclick='return iso_type_reset(\"" + iso_type + "\");'><b>" + iso_text + "</b>" + \
+                        "<div class='iso-div-wrap-tip'><span class='iso-type-tip'><pre>" + tiptext + "</pre></span></div></a>\n"
                 if iso_type == "ni":
                     iso_links += "    <span id='iso-type-listing'>Invariant Changes Due To:</span>"
             isolation_ctrl = "<div id='csi-iso-ctrl' style='margin-top:10px;'>" + iso_links + "</div>\n"
+        legends = "<div style='float:right;'>" + \
+            "<span style='margin-left: 32px;'>Legends:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>" + \
+            "<span><b><u>code-updated</u></b>&nbsp;&nbsp;&nbsp;</span>" + \
+            "<span style='color:red;'>invariant-changed</span>&nbsp;&nbsp;&nbsp;" + \
+            "<span style='color:gray;'>invariant-not-changed</span>&nbsp;&nbsp;&nbsp;" + \
+            "<span>...(old-call-count + newly-added-calls)</span>&nbsp;&nbsp;" + \
+            "</div>"
         html_string = html_string.replace(anchor,
             "<div id='csi-output-targets'></div>\n" + \
             "<div id='csi-output-neighbors-outer'>" + \
@@ -30,15 +39,17 @@ def getty_csi_init(html_file, iso):
             "    <a href='#' id='whether-show-invequal' onclick='return toggle_show_invequal();'>Showing More Methods: YES</a>" + \
             "&nbsp;&nbsp;&nbsp;&nbsp;" + \
             "    <a href='#' id='whether-show-tests' onclick='return toggle_show_tests();'>Showing Tests: YES</a>" + \
+            legends + \
             "  </div>\n" + \
-            "  <div id='csi-output-neighbors'>" + \
-            "    <div style='padding: 8px 0 4px 4px;'>Choose a method/class from above to show its invocation neighbors" + \
+            "  <div id='csi-output-neighbors' style='margin:8px;'>" + \
+            "    <div style='text-align: center;'>" + \
+            "Choose a method/class from above to show its invocation neighbors" + \
             "    </div>\n" + \
             "  </div>\n" + \
             "</div>\n" + \
             "<div id='csi-output-invcomp-outer'>" + isolation_ctrl + \
-            "  <div id='csi-output-invcomp'>" + \
-            "    <div style='padding: 8px 0 4px 4px;'>Invariant differentials will be shown here" + \
+            "  <div id='csi-output-invcomp' style='margin: 8px 2px;'>" + \
+            "    <div style='margin: 8px 4px; text-align: center;'>Invariant differentials will be shown here" + \
             "</div></div></div>")
         f.seek(0)
         f.truncate()

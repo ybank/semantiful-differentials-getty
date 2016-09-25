@@ -110,8 +110,8 @@ def clear_temp_checkout(current_commit):
 
 
 def git_commit_msgs(from_commit, to_commit):
-    gitlog = "git log --graph --abbrev-commit --date=relative " + \
-        "--format=format:'%h - (%ar) %s - %an%d' " + from_commit + ".." + to_commit
+    gitlog = "git log --graph --abbrev-commit " + \
+        "--format=format:'%h - (%ai) %s - %an%d' " + from_commit + ".." + to_commit
     return from_sys_call(gitlog)
 
 
