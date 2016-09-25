@@ -35,7 +35,7 @@
 #   Detect if the character is "printable" for whatever definition,
 #   and display those directly.
 
-import sys, re, htmlentitydefs, getopt, StringIO, codecs, datetime, difflib
+import sys, re, htmlentitydefs, getopt, StringIO, codecs, datetime, difflib, json
 
 import config
 from analysis import solver
@@ -151,11 +151,11 @@ html_hdr = """<!DOCTYPE html>
         table#neighbors a {{ text-decoration: none; }}
         .tooltip {{
             position: absolute;
-            padding: 8px 15px;
+            padding: 0px 16px;
             z-index: 2;
             color: #303030;
-            background-color: #6FF1EB;
-            border: 3px dashed #EC2D8E;
+            background-color: #DFEFEA;
+            border: 2px ridge #F383BC;
             font-family: sans-serif;
             font-size: 14px;
         }}
@@ -993,7 +993,8 @@ def _getty_append_invariants(html_string, targets, go, prev_hash, curr_hash):
     return html_string
 
 
-def _getty_install_invtips(html_string, prev_hash, curr_hash, go, oldl2m, newl2m, iso):
+def _getty_install_invtips(html_string, commit_msgs, github_link,
+                           prev_hash, curr_hash, go, oldl2m, newl2m, iso):
     newarray = ["\"" + curr_hash + "\""]
     if config.install_inv_tips:
         for pair in newl2m:
@@ -1014,9 +1015,12 @@ def _getty_install_invtips(html_string, prev_hash, curr_hash, go, oldl2m, newl2m
     if iso:
         iso_setup = "    isolation = true;\n"
     
+    js_commit_msgs = json.dumps(commit_msgs)
+    js_github_link = (json.dumps(github_link) if github_link is not None else "''")
+    
     install_line = \
         "<script>\n" + \
-        "    window.history.forward(1);\n" + \
+        "    install_msg_tips(" + js_commit_msgs + ", " + js_github_link + ");" + \
         "    window.onbeforeunload = function() { return true; };\n" + \
         iso_setup + \
         "    installInvTips(" + \
@@ -1030,6 +1034,7 @@ def _getty_install_invtips(html_string, prev_hash, curr_hash, go, oldl2m, newl2m
 
 
 def getty_append_semainfo(template_file, targets, go, js_path,
+                          commit_msgs, github_link,
                           prev_hash, curr_hash, old_l2m, new_l2m, iso):
     global oldl2m
     global newl2m
@@ -1059,7 +1064,8 @@ def getty_append_semainfo(template_file, targets, go, js_path,
         inv_to_html(targets, go, curr_hash + "_" + prev_hash)
     
     print ' - install tooltips and show/hide contents ...'
-    html_string = _getty_install_invtips(html_string, prev_hash, curr_hash, go, old_l2m, new_l2m, iso)
+    html_string = _getty_install_invtips(html_string, commit_msgs, github_link,
+                                         prev_hash, curr_hash, go, old_l2m, new_l2m, iso)
     
     print ' - writing to html ...'
     with open(template_file, 'w') as wf:

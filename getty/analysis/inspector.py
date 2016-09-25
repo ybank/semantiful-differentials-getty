@@ -192,9 +192,11 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash, common_package,
     cpkg_disclaimer = ""
     if common_package != '' and common_package is not None:
         cpkg_disclaimer = "<h4 style='margin: 4px 0 8px 0'>Common Package: " + common_package + "</h4>"
-    replace_footer = "</div>"
+    compare_commit_msgs = "<b>Compare Commits:</b> " + \
+        "<a id='commit-msg-link' href='#'>" + prev_hash + " vs. " + post_hash + "</a>"
     replace_header = \
-        "<div id='csi-output-targets'>" + cpkg_disclaimer + "<h4 style='margin: 4px 0 8px 0'>Updated Source:</h4>"
+        "<div id='csi-output-targets'>" + compare_commit_msgs + cpkg_disclaimer + \
+        "<h4 style='margin: 4px 0 8px 0'>Updated Source:</h4>"
     if new_modified_src:
         replacement = ", ".join([__link_to_show_neighbors(t, common_package) for t in new_modified_src])
     else:
@@ -221,6 +223,7 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash, common_package,
         invch_replacement = invch_mtd_replacement + "<br>" + invch_cls_replacement
     else:
         invch_replacement = "<span>None</span>"
+    replace_footer = "</div>"
     html_string = html_string.replace(targets_place_holder,
                                       replace_header + replacement + \
                                       embed_test_update + tests_replacement + \

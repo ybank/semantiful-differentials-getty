@@ -11,6 +11,29 @@ var invdiff_display_with = "none";
 
 var current_method_name = "";
 
+function install_msg_tips(cmsg, glink) {
+	console.log(cmsg);
+	console.log(glink);
+	config_obj = {
+		position: ["150", "0"],
+		persistent: true, focus: true,
+		showTime: 200, hideTime: 0, hideEffect: 'none',
+		onBeforeShow: function() {
+			link_to_github = "";
+			if (glink != "")
+				link_to_github = (
+					"<a href='" + glink + "' target='_blank'>" +
+					"Show all commit messages and code changes at Github</a>");
+			html_to_show = "<div>" + "<pre>" + cmsg + "</pre>" + link_to_github + "</div>";
+			this.update(html_to_show);
+		},
+		onHide: function() {
+			this.update("");
+		}
+	};
+	$('a#commit-msg-link').simpletip(config_obj);
+}
+
 function methodInvsComparePage(theMtd, prev, post) {
 	compareInvs = $("div#hide-all div#vsinvs-" + iso_type + "-" + theMtd)[0].outerHTML;
 	left = 
@@ -62,7 +85,7 @@ function installInvTips(post, prev, newl2m, oldl2m) {
 							this.update("");
 						},
 						showTime: 200, hideTime: 0, hideEffect: 'none'
-				}
+				};
 				the_rows.eq(j).simpletip(config_obj);
 			}
 		}
@@ -85,7 +108,7 @@ function installInvTips(post, prev, newl2m, oldl2m) {
 							this.update("");
 						},
 						showTime: 200, hideTime: 0, hideEffect: 'none'
-				}
+				};
 				the_rows.eq(j).simpletip(config_obj);
 			}
 		}
@@ -110,7 +133,7 @@ function installInvTips(post, prev, newl2m, oldl2m) {
 							this.update("");
 						},
 						showTime: 200, hideTime: 0, hideEffect: 'none'
-				}
+				};
 				the_rows.eq(j).simpletip(config_obj);
 			}
 		}
@@ -164,7 +187,7 @@ function installInvTips4Advice(methods, prev, post) {
 					this.update("");
 				},
 				showTime: 200, hideTime: 0, hideEffect: 'none'
-			}
+			};
 			this_span.simpletip(config_obj);
 		}
 	}

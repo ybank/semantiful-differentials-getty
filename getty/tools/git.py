@@ -107,3 +107,23 @@ def clear_temp_checkout(current_commit):
     resp = from_sys_call("git stash save --keep-index --include-untracked").strip()
     if resp != "No local changes to save":
         sys_call("git stash drop")
+
+
+def git_commit_msgs(from_commit, to_commit):
+    gitlog = "git log --graph --abbrev-commit --date=relative " + \
+        "--format=format:'%h - (%ar) %s - %an%d' " + from_commit + ".." + to_commit
+    return from_sys_call(gitlog)
+
+
+def github_info(prev_commit, post_commit):
+    resp = from_sys_call("git config --get remote.origin.url").strip()
+    http_regex = "^http(s?)://(www\.)?github.com/(.*)/(.*)\.git$"
+    m = re.match(http_regex, resp)
+    if m:
+        return m.group(0)[:-4] + "/compare/" + prev_commit + "..." + post_commit
+    git_regex = "^git@github.com:(.*)/(.*)\.git$"
+    m = re.match(git_regex, resp)
+    if m:
+        return ("https://github.com/" + m.group(1) + "/" + m.group(2) +
+                "/compare/" + prev_commit + "..." + post_commit)
+    return None

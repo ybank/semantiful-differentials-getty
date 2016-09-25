@@ -1,6 +1,7 @@
 import config
 from analysis.advisor import getty_append_report, report
 from analysis.inspector import getty_csi_init, getty_csi_targets_prep
+from tools.git import git_commit_msgs, github_info
 from tools.hdiff import diff_to_html, getty_append_semainfo
 from tools.os import sys_call
 
@@ -37,7 +38,10 @@ def exam(iso, pwd, go, js_path, common_package, all_classes_set,
     print 'generating html from diff ...'
     diff_to_html(diff_in, html_out, exclude_headers=False, old_l2m=old_l2m, new_l2m=new_l2m)
     print 'appending semainfo to the html ....'
+    commit_msgs = git_commit_msgs(prev_hash, post_hash)
+    github_link = github_info(prev_hash, post_hash)
     getty_append_semainfo(html_out, refined_targets_parents_set, go, js_path,
+                          commit_msgs, github_link,
                           prev_hash, post_hash, old_l2m, new_l2m, iso)
     
     print 'initialize csi report ...'
