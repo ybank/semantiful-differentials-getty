@@ -115,13 +115,29 @@ def git_commit_msgs(from_commit, to_commit):
     return from_sys_call(gitlog)
 
 
+http_regex = "^http(s?)://(www\.)?github.com/(.*)/(.*)\.git$"
+git_regex = "^git@github.com:(.*)/(.*)\.git$"
+
+
+# find the first key that matches github.com url
+def get_remote_url_key():
+    all_configs = from_sys_call("git config --list").strip().split("\n")
+    matching_ln_regex = "^remote\.(.*)\.url=(.*)$"
+    for c in all_configs:
+        m = re.match(matching_ln_regex, c)
+        if m and (re.match(http_regex, m.group(2)) or re.match(git_regex, m.group(2))):
+            return m.group(1)
+    return None
+
+
 def github_info(prev_commit, post_commit):
-    resp = from_sys_call("git config --get remote.origin.url").strip()
-    http_regex = "^http(s?)://(www\.)?github.com/(.*)/(.*)\.git$"
+    first_key = get_remote_url_key()
+    if first_key is None:
+        return None
+    resp = from_sys_call("git config --get remote." + first_key + ".url").strip()
     m = re.match(http_regex, resp)
     if m:
         return m.group(0)[:-4] + "/compare/" + prev_commit + "..." + post_commit
-    git_regex = "^git@github.com:(.*)/(.*)\.git$"
     m = re.match(git_regex, resp)
     if m:
         return ("https://github.com/" + m.group(1) + "/" + m.group(2) +
