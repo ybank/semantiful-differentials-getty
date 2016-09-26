@@ -21,7 +21,7 @@ def getty_csi_init(html_file, iso):
                         "    <a id='csi-iso-link-" + iso_type + "' class='csi-iso-ctrl-group' href='#' " + \
                         " style='color: " + tcolor + ";' " + \
                         "onclick='return iso_type_reset(\"" + iso_type + "\");'><b>" + iso_text + "</b>" + \
-                        "<div class='iso-div-wrap-tip'><span class='iso-type-tip'><pre>" + tiptext + "</pre></span></div></a>\n"
+                        "<span class='iso-type-tip'><pre>" + tiptext + "</pre></span></a>\n"
                 if iso_type == "ni":
                     iso_links += "    <span id='iso-type-listing'>Invariant Changes Due To:</span>"
             isolation_ctrl = "<div id='csi-iso-ctrl' style='margin-top:10px;'>" + iso_links + "</div>\n"

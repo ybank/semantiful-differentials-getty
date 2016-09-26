@@ -107,6 +107,7 @@ html_hdr = """<!DOCTYPE html>
             text-decoration: none;
             padding: 4px 8px;
             margin: 0 2px 0 2px;
+            position: relative;
         }}
         span#iso-type-listing {{
             font-family: sans-serif;
@@ -159,8 +160,7 @@ html_hdr = """<!DOCTYPE html>
             font-family: sans-serif;
             font-size: 14px;
         }}
-        div.iso-div-wrap-tip {{ position: relative; }}
-        div.iso-div-wrap-tip span pre {{ margin: 2px 0; }}
+        span.iso-type-tip pre {{ margin: 2px 0; }}
         .csi-iso-ctrl-group .iso-type-tip {{
             visibility: hidden;
             background-color: #303030;
@@ -171,6 +171,7 @@ html_hdr = """<!DOCTYPE html>
             padding: 2px 8px;
             position: absolute;
             bottom: 24px;
+            left: 8px;
             z-index: 1;
         }}
         .csi-iso-ctrl-group:hover .iso-type-tip {{
