@@ -46,7 +46,8 @@ inv_html_footer = """
 """
 
 def inv_to_html(targets, go, commit_hash):
-    for target in targets:
+    filtered_targets = [t for t in targets if not t.endswith(":<clinit>")]
+    for target in filtered_targets:
         tfs = fsformat(target)
         invs_file = go + "_getty_inv__" + tfs + "__" + commit_hash + "_.inv.out"
         try:

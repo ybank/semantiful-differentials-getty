@@ -234,8 +234,9 @@ header_regex = "^(.*\[.*(a|b).*/.*\].*-.*-).*:.*:.*:.*"
 orig_header_regex = "^(\[(a|b)/\] -- ).*:::(ENTER|EXIT|CLASS|OBJECT|THROW).*"
 
 
+# TODO: ideally, the table should be parsed to decide whether it is empty
 def is_empty(table):
-    return len(table) == 40
+    return len(table) == 221
 
 
 def sane(x):
@@ -934,9 +935,9 @@ def __generate_append_diff(target, diff_type, prev_invf, post_invf, diff_htmlf):
     
     inv_title = "<div class='inv-cmp-title'>compare inviants for { <b>" + __escape(target) + "</b> }</div>"
     invdiffhtml = \
-        "<div id='vsinvs-" + diff_type + "-" + fsformat(target) + "' style='min-width:960px'>" + \
-        inv_title + "\n" + dtable + \
-        ("NO DIFFERENCE" if is_empty(dtable) else "") + \
+        "<div id='vsinvs-" + diff_type + "-" + fsformat(target) + "'>" + \
+        inv_title + "\n" + \
+        ("NO DIFFERENCE" if is_empty(dtable) else dtable) + \
         "\n</div>\n"
     with open(diff_htmlf, 'w') as idout:
         idout.write(invdiffhtml)

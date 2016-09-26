@@ -329,7 +329,8 @@ function methodInvsCompareDiv(method_name) {
 	
 	if (targetInvComp == undefined)
 		// return htmlContent = "Choose a neighbor target to show its invariant change";
-		compareInvs = "<div>No Invariant Differences</div>";
+		compareInvs = "<div>No invariants inferred for <b>" +
+			method_name.replace("<", "&lt;", "g").replace(">", "&gt;", "g") + "</b></div>";
 	else
 		compareInvs = targetInvComp.outerHTML;
 	
