@@ -43,13 +43,13 @@ def getty_csi_init(html_file, iso):
             "  </div>\n" + \
             "  <div id='csi-output-neighbors' style='margin:8px;'>" + \
             "    <div style='text-align: center;'>" + \
-            "Choose a method/class from above to show its invocation neighbors" + \
+            "Choose a method/class from above to show its invocation neighbors." + \
             "    </div>\n" + \
             "  </div>\n" + \
             "</div>\n" + \
             "<div id='csi-output-invcomp-outer'>" + isolation_ctrl + \
             "  <div id='csi-output-invcomp' style='margin: 8px 2px;'>" + \
-            "    <div style='margin: 8px 4px; text-align: center;'>Invariant differentials will be shown here" + \
+            "    <div style='margin: 8px 4px; text-align: center;'>Invariant differentials will be shown here." + \
             "</div></div></div>")
         f.seek(0)
         f.truncate()

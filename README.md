@@ -19,6 +19,14 @@ Like Continuous Integration (CI) that supports effortless testing, CSI provides 
   * Version Control System:
     * [Git 2.2.x](https://git-scm.com/)
 
+###*Applicable Projects*
+The projects Getty can analyze should satisfy the following criteria:
+  * Written in Java
+  * Built by Maven (single-module\* setting)
+  * Configured to test using JUnit (version 3 or 4) only
+
+\*Disclaimer of [Maven multi-module](https://maven.apache.org/guides/mini/guide-multiple-modules.html) project support: The mechanism (reactor) in Maven that handles multi-module projects collects all available modules (sub-projects), sorts and build all selected ones in their correct build order. The use of multiple modules remains controversal ([discussion in reddit](https://www.reddit.com/r/programming/comments/1ns6ae/maven_is_broken_by_design/?st=itjkarzb&sh=4aee9c04), [discussion in stackoverflow](http://stackoverflow.com/questions/11730791/why-and-when-to-create-a-multi-module-maven-project), etc.). As a more general case, Getty targets single-module Maven projects. Though Getty does not provide direct support towards multi-module projects, however, you can still analyze each of their single modules separately.
+
 ###*Prep*
   * Confirm system requirements are met: all executables should be set on your path and you can run them without specifying full path. For example:
   
@@ -90,7 +98,7 @@ Like Continuous Integration (CI) that supports effortless testing, CSI provides 
   $ git clone https://github.com/ybank/dsproj.git
   ```
   
-  * Go to the project's working directory
+  * Go to the project's working directory. (For a multi-module project, go to its specific single module's working directory; for example, Google's GSON project has multiple modules so the user should go to `gson/gson` subdirectory if she is interested in the `gson` sub-module.)
   ```bash
   $ cd dsproj
   ```
@@ -112,7 +120,7 @@ Like Continuous Integration (CI) that supports effortless testing, CSI provides 
   That's it!
 
 ###*Misc & Screenshot*
-[Here](http://sosa08.ucsd.edu:8000/sema.diff.html) is a screenshot of the source-impact isolated CSI view, for the commit ("#7") we discussed in our submitted CSI paper, which is currently under ICSE's review.
+[Here](http://sosa08.ucsd.edu:8000/sema.diff.html) is a screenshot of the source-impact isolated CSI view, for the commit ("#7") we discussed in our submitted CSI paper, which is currently under ICSE's review. Please note that the user interface is changed slightly, but mostly remains the same.
   
 ###*Support*
 Please send email to the authors ({yayan, mmenarini, wgg} 'AT' cs 'dot' ucsd 'dot' edu) to discuss Getty, or to post questions.
