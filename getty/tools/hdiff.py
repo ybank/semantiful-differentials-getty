@@ -954,9 +954,9 @@ def _getty_append_invdiff(html_string, targets, go, prev_hash, curr_hash, iso):
                 osnt_invf = go + "_getty_inv__" + tfs + "__" + prev_hash + "_" + curr_hash + "_.inv.out"
                 nsot_invf = go + "_getty_inv__" + tfs + "__" + curr_hash + "_" + prev_hash + "_.inv.out"
                 diff_settings += [
-                    ("si", osnt_invf, nsnt_invf, invdiff_outft[:-10]+".si.diff.out"),
-                    ("ti4o", osot_invf, osnt_invf, invdiff_outft[:-10]+".ti4o.diff.out"),
-                    ("ti4n", nsot_invf, nsnt_invf, invdiff_outft[:-10]+".ti4n.diff.out")]
+                    ("si", osnt_invf, nsnt_invf, invdiff_outft[:-10]+".si.diff.html"),
+                    ("ti4o", osot_invf, osnt_invf, invdiff_outft[:-10]+".ti4o.diff.html"),
+                    ("ti4n", nsot_invf, nsnt_invf, invdiff_outft[:-10]+".ti4n.diff.html")]
             for ds in diff_settings:
                 anchor = "<br>{{{__getty_invariant_diff__}}}<br>"
                 replacement = anchor + "\n" + \
@@ -1012,21 +1012,29 @@ def _getty_append_invariants(html_string, targets, go, prev_hash, curr_hash):
 
 def _getty_install_invtips(html_string, commit_msgs, github_link,
                            prev_hash, curr_hash, go, oldl2m, newl2m, iso):
-    newarray = ["\"" + curr_hash + "\""]
-    if config.install_inv_tips:
-        for pair in newl2m:
-            newarray.append("\"" + __path_to_image(pair[0]) + "\"")
-            newarray.append("\"" + str(pair[1]) + "\"")
-            newarray.append("\"" + fsformat(newl2m[pair]) + "\"")
-    newarray_str = "[" + ", ".join(t for t in newarray) + "]"
-    
-    oldarray = ["\"" + prev_hash + "\""]
-    if config.install_inv_tips:
-        for pair in oldl2m:
-            oldarray.append("\"" + __path_to_image(pair[0]) + "\"")
-            oldarray.append("\"" + str(pair[1]) + "\"")
-            oldarray.append("\"" + fsformat(oldl2m[pair]) + "\"")
-    oldarray_str = "[" + ", ".join(t for t in oldarray) + "]"
+    extra_tooltips_installation = "    set_commit_hashes(" + \
+        "\"" + prev_hash + "\", " + "\"" + curr_hash + "\");\n"
+    if config.install_extra_tips:
+        newarray = ["\"" + curr_hash + "\""]
+        if config.install_inv_tips:
+            for pair in newl2m:
+                newarray.append("\"" + __path_to_image(pair[0]) + "\"")
+                newarray.append("\"" + str(pair[1]) + "\"")
+                newarray.append("\"" + fsformat(newl2m[pair]) + "\"")
+        newarray_str = "[" + ", ".join(t for t in newarray) + "]"
+        
+        oldarray = ["\"" + prev_hash + "\""]
+        if config.install_inv_tips:
+            for pair in oldl2m:
+                oldarray.append("\"" + __path_to_image(pair[0]) + "\"")
+                oldarray.append("\"" + str(pair[1]) + "\"")
+                oldarray.append("\"" + fsformat(oldl2m[pair]) + "\"")
+        oldarray_str = "[" + ", ".join(t for t in oldarray) + "]"
+        
+        extra_tooltips_installation = \
+            "    installInvTips(" + \
+            "\"" + curr_hash + "\", " + "\"" + prev_hash + "\", " + \
+            newarray_str + ", " + oldarray_str + ");\n"
     
     iso_setup = ""
     if iso:
@@ -1039,10 +1047,7 @@ def _getty_install_invtips(html_string, commit_msgs, github_link,
         "<script>\n" + \
         "    install_msg_tips(" + js_commit_msgs + ", " + js_github_link + ");" + \
         "    window.onbeforeunload = function() { return true; };\n" + \
-        iso_setup + \
-        "    installInvTips(" + \
-        "\"" + curr_hash + "\", " + "\"" + prev_hash + "\", " + \
-        newarray_str + ", " + oldarray_str + ");\n" + \
+        iso_setup + extra_tooltips_installation + \
         "    $(\"tr.diffhunk\").hide();\n" + \
         "    $(\"tr.diff-ignore\").css('display', 'none');\n" + \
         "</script>\n</body>"

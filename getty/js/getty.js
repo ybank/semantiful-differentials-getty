@@ -58,9 +58,13 @@ function methodName(classNames) {
 		return undefined;
 }
 
-function installInvTips(post, prev, newl2m, oldl2m) {
+function set_commit_hashes(prev, post) {
 	prev_hash = prev;
 	post_hash = post;
+}
+
+function installInvTips(post, prev, newl2m, oldl2m) {
+	set_commit_hashes(prev, post);
 	postHash = newl2m[0];
 	prevHash = oldl2m[0];
 	

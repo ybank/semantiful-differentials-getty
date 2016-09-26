@@ -55,6 +55,7 @@ profile_performance = False
 # review options
 review_auto_open = False
 code_syntax_highlight = True
+install_extra_tips = False
 
 # misc
 max_diff_lines = 1000
