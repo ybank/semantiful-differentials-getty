@@ -361,6 +361,7 @@ function methodInvsCompareDiv(method_name) {
 		"<iframe id='i-right-src' src='" + name_to_path(method_name, post_hash) + "' " +
 		"class='srctip' style='" + sright + "'></iframe>";
 	mitabs = "<div style='margin-bottom:8px;'>" +
+		"<span class='more-inv-display-option-listing'>Display Options:&nbsp;&nbsp;&nbsp;</span>" +
 		[create_src_or_inv_button_link("none", "src_inv_btn_4none"),
 		 create_src_or_inv_button_link("inv", "src_inv_btn_4inv"),
 		 create_src_or_inv_button_link("src", "src_inv_btn_4src")

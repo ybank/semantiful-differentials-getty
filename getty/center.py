@@ -455,7 +455,7 @@ def visit(junit_path, sys_classpath, agent_path, cust_mvn_repo, separate_go, pre
     '''
     new_all_classes = one_inv_pass(go,
         new_cp, new_junit_torun, post_hash, refined_target_set)
-    
+
     '''
         more passes: checkout mixed commits as detached head, and get invariants for all interesting targets
     '''

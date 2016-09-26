@@ -109,9 +109,9 @@ html_hdr = """<!DOCTYPE html>
             margin: 0 2px 0 2px;
             position: relative;
         }}
-        span#iso-type-listing {{
+        span.more-inv-display-option-listing {{
             font-family: sans-serif;
-            margin-left: 16px;
+            margin-left: 2px;
             margin-right: 4px;
         }}
         a.src-inv-button-link {{
@@ -170,8 +170,8 @@ html_hdr = """<!DOCTYPE html>
             border-radius: 4px;
             padding: 2px 8px;
             position: absolute;
-            bottom: 24px;
-            left: 8px;
+            bottom: 28px;
+            left: 2px;
             z-index: 1;
         }}
         .csi-iso-ctrl-group:hover .iso-type-tip {{

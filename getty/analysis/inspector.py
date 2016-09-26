@@ -13,8 +13,8 @@ def getty_csi_init(html_file, iso):
         if iso:
             iso_links = ""
             for iso_type, iso_text, tcolor, tiptext in [
-                        ("ni", "No Impact Isolation", "blue", "old src & tests\nvs.\nnew src & tests"),
-                        ("si", "Source Change", "gray", "old src vs. new src\n(with same tests)"),
+                        ("ni", "Source & Test Change", "blue", "old src & tests\nvs.\nnew src & tests"),
+                        ("si", "Source Change Only", "gray", "old vs. new src\n(with same tests)"),
                         ("ti4o", "Test Change (for OLD Source)", "gray", "old tests vs. new tests\n(both for old src)"),
                         ("ti4n", "Test Change (for NEW Source)", "gray", "old tests vs. new tests\n(both for new src)")]:
                 iso_links += \
@@ -23,8 +23,8 @@ def getty_csi_init(html_file, iso):
                         "onclick='return iso_type_reset(\"" + iso_type + "\");'><b>" + iso_text + "</b>" + \
                         "<span class='iso-type-tip'><pre>" + tiptext + "</pre></span></a>\n"
                 if iso_type == "ni":
-                    iso_links += "    <span id='iso-type-listing'>Invariant Changes Due To:</span>"
-            isolation_ctrl = "<div id='csi-iso-ctrl' style='margin-top:10px;'>" + iso_links + "</div>\n"
+                    iso_links = "    <span class='more-inv-display-option-listing'>Invariant Changes Due To:</span>\n" + iso_links
+            isolation_ctrl = "<div id='csi-iso-ctrl' style='margin-top:10px;'>\n" + iso_links + "</div>\n"
         legends = "<div style='float:right;'>" + \
             "<span style='margin-left: 32px;'>Legends:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>" + \
             "<span><b><u>code-updated</u></b>&nbsp;&nbsp;&nbsp;</span>" + \
@@ -47,7 +47,7 @@ def getty_csi_init(html_file, iso):
             "    </div>\n" + \
             "  </div>\n" + \
             "</div>\n" + \
-            "<div id='csi-output-invcomp-outer'>" + isolation_ctrl + \
+            "<div id='csi-output-invcomp-outer'>\n" + isolation_ctrl + \
             "  <div id='csi-output-invcomp' style='margin: 8px 2px;'>" + \
             "    <div style='margin: 8px 4px; text-align: center;'>Invariant differentials will be shown here." + \
             "</div></div></div>")
