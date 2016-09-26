@@ -419,14 +419,18 @@ def convert(s, linesize=0, ponct=0):
 
 
 def add_comment(s, output_file):
-    ln_td = "<td colspan='1' style='width:1%'>"
-    content_td = "<td colspan='1' style='width:49%'>"
-    fixed_layout_first_row = ln_td + content_td + ln_td + content_td
+    ph_ln_td = "<td colspan='1' style='width:1%'>&nbsp;</td>"
+    ph_ln_td_e = "<td colspan='1' style='width:1%'></td>"
+    ph_content_td = "<td colspan='1' style='width:49%'></td>"
+    fixed_layout_first_row = ph_ln_td + ph_content_td + ph_ln_td + ph_content_td
+    fixed_layout_empty_row = ph_ln_td_e + ph_content_td + ph_ln_td_e + ph_content_td
     if re.match("^diff --git", s):
         output_file.write(
-            ('<tr class="diffmisc">' + fixed_layout_first_row + '%s</td></tr>\n'%convert(s)).encode(encoding))
+            ('<tr class="diffmisc">' + fixed_layout_first_row + '</tr>\n' +
+             '<tr><td colspan=\'4\'>%s</td></tr>\n'%convert(s)).encode(encoding))
     else:
-        output_file.write(('<tr class="diffmisc">' + fixed_layout_first_row + '</td></tr>\n').encode(encoding))
+        output_file.write(
+            ('<tr class="diffmisc">' + fixed_layout_empty_row + '</tr>\n').encode(encoding))
 
 
 def __path_to_image(fpath):
