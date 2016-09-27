@@ -16,7 +16,7 @@ import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 
 import edu.ucsd.getty.IMethodRecognizer;
-import edu.ucsd.getty.visitors.MethodDeclarationSrcVisitor;
+import edu.ucsd.getty.visitors.MethodLineNumberSrcVisitor;
 
 public class ASTInspector implements IMethodRecognizer {
 	
@@ -78,7 +78,7 @@ public class ASTInspector implements IMethodRecognizer {
 		try {
 			String qualifiedMethodName = null;
 			
-			MethodDeclarationSrcVisitor visitor = new MethodDeclarationSrcVisitor();
+			MethodLineNumberSrcVisitor visitor = new MethodLineNumberSrcVisitor();
 			Node visited = visitor.visit(cu, lineNumber);
 			if (visited == null)
 				return null;
@@ -86,10 +86,10 @@ public class ASTInspector implements IMethodRecognizer {
 			String resultClassName = visited.getClass().getName();
 			if (resultClassName.equals("com.github.javaparser.ast.body.ConstructorDeclaration")) {
 				ConstructorDeclaration decl = (ConstructorDeclaration) visited;
-				qualifiedMethodName = this.getQualifiedConstructorName(decl);
+				qualifiedMethodName = getQualifiedConstructorName(decl);
 			} else if (resultClassName.equals("com.github.javaparser.ast.body.MethodDeclaration")) {
 				MethodDeclaration decl = (MethodDeclaration) visited;
-				qualifiedMethodName = this.getQualifiedMethodName(decl);
+				qualifiedMethodName = getQualifiedMethodName(decl);
 			} else {
 				System.out.println("unprocesed method type: " + resultClassName);
 			}
@@ -101,7 +101,7 @@ public class ASTInspector implements IMethodRecognizer {
 		}
 	}
 	
-	private String getQualifiedConstructorName(ConstructorDeclaration cons) throws Exception {
+	static private String getQualifiedConstructorName(ConstructorDeclaration cons) throws Exception {
 		String constructorName = cons.getName();
 		Node parent = cons.getParentNode();
 		String separator = null;
@@ -155,7 +155,7 @@ public class ASTInspector implements IMethodRecognizer {
 		return constructorName;
 	}
 	
-	private String getQualifiedMethodName(MethodDeclaration decl) throws Exception {
+	static private String getQualifiedMethodName(MethodDeclaration decl) throws Exception {
 		String methodName = decl.getName();
 		Node parent = decl.getParentNode();
 		String separator = null;

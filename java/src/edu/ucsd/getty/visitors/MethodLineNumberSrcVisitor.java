@@ -5,7 +5,7 @@ import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.visitor.GenericVisitorAdapter;
 
-public class MethodDeclarationSrcVisitor extends GenericVisitorAdapter<Node, Integer> {
+public class MethodLineNumberSrcVisitor extends GenericVisitorAdapter<Node, Integer> {
 
 	public Node visit(final MethodDeclaration n, final Integer arg) {
 		int lineNumber = arg.intValue();
