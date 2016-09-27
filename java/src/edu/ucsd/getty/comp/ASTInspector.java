@@ -101,7 +101,7 @@ public class ASTInspector implements IMethodRecognizer {
 		}
 	}
 	
-	static private String getQualifiedConstructorName(ConstructorDeclaration cons) throws Exception {
+	static public String getQualifiedConstructorName(ConstructorDeclaration cons) throws Exception {
 		String constructorName = cons.getName();
 		Node parent = cons.getParentNode();
 		String separator = null;
@@ -155,7 +155,7 @@ public class ASTInspector implements IMethodRecognizer {
 		return constructorName;
 	}
 	
-	static private String getQualifiedMethodName(MethodDeclaration decl) throws Exception {
+	static public String getQualifiedMethodName(MethodDeclaration decl) throws Exception {
 		String methodName = decl.getName();
 		Node parent = decl.getParentNode();
 		String separator = null;
