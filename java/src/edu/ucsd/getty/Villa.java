@@ -106,7 +106,7 @@ public class Villa {
 				System.exit(1);
 			}
 		} else if (args.length == 4 || args.length == 6) {
-			if (!(args[0].equals("-l") || args[0].equals("-m") || args[0].equals("-l4m"))) {
+			if (!(args[0].equals("-l") || args[0].equals("-m") || args[0].equals("--l4m"))) {
 				System.out.println("Incorrect execution mode: " + args[0]);
 				print_help_info();
 				System.exit(1);
