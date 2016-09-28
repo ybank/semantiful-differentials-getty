@@ -11,7 +11,7 @@ analyze_tests = True
 
 # whether to limit interested into a relatively smaller set
 limit_interest = True
-limit_distance = 0
+limit_distance = 3
 
 # scale parameters
 num_master_workers = 1
