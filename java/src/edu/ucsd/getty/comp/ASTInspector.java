@@ -1,6 +1,11 @@
 package edu.ucsd.getty.comp;
 
+import java.io.File;
 import java.io.FileInputStream;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -16,6 +21,7 @@ import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 
 import edu.ucsd.getty.IMethodRecognizer;
+import edu.ucsd.getty.visitors.MethodDeclarationVisitor;
 import edu.ucsd.getty.visitors.MethodLineNumberSrcVisitor;
 
 public class ASTInspector implements IMethodRecognizer {
@@ -142,11 +148,13 @@ public class ASTInspector implements IMethodRecognizer {
 					throw new Exception("[C] unexpected previous separator " + separator 
 							+ " when current parent is an enum " + currentEnumName
 							+ " and current method name is " + constructorName);
-				System.out.println("[C] RARE: process enum type and get (maybe intermediate): " + constructorName);
+//				System.out.println("[C] RARE: process enum type and get (maybe intermediate): " + constructorName);
 			}
-			else if (className.equals("com.github.javaparser.ast.CompilationUnit"))
-				constructorName = ((CompilationUnit) parent).getPackage().getName().toString() + "." + constructorName;
-			else {
+			else if (className.equals("com.github.javaparser.ast.CompilationUnit")) {
+				PackageDeclaration pkg = ((CompilationUnit) parent).getPackage();
+				if (pkg != null)
+					constructorName = pkg.getName().toString() + "." + constructorName;
+			} else {
 //				System.out.println("[C] unprocessed type: " + className);
 				throw new Exception("[C] unprocessed type: " + className);
 			}
@@ -186,7 +194,7 @@ public class ASTInspector implements IMethodRecognizer {
 							+ " when current parent is an enum " + ((EnumDeclaration) parent).getName()
 							+ " and current method name is " + methodName);
 				methodName = ((EnumDeclaration) parent).getName() + separator + methodName;
-				System.out.println("[M] RARE: process enum type and get (maybe intermediate): " + methodName);
+//				System.out.println("[M] RARE: process enum type and get (maybe intermediate): " + methodName);
 			}
 			else if (className.equals("com.github.javaparser.ast.CompilationUnit")) {
 				PackageDeclaration pkg = ((CompilationUnit) parent).getPackage();
@@ -201,6 +209,44 @@ public class ASTInspector implements IMethodRecognizer {
 			parent = parent.getParentNode();
 		}
 		return methodName;
+	}
+	
+	public static Map<String, Integer> getMethodLineNumberMap(String path, String src_postfix) {
+		Map<String, Integer> results = new HashMap<String, Integer>();
+		if (getPathType(path) == PathType.FILE) {
+			MethodDeclarationVisitor visitor = new MethodDeclarationVisitor();
+			try {
+				if (path.endsWith(src_postfix)) {
+					FileInputStream in = new FileInputStream(path);
+					CompilationUnit cu = JavaParser.parse(in);
+					in.close();
+					visitor.visit(cu, results);
+				}
+			} catch (Exception e) {
+				System.out.println("Failed to get method-linenums for path: " + path);
+			}
+			return results;
+		} else if (getPathType(path) == PathType.DIR) {
+			File dir = new File(path);
+			for (String sub : dir.list()) {
+				results.putAll(getMethodLineNumberMap(dir.getPath() + "/" + sub, src_postfix));
+			}
+			return results;
+		} else {
+			return results;
+		}
+	}
+	
+	private enum PathType { DIR, FILE, ELSE }
+	
+	private static PathType getPathType(String path) {
+		Path p = Paths.get(path);
+		if (Files.isDirectory(p, LinkOption.NOFOLLOW_LINKS))
+			return PathType.DIR;
+		else if (Files.isRegularFile(p, LinkOption.NOFOLLOW_LINKS))
+			return PathType.FILE;
+		else
+			return PathType.ELSE;
 	}
 
 	public static void main(String[] args) {

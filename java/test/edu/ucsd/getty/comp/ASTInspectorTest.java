@@ -61,5 +61,22 @@ public class ASTInspectorTest {
 		expected.add("some.pack2.TestJavaSource2:anotherMethod");
 		assertEquals(expected, recognizer.changedMethods(diffs));
 	}
+	
+	@Test
+	public void testDeclarationLineNumberSingleFileInformation() {
+		Map<String, Integer> results = ASTInspector.getMethodLineNumberMap(
+				"java/test/data/src/RealEnumTest.java.file", ".java.file");
+		assertEquals(3, results.keySet().size());
+		assertEquals(15, (int) results.get("com.crunchify.tutorials.CrunchifyEnumExample:<init>"));
+		assertEquals(19, (int) results.get("com.crunchify.tutorials.CrunchifyEnumExample:companyDetails"));
+		assertEquals(40, (int) results.get("com.crunchify.tutorials.CrunchifyEnumExample:main"));
+	}
+	
+	@Test
+	public void testDeclarationLineNumberDirectoryInformation() {
+		Map<String, Integer> results = ASTInspector.getMethodLineNumberMap(
+				"java/test/data", ".java.file");
+		assertEquals(41, results.keySet().size());
+	}
 
 }

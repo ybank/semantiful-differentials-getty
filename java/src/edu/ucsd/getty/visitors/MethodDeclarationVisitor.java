@@ -58,8 +58,13 @@ public class MethodDeclarationVisitor extends VoidVisitorAdapter<Map<String, Int
 				}
 			}
 		} catch (Exception e) {
-			System.out.println("<getty> unable to process declaration: " + decl.getName() + 
+			System.out.println("------------------------");
+			System.out.println("<getty> skipped processing declaration: " + decl.getName() +
+					" more details: "  + decl.toString() +
+					" with type: " + decl.getClass().toString() +
 					" between lines: " + decl.getBeginLine() + " and " + decl.getEndLine());
+			e.printStackTrace();
+			System.out.println("------------------------\n\n");
 		}
 	}
 
