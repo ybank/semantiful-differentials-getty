@@ -1,6 +1,7 @@
 # html transformation and manipulation
 
 from tools.daikon import fsformat
+from tools.ex import read_str_from
 
 
 inv_html_header = """<!-- inv html header -->
@@ -120,17 +121,46 @@ def _to_real_footer(levels):
     return src_html_footer.replace("=LEVELS=", levelstr)
 
 
-def src_to_html(targets, go, commit_hash):
+def _install_anchors_for(original, targets, l4ms):
+    l2as = {}
+    for target in targets:
+        if target in l4ms:
+            l2as[l4ms[target]] = "<a name='" + fsformat(target) + "'></a>"
+    if len(l2as) > 0:
+        installed = []
+        for line_number, line_content in enumerate(original.split("\n"), start=1):
+            if line_number in l2as:
+                installed.append(l2as[line_number] + line_content)
+            else:
+                installed.append(line_content)
+        return '\n'.join(installed)
+    else:
+        return original
+
+
+def src_to_html(targets, go, commit_hash, install_line_numbers=False):
     filehash = {}
+    if install_line_numbers:
+        f2ts = {}
+        l4ms = read_str_from(go + "_getty_alll4m_" + commit_hash + "_.ex")
     for target in targets:
         tp, lv = _target_to_path(target)
-        if tp not in filehash:
-            filehash[go + "_getty_allcode_" + commit_hash + "_/" + tp] = lv
+        real_path = go + "_getty_allcode_" + commit_hash + "_/" + tp
+        if real_path not in filehash:
+            filehash[real_path] = lv
+        if install_line_numbers:
+            if real_path not in f2ts:
+                f2ts[real_path] = set()
+            f2ts[real_path].add(target)
     for jp in filehash:
         try:
-            print "syntax highlighting: " + jp
+            print "preprocessing: " + jp
             with open(jp, "r+") as javaf:
                 allsrc = javaf.read()
+                if install_line_numbers:
+                    print "  -- installing anchors ..."
+                    allsrc = _install_anchors_for(allsrc, f2ts[jp], l4ms)
+                print "  -- syntax highlighting ..."
                 newsrchtml = src_html_header + allsrc + _to_real_footer(filehash[jp])
                 javaf.seek(0)
                 javaf.truncate()

@@ -430,7 +430,7 @@ public class Villa {
 			}
 			l4ms_str += "}";
 			
-			String output_path = output_dir + "_getty_allm4l_" + the_hash + "_.ex";
+			String output_path = output_dir + "_getty_alll4m_" + the_hash + "_.ex";
 			System.out.println(
 					"<line# for methods>: number of methods with line# information: " + l4ms.size() + "\n"
 							+ "  output to file --> " + output_path + " ...\n");

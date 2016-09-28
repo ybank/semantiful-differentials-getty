@@ -292,6 +292,10 @@ function show_src_or_inv(which) {
 		$('a#src_inv_btn_4inv').css("color", "blue");
 	} else if (which == "src") {
 		$('iframe.invtip').hide();
+		anchor_name = fsformat(current_method_name);
+		// reset link with anchor for better display
+		$('iframe#i-left-src').attr('src', name_to_path(current_method_name, prev_hash) + "#" + anchor_name);
+		$('iframe#i-right-src').attr('src', name_to_path(current_method_name, post_hash) + "#" + anchor_name);
 		$('iframe.srctip').css("display", "inline-block");
 		$('a.src-inv-button-link').css("color", "gray");
 		$('a#src_inv_btn_4src').css("color", "blue");
@@ -336,6 +340,8 @@ function methodInvsCompareDiv(method_name) {
 	
 	var preInvs = "", postInvs = "";
 	var preSrcs = "", postSrcs = "";
+	var anchor_name = fsformat(current_method_name);
+	
 	ileft =
 		"width:49%;height:400px;background-color:#000;" +
 		"display:none;position:relative;border:2px dotted #A8BBA8;";
@@ -355,10 +361,10 @@ function methodInvsCompareDiv(method_name) {
 		"width:49%;height:400px;background-color:#333;" +
 		"display:none;position:absolute;right:15px;border:2px dotted #A8BBA8;";
 	preSrcs =
-		"<iframe id='i-left-src' src='" + name_to_path(method_name, prev_hash) + "' " +
+		"<iframe id='i-left-src' src='" + name_to_path(method_name, prev_hash) + "#" + anchor_name + "' " +
 		"class='srctip' style='" + sleft + "'></iframe>";
 	postSrcs =
-		"<iframe id='i-right-src' src='" + name_to_path(method_name, post_hash) + "' " +
+		"<iframe id='i-right-src' src='" + name_to_path(method_name, post_hash) + "#" + anchor_name + "' " +
 		"class='srctip' style='" + sright + "'></iframe>";
 	mitabs = "<div style='margin-bottom:8px;'>" +
 		"<span class='more-inv-display-option-listing'>Display Options:&nbsp;&nbsp;&nbsp;</span>" +

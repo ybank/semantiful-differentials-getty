@@ -50,45 +50,6 @@ def sort_txt_inv(out_file):
             f.write('<NO INVARIANTS INFERRED>')
 
 
-# Chicory-Daikon-Invariant
-# # v3. flexible to be run in parallel
-# def seq_get_invs(target_set, java_cmd, junit_torun, go, this_hash):
-#     index = target_set[-1]
-#     target_set = target_set[:-1]
-#     
-#     select_pattern = daikon.reformat_all(target_set, more_ppts=True)
-#     print "\n===select pattern===\n" + select_pattern + "\n"
-#     
-#     run_chicory = \
-#         " ".join([java_cmd, "daikon.Chicory --exception-handling", \
-#                   "--dtrace-file="+rel_go(go)+"_getty_trace_"+this_hash+"_."+index+".dtrace.gz", \
-#                   "--ppt-select-pattern=\'"+select_pattern+"\'", \
-#                   junit_torun])
-#     print "\n=== Daikon:Chicory command to run: \n" + run_chicory
-#     os.sys_call(run_chicory, ignore_bad_exit=True)
-#     
-#     run_daikon = \
-#         " ".join([java_cmd, "daikon.Daikon", 
-#                   go+"_getty_trace_"+this_hash+"_."+index+".dtrace.gz", \
-#                   "--ppt-select-pattern=\'"+daikon.dfformat_full(target_set)+"\'", \
-#                   "--no_text_output", "--show_progress", \
-#                   "-o", go+"_getty_inv_"+this_hash+"_."+index+".inv.gz"])
-#     print "\n=== Daikon:Daikon command to run: \n" + run_daikon
-#     os.sys_call(run_daikon, ignore_bad_exit=True)
-#     
-#     os.remove_file(go+"_getty_trace_"+this_hash+"_."+index+".dtrace.gz")
-#     
-#     for tgt in target_set:
-#         target_ff = daikon.fsformat(tgt)
-#         run_printinv = \
-#             " ".join([java_cmd, "daikon.PrintInvariants", \
-#                       "--ppt-select-pattern=\'"+daikon.dfformat(tgt)+"\'", \
-#                       go+"_getty_inv_"+this_hash+"_."+index+".inv.gz"])
-#         out_file = go+"_getty_inv__"+target_ff+"__"+this_hash+"_.inv.out"
-#         print "\n=== Daikon:PrintInvs command to run: \n" + run_printinv
-#         os.sys_call(run_printinv + " > " + out_file, ignore_bad_exit=True)
-#         sort_txt_inv(out_file)
-
 # v4. flexible to be run in parallel, in daikon-online mode
 def seq_get_invs(target_set_index_pair, java_cmd, junit_torun, go, this_hash):
     index = target_set_index_pair[1]
@@ -441,8 +402,8 @@ def visit(junit_path, sys_classpath, agent_path, cust_mvn_repo, separate_go, pre
     if config.analyze_tests:
         refined_target_set = refined_target_set | set(old_changed_tests) | set(new_changed_tests)
     
-    html.src_to_html(refined_target_set, go, prev_hash)
-    html.src_to_html(refined_target_set, go, post_hash)
+    html.src_to_html(refined_target_set, go, prev_hash, install_line_numbers=config.jump_to_method)
+    html.src_to_html(refined_target_set, go, post_hash, install_line_numbers=config.jump_to_method)
     
     '''
         3-rd pass: checkout prev_commit as detached head, and get invariants for all interesting targets
