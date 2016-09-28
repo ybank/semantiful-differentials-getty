@@ -219,7 +219,10 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash, common_package,
     else:
         tests_replacement = "<span>None</span>"
     inv_change_update = \
-        "<br><br><h4 style='margin: 4px 0 8px 0'>Invariant Changed:</h4>"
+        "<br><br>" + \
+        "<a href='#' id='inv-change-list-link' onclick='$(\"div.invariant-change-list-divs\").toggle();return false;'>" + \
+        "<h4 style='margin: 4px 0 8px 0'><span>[Show/Hide Methods & Classes with Possible Invariant Changes]</span></h4>" + \
+        "</a>"
     if all_whose_inv_changed or all_whose_clsobj_inv_changed:
         if all_whose_inv_changed:
             invch_mtd_replacement = "<span>Methods: </span>" + ", ".join(
@@ -234,6 +237,8 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash, common_package,
         invch_replacement = invch_mtd_replacement + "<br>" + invch_cls_replacement
     else:
         invch_replacement = "<span>None</span>"
+    invch_replacement = "<div class='invariant-change-list-divs'><span>&nbsp;...</span></div>" + \
+        "<div class='invariant-change-list-divs' style='display:none;'>" + invch_replacement + "</div>"
     replace_footer = "</div>"
     html_string = html_string.replace(targets_place_holder,
                                       replace_header + replacement + \
