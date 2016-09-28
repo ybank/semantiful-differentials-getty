@@ -6,8 +6,13 @@ from tools import ex, git, mvn, os
 def checkout_build(proj_dir, commit_hash):
     os.sys_call("git checkout " + commit_hash)
     os.sys_call("mvn clean")
-    # src_path = path_from_mvn_call("sourceDirectory")
     bin_path = mvn.path_from_mvn_call("outputDirectory")
+    src_rel_path = mvn.path_from_mvn_call("sourceDirectory")
+    if src_rel_path.startswith(proj_dir):
+        src_rel_path = src_rel_path[len(proj_dir):]
+    else:
+        raise ValueError("proj_dir is not a prefix of src path")
+    print "current src path (relative): " + src_rel_path + "\n"
     test_src_rel_path = mvn.path_from_mvn_call("testSourceDirectory")
     if test_src_rel_path.startswith(proj_dir):
         test_src_rel_path = test_src_rel_path[len(proj_dir):]
@@ -15,7 +20,7 @@ def checkout_build(proj_dir, commit_hash):
         raise ValueError("proj_dir is not a prefix of test src path")
     print "current test src path (relative): " + test_src_rel_path + "\n"
     os.sys_call("mvn test-compile")
-    return bin_path, test_src_rel_path
+    return bin_path, src_rel_path, test_src_rel_path
 
 
 def visit(villa_path, pwd, proj_dir, go, prev_hash, post_hash, pkg_prefix="-"):
@@ -33,13 +38,16 @@ def visit(villa_path, pwd, proj_dir, go, prev_hash, post_hash, pkg_prefix="-"):
         1-st pass: checkout prev_commit as detached head, and get all sets and etc, in simple (bare) mode (-s)
             remember to clear after this pass
     '''
-    bin_path, test_src_rel_path = checkout_build(proj_dir, prev_hash)
+    bin_path, src_rel_path, test_src_rel_path = checkout_build(proj_dir, prev_hash)
     
     run_villa = "java -jar {0} -s {1} {2} {3} {4} {5} {6} -o {7}".format(
         villa_path, diff_out, bin_path, test_src_rel_path, pkg_prefix, prev_hash, post_hash, go)
-    print "\n\nstart to run Villa ... \n\n" + run_villa
+    run_villa_l4ms = "java -jar {0} -l {1} {2} {3} -o {4}".format(
+        villa_path, src_rel_path, test_src_rel_path, prev_hash, go)
+    print "\n\nstart to run Villa ... \n\n" + run_villa + "\n  and  \n" + run_villa_l4ms
     chdir(proj_dir)
     os.sys_call(run_villa)
+    os.sys_call(run_villa_l4ms)
     chdir(pwd)
     
     old_changed_methods = ex.read_str_from(go + "_getty_chgmtd_src_old_{0}_.ex".format(prev_hash))
@@ -60,13 +68,16 @@ def visit(villa_path, pwd, proj_dir, go, prev_hash, post_hash, pkg_prefix="-"):
         2-nd pass: checkout post_commit as detached head, and get all sets and etc, in complex mode (-c)
             remember to clear after this pass
     '''
-    bin_path, test_src_rel_path = checkout_build(proj_dir, post_hash)
+    bin_path, src_rel_path, test_src_rel_path = checkout_build(proj_dir, post_hash)
     
     run_villa = "java -jar {0} -c {1} {2} {3} {4} {5} {6} -o {7}".format(
         villa_path, diff_out, bin_path, test_src_rel_path, pkg_prefix, prev_hash, post_hash, go)
-    print "\n\nstart to run Villa ... \n\n" + run_villa
+    run_villa_l4ms = "java -jar {0} -l {1} {2} {3} -o {4}".format(
+        villa_path, src_rel_path, test_src_rel_path, post_hash, go)
+    print "\n\nstart to run Villa ... \n\n" + run_villa + "\n  and  \n" + run_villa_l4ms
     chdir(proj_dir)
     os.sys_call(run_villa)
+    os.sys_call(run_villa_l4ms)
     chdir(pwd)
     
     new_changed_methods = ex.read_str_from(go + "_getty_chgmtd_src_new_{0}_.ex".format(post_hash))
@@ -100,7 +111,7 @@ def visit(villa_path, pwd, proj_dir, go, prev_hash, post_hash, pkg_prefix="-"):
         3-rd pass: checkout prev_commit as detached head, and get all sets and etc, in recovery mode (-r)
             remember to clear after this pass
     '''
-    bin_path, test_src_rel_path = checkout_build(proj_dir, prev_hash)
+    bin_path, src_rel_path, test_src_rel_path = checkout_build(proj_dir, prev_hash)
     
     run_villa = "java -jar {0} -r {1} {2} {3} {4} {5} {6} -o {7}".format(
         villa_path, diff_out, bin_path, test_src_rel_path, pkg_prefix, prev_hash, post_hash, go)
