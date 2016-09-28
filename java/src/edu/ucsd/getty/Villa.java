@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -47,7 +46,7 @@ public class Villa {
 			case "--simgen=new":
 				execute_tour_simple_mode(args);
 				break;
-				
+			
 		/**
 		 * comgen (c)
 		 */
@@ -55,7 +54,7 @@ public class Villa {
 			case "--comgen":
 				execute_tour_complex_mode(args);
 				break;
-				
+			
 		/**
 		 * comgen (c)
 		 */
@@ -63,7 +62,16 @@ public class Villa {
 			case "--recgen":
 				execute_tour_recovery_mode(args);
 				break;
-						
+			
+		/**
+		 * comgen (c)
+		 */
+			case "-l":
+			case "-m":
+			case "--l4m":
+				extract_l4m_info(args);
+				break;
+			
 		/**
 		 * unrecognizable execution mode
 		 */
@@ -75,7 +83,7 @@ public class Villa {
 		}
 		
 	}
-
+	
 	private static void check_args(String[] args) {
 		if (args.length == 0 || args[0].equals("-h") || args[0].equals("--help")) {
 			print_help_info();
@@ -97,8 +105,18 @@ public class Villa {
 				print_help_info();
 				System.exit(1);
 			}
-//		} else if (args.length == -1) {  // FIXME: get number of args for other mode(s)
-//			// TODO: for other Java tools
+		} else if (args.length == 4 || args.length == 6) {
+			if (!(args[0].equals("-l") || args[0].equals("-m") || args[0].equals("-l4m"))) {
+				System.out.println("Incorrect execution mode: " + args[0]);
+				print_help_info();
+				System.exit(1);
+			}
+			if (args.length == 6
+					&& !(args[4].equals("-o") || args[4].equals("--output"))) {
+				System.out.println("Incorrect secondary option: " + args[4]);
+				print_help_info();
+				System.exit(1);
+			}
 		} else {
 			System.out.println("Incorrect arguments given.");
 			print_help_info();
@@ -109,26 +127,30 @@ public class Villa {
 	private static void print_help_info() {
 		System.out.println("Usage:"
 				+ "\n\t  "
-				+ "java -jar Getty.Villa.jar <--help | -h>"
+				+ "java -jar villa.jar <--help | -h>"
 				+ "\n\t  "
-				+ "java -jar Getty.Villa.jar "
+				+ "java -jar villa.jar "
 				+ "<--simgen=bare | -s> <diffpath> <targetpath> <testsrcrelpath> <pkgprefix | -> <prevcommit> <currcommit> "
 				+ "[<--output | -o> <outputworkdir>]"
 				+ "\n\t  "
-				+ "java -jar Getty.Villa.jar "
+				+ "java -jar villa.jar "
 				+ "<--simgen=old | --simgen | -so> <diffpath> <targetpath> <testsrcrelpath> <pkgprefix | -> <prevcommit> <currcommit> "
 				+ "[<--output | -o> <outputworkdir>]"
 				+ "\n\t  "
-				+ "java -jar Getty.Villa.jar "
+				+ "java -jar villa.jar "
 				+ "<--simgen=new | -sn> <diffpath> <targetpath> <testsrcrelpath> <pkgprefix | -> <prevcommit> <currcommit> "
 				+ "[<--output | -o> <outputworkdir>]"
 				+ "\n\t  "
-				+ "java -jar Getty.Villa.jar "
+				+ "java -jar villa.jar "
 				+ "<--comgen | -c> <diffpath> <targetpath> <testsrcrelpath> <pkgprefix | -> <prevcommit> <currcommit> "
 				+ "[<--output | -o> <outputworkdir>]"
 				+ "\n\t  "
-				+ "java -jar Getty.Villa.jar "
+				+ "java -jar villa.jar "
 				+ "<--recgen | -r> <diffpath> <targetpath> <testsrcrelpath> <pkgprefix | -> <prevcommit> <currcommit> "
+				+ "[<--output | -o> <outputworkdir>]"
+				+ "\n\t  "
+				+ "java -jar villa.jar "
+				+ "<--l4m | -l | -m> <srcpath> <testpath> <commit> "
 				+ "[<--output | -o> <outputworkdir>]"
 				+ "\n");
 	}
@@ -379,6 +401,43 @@ public class Villa {
 			
 			ITraceFinder chain_generator_improved = get_generator(target_path, package_prefix, revised_methods);
 			output_dataflow_approx(output_dir, chain_generator_improved, prev_commit);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(2);
+		}
+	}
+	
+	private static void extract_l4m_info(String[] args) {
+		String src_path = args[1];
+		String test_path = args[2];
+		String the_hash = args[3];
+		try {
+			Map<String, Integer> l4ms = ASTInspector.getMethodLineNumberMap(src_path, ".java");
+			if (!test_path.equals(src_path))
+				l4ms.putAll(ASTInspector.getMethodLineNumberMap(test_path, ".java"));
+			String output_dir = "/tmp/getty/";
+			if (args.length == 6 && (args[4].equals("-o") || args[4].equals("--output"))) {
+				output_dir = args[5];
+				if (!output_dir.endsWith("/"))
+					output_dir += "/";
+			}
+			
+			String l4ms_str = "{";
+			for (String method : l4ms.keySet()) {
+				l4ms_str += ("\"" + method + "\": ");
+				l4ms_str += (l4ms.get(method) + ", ");
+			}
+			l4ms_str += "}";
+			
+			String output_path = output_dir + "_getty_allm4l_" + the_hash + "_.ex";
+			System.out.println(
+					"<line# for methods>: number of methods with line# information: " + l4ms.size() + "\n"
+							+ "  output to file --> " + output_path + " ...\n");
+			PrintWriter l4ms_out = new PrintWriter(
+					new BufferedWriter(new FileWriter(output_path, false)));
+			l4ms_out.print(l4ms_str);
+			l4ms_out.close();
 			
 		} catch (Exception e) {
 			e.printStackTrace();
