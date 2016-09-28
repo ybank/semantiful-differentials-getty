@@ -219,37 +219,10 @@ public class Villa {
 			
 			
 			////
-			// get ccc and clr only if it is not bare mode
+			// get clr only if it is not bare mode
 			////
 			if (!(args[0].equals("-s") || args[0].equals("--simgen=bare"))) {
-				
-//				Map<String, Set<List<String>>> candidates = chain_generator.getCandidateTraces();
-////					System.out.println(candidates);
-//				String ccc_out_path = output_dir + "_getty_ccc_" + this_commit + "_.ex";
-//				int max_chain_len = 0;
-//				for (String method : candidates.keySet()) {
-//					int c_len = candidates.get(method).size();
-//					if (c_len > max_chain_len)
-//						max_chain_len = c_len;
-//				}
-//				System.out.println(
-//						"<simple mode>: max size of ccc map: " + candidates.size() + "(methods) x " + max_chain_len + "(chains)\n"
-//								+ "  output to file --> " + ccc_out_path + " ...\n");
-//				output_to(ccc_out_path, candidates);
-				
-				
-//				/**********************************/
-//				Set<String> all_ccc_related = get_all_ccc_related(candidates);
-////					System.out.println(all_ccc_related);
-//				String cccmtd_out_path = output_dir + "_getty_cccmtd_" + this_commit + "_.ex";
-//				System.out.println(
-//						"<simple mode>: number of related ccc methods: " + all_ccc_related.size() + "\n"
-//								+ "  output to file --> " + cccmtd_out_path + " ...\n");
-//				output_to(cccmtd_out_path, all_ccc_related);
-				
-				/**********************************/
 				output_dataflow_approx(output_dir, chain_generator, this_commit);
-				
 			}
 			
 		} catch (Exception e) {
@@ -347,31 +320,6 @@ public class Villa {
 			/************************************************/
 			ITraceFinder chain_generator_improved = get_generator(target_path, package_prefix, revised_methods);
 			
-//			Map<String, Set<List<String>>> candidates = chain_generator_improved.getCandidateTraces();
-////					System.out.println(candidates);
-//			String ccc_out_path = output_dir + "_getty_ccc_" + curr_commit + "_.ex";
-//			int max_chain_len = 0;
-//			for (String method : candidates.keySet()) {
-//				int c_len = candidates.get(method).size();
-//				if (c_len > max_chain_len)
-//					max_chain_len = c_len;
-//			}
-//			System.out.println(
-//					"<complex mode>: max size of ccc map: " + candidates.size() + "(methods) x " + max_chain_len + "(chains)\n"
-//							+ "  output to file --> " + ccc_out_path + " ...\n");
-//			output_to(ccc_out_path, candidates);
-			
-			
-//			/**********************************/
-//			Set<String> all_ccc_related = get_all_ccc_related(candidates);
-////					System.out.println(all_ccc_related);
-//			String cccmtd_out_path = output_dir + "_getty_cccmtd_" + curr_commit + "_.ex";
-//			System.out.println(
-//					"<complex mode>: number of related ccc methods: " + all_ccc_related.size() + "\n"
-//							+ "  output to file --> " + cccmtd_out_path + " ...\n");
-//			output_to(cccmtd_out_path, all_ccc_related);
-			
-			/**********************************/
 			output_dataflow_approx(output_dir, chain_generator_improved, curr_commit);
 			
 		} catch (Exception e) {
@@ -429,34 +377,7 @@ public class Villa {
 							+ "  output to file --> " + added_chgmtd_out_path + " ...\n");
 			output_to(added_chgmtd_out_path, added_methods);
 			
-			/************************************************/
 			ITraceFinder chain_generator_improved = get_generator(target_path, package_prefix, revised_methods);
-			
-//			Map<String, Set<List<String>>> candidates = chain_generator_improved.getCandidateTraces();
-////					System.out.println(candidates);
-//			String ccc_out_path = output_dir + "_getty_ccc_" + prev_commit + "_.ex";
-//			int max_chain_len = 0;
-//			for (String method : candidates.keySet()) {
-//				int c_len = candidates.get(method).size();
-//				if (c_len > max_chain_len)
-//					max_chain_len = c_len;
-//			}
-//			System.out.println(
-//					"<recovery mode>: max size of ccc map: " + candidates.size() + "(methods) x " + max_chain_len + "(chains)\n"
-//							+ "  output to file --> " + ccc_out_path + " ...\n");
-//			output_to(ccc_out_path, candidates);
-			
-			
-//			/**********************************/
-//			Set<String> all_ccc_related = get_all_ccc_related(candidates);
-////					System.out.println(all_ccc_related);
-//			String cccmtd_out_path = output_dir + "_getty_cccmtd_" + prev_commit + "_.ex";
-//			System.out.println(
-//					"<recovery mode>: number of related ccc methods: " + all_ccc_related.size() + "\n"
-//							+ "  output to file --> " + cccmtd_out_path + " ...\n");
-//			output_to(cccmtd_out_path, all_ccc_related);
-			
-			/**********************************/
 			output_dataflow_approx(output_dir, chain_generator_improved, prev_commit);
 			
 		} catch (Exception e) {
@@ -530,40 +451,6 @@ public class Villa {
 		out_file.close();
 	}
 	
-	private static void output_to(String out_path, Map<String, Set<List<String>>> ccc_content) throws IOException {
-		PrintWriter out_file = new PrintWriter(
-				new BufferedWriter(new FileWriter(out_path, false)));
-		String str_content = "{";
-		for (String method : ccc_content.keySet()) {
-			str_content += ("\"" + method + "\": [");
-			for (List<String> chain : ccc_content.get(method)) {
-				str_content += "[";
-				for (String mtd : chain) {
-					str_content += ("\"" + mtd + "\", ");
-				}
-				str_content += "], ";
-			}
-			str_content += "], ";
-		}
-		str_content += "}";
-		out_file.print(str_content);
-		out_file.close();
-	}
-
-	private static Set<String> get_all_ccc_related(Map<String, Set<List<String>>> candidates) {
-		System.out.println("\nGetting all related methods of changed methods from ccc ...\n");
-		Set<String> all_related = new HashSet<String>();
-		for (String method : candidates.keySet()) {
-			for (List<String> chain : candidates.get(method)) {
-				for (String mtd : chain) {
-					if (!mtd.equals("!") && !mtd.startsWith("@"))
-						all_related.add(mtd);
-				}
-			}
-		}
-		return all_related;
-	}
-	
 	private static ITraceFinder get_generator(String target_path, String package_prefix, Set<String> revised_methods) {
 		System.out.println("\nGetting all project methods, call graphs and candidate call chains ...\n");
 		ITraceFinder chain_generator = new CandidateGenerator(revised_methods, target_path, package_prefix);
@@ -584,11 +471,6 @@ public class Villa {
 //		System.out.println("DEBUG -- after exclusion: " + file_revision_lines.keySet());
 			
 		Set<String> revised_methods = ast_inspector.changedMethods(file_revision_lines);
-//		Map<String, String> l2m = ast_inspector.l2m();
-////		System.out.println(l2m);
-//		Map<String, Set<String>> m2l = ast_inspector.m2l();
-////		System.out.println(m2l);
-//		output_m2l_l2m(output_dir, l2m, m2l, commit_hash);
 		
 		return revised_methods;
 	}
