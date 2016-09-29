@@ -103,24 +103,39 @@ The projects Getty can analyze should satisfy the following criteria:
   $ cd dsproj
   ```
   
-  * Review invariant differentials between any two commits! As an example, compare commit `3dc01ea` to its parent (`3dc01ea~1`) of the example project.
+  * Review invariant differentials between any two commits! As an example, compare commit `a562db1` to one of its ancestor commits (`19f4281`) of the example project.
   
   ```bash
-  $ /path/to/your/Getty/semantiful-differentials-getty/getty/csi 3dc01ea~1 3dc01ea
+  $ /path/to/your/Getty/semantiful-differentials-getty/getty/csi 19f4281 a562db1
   ```
-  Or, using its shorter version:
+  By default, Getty does not isolate invariant changes due to different types of code update. More frequently, however, it is necessary to let Getty isolate the impact of source or test code changes. To get the integrated impact-isolated view (superset of the results above), append the option `-i` at the end of the commend.
   ```bash
-  $ /path/to/your/Getty/semantiful-differentials-getty/getty/csi ~1 3dc01ea
+  $ /path/to/your/Getty/semantiful-differentials-getty/getty/csi ~1 19f4281 a562db1 -i
   ```
   
   After analysis your terminal will tell you where to look at the results. 
-  Typically it is located at `/path/to/your/example/project.__getty_output__/sema.diff.html`.
+  The default location is:
+  
+    `/path/to/your/example/project.__getty_output__/sema.diff.html`
+  
+  Or, for isolated view, the location is:
+  
+    `/path/to/your/example/project.__getty_output__/iso_$PREV_$POST/sema.diff.html`
+  
+  In the above path, `$PREV` is the first commit hash passed in command line and `$POST` the second; for example, the results of the isolated view by the last command above is located at:
+  
+    `/path/to/your/example/project.__getty_output__/iso_19f4281_a562db1/sema.diff.html`
+  
   For best viewing results, [Chrome](https://www.google.com/chrome/) and [Firefox](https://www.mozilla.org/en-US/firefox/new/) are recommanded to open the rendered html page. Safari and IE are not currently recommended.
   
   That's it!
 
-###*Misc & Screenshot*
-[Here](http://sosa08.ucsd.edu:8000/sema.diff.html) is a screenshot of the source-impact isolated CSI view, for the commit ("#7") we discussed in our submitted CSI paper, which is currently under ICSE's review. Please note that the user interface is changed slightly, but mostly remains the same.
+###*Screenshot & Misc*
+[Here](http://sosa08.ucsd.edu:8000/sema.diff.html) is an *outdated* screenshot of the source-impact isolated CSI view, for the commit ("#7") we discussed in our submitted CSI paper, which is currently under ICSE's review.
+
+Please note that our latest user interface has been changed moderately (a refined UI style, more enriched features and integration of impact-isolated views), but most other part of the UI resembles the past. If you would like to skip all of the above set-up but just view the latest generated results, the quickest way is to download the zip file [here in my Google Drive (no sign-in required)](https://drive.google.com/file/d/0B2ErS1V8NMeXTjd2Y29nSXZoQUU/view?usp=sharing). After downloading it, upzip it and use your preferred browser to open the `sema.diff.html` file. (Again, we recommend Chrome and Firefox here.)
+
+We have also updated the textual-diffing algorithm for invariant matching, which gives slightly cleaner diffing results; but ideally, we would like to further enhance it to a real semantic diffing algorithm backed by a theorem prover, which is currently WIP for future applications.
   
 ###*Support*
 Please send email to the authors ({yayan, mmenarini, wgg} 'AT' cs 'dot' ucsd 'dot' edu) to discuss Getty, or to post questions.
