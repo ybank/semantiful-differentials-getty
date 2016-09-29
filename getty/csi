@@ -34,7 +34,8 @@ def show_help():
     print "\tCompare between the given commits: preimage_commit vs. postimage_commit (give issue name optionally):"
     print "\t  csi < preimage_commit > < postimage_commit > [issue:<ISSUE_NAME>]"
     print "\t  csi < ~relative_index > < postimage_commit > [issue:<ISSUE_NAME>]"
-    print "\t  csi < -preimage_index > < -postimage_index > [issue:<ISSUE_NAME>]\n"
+    print "\t  csi < -preimage_index > < -postimage_index > [issue:<ISSUE_NAME>]"
+    print "\t  csi < -preimage_commit > < -postimage_commit > -i\n"
 
 
 def config_env():
