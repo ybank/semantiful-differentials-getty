@@ -98,7 +98,7 @@ html_hdr = """<!DOCTYPE html>
         tr.diffseparator td {{}}
         tr.invheader > td {{ background: #7a7a7a; color: #f0f3cc; font-weight: bold }}
         a#inv-change-list-link {{ text-decoration: none }}
-        a#inv-change-list-link h4 span:hover {{ background-color: lightgray }}
+        h4 span a#inv-change-list-link:hover {{ background-color: lightgray }}
         a.special-neighbor-link {{ color: red }}
         a.hidable-mtd-equal-inv {{ color: gray }}
         a.output-invc-highlight {{ color: red; text-decoration: none }}

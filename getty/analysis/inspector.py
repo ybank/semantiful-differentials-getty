@@ -220,9 +220,10 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash, common_package,
         tests_replacement = "<span>None</span>"
     inv_change_update = \
         "<br><br>" + \
+        "<h4 style='margin: 4px 0 8px 0'><span>" + \
         "<a href='#' id='inv-change-list-link' onclick='$(\"div.invariant-change-list-divs\").toggle();return false;'>" + \
-        "<h4 style='margin: 4px 0 8px 0'><span>[Show/Hide Methods & Classes with Possible Invariant Changes]</span></h4>" + \
-        "</a>"
+        "[Show/Hide Methods & Classes with Possible Invariant Changes]" + "</a>" + \
+        "</span></h4>"
     if all_whose_inv_changed or all_whose_clsobj_inv_changed:
         if all_whose_inv_changed:
             invch_mtd_replacement = "<span>Methods: </span>" + ", ".join(
