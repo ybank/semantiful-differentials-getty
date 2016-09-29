@@ -35,7 +35,7 @@
 #   Detect if the character is "printable" for whatever definition,
 #   and display those directly.
 
-import sys, re, htmlentitydefs, getopt, StringIO, codecs, datetime, difflib, json
+import sys, re, htmlentitydefs, getopt, StringIO, codecs, datetime, difflib, json, time
 
 import config
 from analysis import solver
@@ -979,10 +979,11 @@ def _getty_append_invdiff(html_string, targets, go, prev_hash, curr_hash, iso):
 def _import_js(html_string, js_path, go):
     import_script = "<script type=\"text/javascript\" src=\"{0}\"></script>"
     last_import = []
+    ver_time = str(int(time.time()))
     for jslib in ["jquery-1.2.6.js", "jquery.simpletip-1.3.1.js",
-                  "run_prettify.js", "buckets.min.js", "getty.js"]:
+                  "buckets.min.js", "run_prettify.js", "getty.js"]:
         from_sys_call_enforce(" ".join(["cp", js_path + jslib, go + jslib]))
-        last_import.append(import_script.format(jslib))
+        last_import.append(import_script.format(jslib + "?ver=" + ver_time))
     last_import.append("</body>")
     last_import_str = "\n".join(last_import)
     return html_string.replace("</body>", last_import_str)
