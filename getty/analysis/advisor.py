@@ -73,7 +73,7 @@ def _with_invdiff(report_html, targets, go):
 
 def _with_tips(page, targets, prev_hash, post_hash, go, jspath):
     import_script = "<script type=\"text/javascript\" src=\"{0}\"></script>\n"
-    import_jquery = import_script.format(jspath + "jquery-1.2.6.js")
+    import_jquery = import_script.format(jspath + "jquery-3.1.1.min.js")
     import_simpletip = import_script.format(jspath + "jquery.simpletip-1.3.1.js")
     import_getty = import_script.format(jspath + "getty.js")
     targets_str = "[" + ", ".join("\"" + fsformat(t) + "\"" for t in targets) + "]"
