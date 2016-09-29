@@ -32,19 +32,23 @@ function install_msg_tips(cmsg, glink) {
 	$('a#commit-msg-link').simpletip(config_obj);
 }
 
+function fsname_to_inv_path(mtd_fsformat_name, commit_hash) {
+	return "./_getty_inv__" + mtd_fsformat_name + "__" + commit_hash + "_.inv.out.html";
+}
+
 function methodInvsComparePage(theMtd, prev, post) {
 	compareInvs = $("div#hide-all div#vsinvs-" + iso_type + "-" + theMtd)[0].outerHTML;
 	left = 
 		"width:48%;height:400px;background-color: #5A5F5A;" + 
 		"display:inline-block;position:relative;border:2px dotted #A8BBA8;";
 	preInvs = 
-		"<iframe src='./_getty_inv__" + theMtd + "__" + prev + "_.inv.out' " +
+		"<iframe src='" + fsname_to_inv_path(theMtd, prev) + "' " +
 				"class='invtip' style='" + left + "'></iframe>";
 	right = 
 		"width:48%;height:400px;background-color: #5A5F5A;" + 
 		"display:inline-block;position:absolute;right:15px;border:2px dotted #A8BBA8;";
 	postInvs = 
-		"<iframe src='./_getty_inv__" + theMtd + "__" + post + "_.inv.out' " +
+		"<iframe src='" + fsname_to_inv_path(theMtd, post) + "' " +
 				"class='invtip' style='" + right + "'></iframe>";
 	htmlContent = compareInvs + "<br>" + preInvs + postInvs;
 	return "<body>" + htmlContent + "</body>";
@@ -161,13 +165,13 @@ function reportTipFor(theMtd, prev, post) {
 			"width:48%;height:400px;background-color: #5A5F5A;" + 
 			"display:inline-block;position:relative;border:2px dotted #A8BBA8;";
 		preInvs = 
-			"<iframe src='./_getty_inv__" + theMtd + "__" + prev + "_.inv.out' " +
+			"<iframe src='" + fsname_to_inv_path(theMtd, prev) + "' " +
 					"class='invtip' style='" + left + "'></iframe>";
 		right = 
 			"width:48%;height:400px;background-color: #5A5F5A;" + 
 			"display:inline-block;position:absolute;right:15px;border:2px dotted #A8BBA8;";
 		postInvs = 
-			"<iframe src='./_getty_inv__" + theMtd + "__" + post + "_.inv.out' " +
+			"<iframe src='" + fsname_to_inv_path(theMtd, post) + "' " +
 					"class='invtip' style='" + right + "'></iframe>";
 		htmlContent = compareInvs + "<br>" + preInvs + postInvs;
 		return "<body>" + htmlContent + "</body>";
@@ -252,7 +256,7 @@ function name_to_path(m, hash_value) {
 			rel_path = m.substring(0, dollar_index).replace(/\./g, "/");
 		}
 	}
-	return "./_getty_allcode_" + hash_value + "_/" + rel_path + ".java";
+	return "./_getty_allcode_" + hash_value + "_/" + rel_path + ".java.html";
 }
 
 function show_src_or_inv(which) {
@@ -261,28 +265,20 @@ function show_src_or_inv(which) {
 		tfs = fsformat(current_method_name)
 		switch (iso_type) {
 			case "ni":
-				$('iframe#iinvprev').attr('src',
-						"./_getty_inv__" + tfs + "__" + prev_hash + "_.inv.out");
-				$('iframe#iinvpost').attr('src',
-						"./_getty_inv__" + tfs + "__" + post_hash + "_.inv.out");
+				$('iframe#iinvprev').attr('src', fsname_to_inv_path(tfs, prev_hash));
+				$('iframe#iinvpost').attr('src', fsname_to_inv_path(tfs, post_hash));
 				break;
 			case "si":
-				$('iframe#iinvprev').attr('src',
-						"./_getty_inv__" + tfs + "__" + prev_hash + "_" + post_hash + "_.inv.out");
-				$('iframe#iinvpost').attr('src',
-						"./_getty_inv__" + tfs + "__" + post_hash + "_.inv.out");
+				$('iframe#iinvprev').attr('src', fsname_to_inv_path(tfs, prev_hash + "_" + post_hash));
+				$('iframe#iinvpost').attr('src', fsname_to_inv_path(tfs, post_hash));
 				break;
 			case "ti4o":
-				$('iframe#iinvprev').attr('src',
-						"./_getty_inv__" + tfs + "__" + prev_hash + "_.inv.out");
-				$('iframe#iinvpost').attr('src',
-						"./_getty_inv__" + tfs + "__" + prev_hash + "_" + post_hash + "_.inv.out");
+				$('iframe#iinvprev').attr('src', fsname_to_inv_path(tfs, prev_hash));
+				$('iframe#iinvpost').attr('src', fsname_to_inv_path(tfs, prev_hash + "_" + post_hash));
 				break;
 			case "ti4n":
-				$('iframe#iinvprev').attr('src',
-						"./_getty_inv__" + tfs + "__" + post_hash + "_" + prev_hash + "_.inv.out");
-				$('iframe#iinvpost').attr('src',
-						"./_getty_inv__" + tfs + "__" + post_hash + "_.inv.out");
+				$('iframe#iinvprev').attr('src', fsname_to_inv_path(tfs, post_hash + "_" + prev_hash));
+				$('iframe#iinvpost').attr('src', fsname_to_inv_path(tfs, post_hash));
 				break;
 			default:
 				console.log("incorrect iso_type: " + iso_type);
@@ -349,10 +345,10 @@ function methodInvsCompareDiv(method_name) {
 		"width:49%;height:400px;background-color:#000;" +
 		"display:none;position:absolute;right:15px;border:2px dotted #A8BBA8;";
 	preInvs =
-		"<iframe id='iinvprev' name='iinvprev' src='./_getty_inv__" + theMtd + "__" + prev_hash + "_.inv.out' " +
+		"<iframe id='iinvprev' name='iinvprev' src='" + fsname_to_inv_path(theMtd, prev_hash) + "' " +
 		"class='invtip' style='" + ileft + "'></iframe>";
 	postInvs =
-		"<iframe id='iinvpost' name='iinvpost' src='./_getty_inv__" + theMtd + "__" + post_hash + "_.inv.out' " +
+		"<iframe id='iinvpost' name='iinvpost' src='" + fsname_to_inv_path(theMtd, post_hash) + "' " +
 		"class='invtip' style='" + iright + "'></iframe>";
 	sleft =
 		"width:49%;height:400px;background-color:#333;" +

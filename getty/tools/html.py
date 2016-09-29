@@ -52,14 +52,13 @@ def inv_to_html(targets, go, commit_hash):
         tfs = fsformat(target)
         invs_file = go + "_getty_inv__" + tfs + "__" + commit_hash + "_.inv.out"
         try:
-            with open(invs_file, 'r+') as invf:
+            with open(invs_file, 'r') as invf:
                 invs = invf.read()
                 newinvhtml = inv_html_header + invs + inv_html_footer
-                invf.seek(0)
-                invf.truncate()
-                invf.write(newinvhtml)
+            with open(invs_file + ".html", "w") as wf:
+                wf.write(newinvhtml)
         except IOError:
-            with open(invs_file, 'w') as newf:
+            with open(invs_file + ".html", 'w') as newf:
                 newf.write("<NO INVARIANTS INFERRED>")
 
 
@@ -155,15 +154,14 @@ def src_to_html(targets, go, commit_hash, install_line_numbers=False):
     for jp in filehash:
         try:
             print "preprocessing: " + jp
-            with open(jp, "r+") as javaf:
+            with open(jp, "r") as javaf:
                 allsrc = javaf.read()
                 if install_line_numbers:
                     print "  -- installing anchors ..."
                     allsrc = _install_anchors_for(allsrc, f2ts[jp], l4ms)
                 print "  -- syntax highlighting ..."
                 newsrchtml = src_html_header + allsrc + _to_real_footer(filehash[jp])
-                javaf.seek(0)
-                javaf.truncate()
-                javaf.write(newsrchtml)
+            with open(jp + ".html", 'w') as wf:
+                wf.write(newsrchtml)
         except:
             pass
