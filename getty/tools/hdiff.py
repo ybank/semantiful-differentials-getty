@@ -35,7 +35,7 @@
 #   Detect if the character is "printable" for whatever definition,
 #   and display those directly.
 
-import sys, re, htmlentitydefs, getopt, StringIO, codecs, datetime, difflib, json, time
+import sys, re, htmlentitydefs, getopt, StringIO, codecs, datetime, difflib, json
 
 import config
 from analysis import solver
@@ -65,124 +65,18 @@ html_hdr = """<!DOCTYPE html>
     <meta charset="{1}" />
     <meta name="generator" content="diff2html.py (http://git.droids-corp.org/gitweb/?p=diff2html)" />
     <!--meta name="author" content="Fill in" /-->
-    <title>Semantiful Differentials{0}</title>
+    <title>Getty - Semantiful Differentials {0}</title>
     <link rel="shortcut icon"
         href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAgMAAABinRfyAAAACVBMVEXAAAAAgAD///+K/HwIAAAAJUlEQVQI12NYBQQM2IgGBQ4mCIEQW7oyK4phampkGIQAc1G1AQCRxCNbyW92oQAAAABJRU5ErkJggg=="
         type="image/png" />
+    <link rel="stylesheet" type="text/css" href="styles.css?ver={6}">
     <meta property="dc:language" content="{5}" />
     <!--meta property="dc:date" content="{3}" /-->
     <meta property="dc:modified" content="{4}" />
     <meta name="description" content="{2}" />
     <meta property="dc:abstract" content="{2}" />
-    <style>
-        table {{
-            border:0px;
-            border-collapse:collapse;
-            width: 100%;
-            font-size:0.75em;
-            font-family: Lucida Console, monospace;
-            table-layout: fixed;
-        }}
-        td.line {{ color:#8080a0 }}
-        table.diff tr td.diffpresent {{ word-wrap: break-word; white-space: pre-wrap; width: 49%; }}
-        table.diff tr td.diffpresent span {{ word-wrap: break-word; white-space: pre-wrap; }}
-        th {{ background: black; color: white }}
-        tr.diffunmodified > td {{ background: #D0D0E0 }}
-        tr.diffhunk > td {{ background: #A0A0A0 }}
-        tr.diffadded > td {{ background: #CCFFCC }}
-        tr.diffdeleted > td {{ background: #FFCCCC }}
-        tr.diffchanged > td {{ background: #FFFFA0 }}
-        span.diffchanged2 {{ background: #E0C880 }}
-        span.diffponct {{ color: #B08080 }}
-        tr.diffmisc td {{}}
-        tr.diffseparator td {{}}
-        tr.invheader > td {{ background: #7a7a7a; color: #f0f3cc; font-weight: bold }}
-        a#inv-change-list-link {{ text-decoration: none }}
-        h4 span a#inv-change-list-link:hover {{ background-color: lightgray }}
-        a.special-neighbor-link {{ color: red }}
-        a.hidable-mtd-equal-inv {{ color: gray }}
-        a.output-invc-highlight {{ color: red; text-decoration: none }}
-        a.csi-iso-ctrl-group {{
-            -webkit-appearance: button;
-            -moz-appearance: button;
-            appearance: button;
-            text-decoration: none;
-            padding: 4px 8px;
-            margin: 0 2px 0 2px;
-            position: relative;
-        }}
-        span.more-inv-display-option-listing {{
-            font-family: sans-serif;
-            margin-left: 2px;
-            margin-right: 4px;
-        }}
-        a.src-inv-button-link {{
-            -webkit-appearance: button;
-            -moz-appearance: button;
-            appearance: button;
-            text-decoration: none;
-            padding: 4px 12px;
-            margin-left: 2px;
-        }}
-        div#getty-full-code-diff {{
-            border:2px solid gray;
-            order-radius:10px;
-            padding:8px;
-        }}
-        div#csi-output-targets {{
-            border: 4px ridge gray;
-            padding: 4px 4px 4px 4px;
-            margin: 8px 0 0 0;
-            border-radius: 10px;
-        }}
-        div#csi-output-targets a:hover {{ background-color: yellow }}
-        div#csi-output-menu {{ padding: 4px 0 0 4px; }}
-        div#csi-output-neighbors-outer {{
-            border:2px dotted lightgray;
-            padding: 4px 4px 4px 4px;
-            margin: 8px 0 0 0;
-            border-radius: 8px;
-        }}
-        div#csi-output-neighbors a:hover {{ background-color: yellow }}
-        div#csi-output-invcomp-outer {{
-            border: 2px solid gray;
-            padding: 4px 4px 4px 4px;
-            margin: 8px 0 0 0;
-            border-radius: 8px;
-        }}
-        div.inv-cmp-title {{ margin-top: 8px; }}
-        table#neighbors a {{ text-decoration: none; }}
-        .tooltip {{
-            position: absolute;
-            padding: 0px 16px;
-            z-index: 2;
-            color: #303030;
-            background-color: #DFEFEA;
-            border: 2px ridge #F383BC;
-            font-family: sans-serif;
-            font-size: 14px;
-        }}
-        span.iso-type-tip pre {{ margin: 2px 0; }}
-        .csi-iso-ctrl-group .iso-type-tip {{
-            visibility: hidden;
-            background-color: #303030;
-            color: #fff;
-            font-family: sans-serif;
-            text-align: center;
-            border-radius: 4px;
-            padding: 2px 8px;
-            position: absolute;
-            bottom: 28px;
-            left: 2px;
-            z-index: 1;
-        }}
-        .csi-iso-ctrl-group:hover .iso-type-tip {{
-            visibility: visible;
-        }}
-    </style>
 </head>
 <body>
-    <a name='top'><h3>GETTY - SEMANTIFUL DIFFERENTIALS</h3></a>
     <a href='#' id='getty-advice-title' onclick='return false;'>{{{{{{__getty_advice__}}}}}}</a><br>
     <a href='#' style='padding-left:4px; padding-bottom:4px;'
         onclick='$(\"div#getty-full-code-diff\").toggle();return false;'>Show/Hide All Code Changes</a>
@@ -473,9 +367,9 @@ def add_filename(f1, f2, output_file):
     prefile = (f1[2:] if not f1.startswith("/") else f1)
     postfile = (f2[2:] if not f2.startswith("/") else f2)
     
-    display1 = f1 if f1 != "BEFORE" else "removed invariants"
+    display1 = f1 if f1 != "BEFORE" else "REMOVED"
     output_file.write(("<tr><th colspan='2'>%s</th>"%convert(display1, linesize=linesize)).encode(encoding))
-    display2 = f2 if f2 != "AFTER" else "added invariants"
+    display2 = f2 if f2 != "AFTER" else "ADDED"
     output_file.write(("<th colspan='2'>%s</th></tr>\n"%convert(display2, linesize=linesize)).encode(encoding))
 
 
@@ -671,7 +565,9 @@ def parse_input(input_file, output_file, input_file_name, output_file_name,
 
     if not exclude_headers:
         title_suffix = ' ' + input_file_name
-        output_file.write(html_hdr.format(title_suffix, encoding, desc, "", modified_date, lang).encode(encoding))
+        output_file.write(
+            html_hdr.format(
+                title_suffix, encoding, desc, "", modified_date, lang, config.version_time).encode(encoding))
     output_file.write(table_hdr.encode(encoding))
 
     while True:
@@ -936,7 +832,9 @@ def __generate_append_diff(target, diff_type, prev_invf, post_invf, diff_htmlf):
         print '   --- too big diff to be shown'
         dtable = '<div>The differential is too big to be shown</div>'
     
-    inv_title = "<div class='inv-cmp-title'>compare inviants for { <b>" + __escape(target) + "</b> }</div>"
+    inv_title = \
+        "<div class='inv-cmp-title'><span class='menu-words'>Compare Invariants for</span> " + \
+        "{ <span class='program-words'><b>" + __escape(target) + "</b></span> }</div>"
     invdiffhtml = \
         "<div id='vsinvs-" + diff_type + "-" + fsformat(target) + "'>" + \
         inv_title + "\n" + \
@@ -976,14 +874,15 @@ def _getty_append_invdiff(html_string, targets, go, prev_hash, curr_hash, iso):
     return html_string
 
 
-def _import_js(html_string, js_path, go):
+def _import_js(html_string, fe_path, go):
     import_script = "<script type=\"text/javascript\" src=\"{0}\"></script>"
     last_import = []
-    ver_time = str(int(time.time()))
-    for jslib in ["jquery-3.1.1.min.js", "jquery.simpletip-1.3.1.js",
+    for cssfile in ["styles.css", "styles_inv.css", "styles_src.css"]:
+        from_sys_call_enforce(" ".join(["cp", fe_path + cssfile, go + cssfile]))
+    for jslib in ["jquery-3.1.1.min.js", "jquery.simpletip-1.3.2.js",
                   "buckets.min.js", "run_prettify.js", "getty.js"]:
-        from_sys_call_enforce(" ".join(["cp", js_path + jslib, go + jslib]))
-        last_import.append(import_script.format(jslib + "?ver=" + ver_time))
+        from_sys_call_enforce(" ".join(["cp", fe_path + jslib, go + jslib]))
+        last_import.append(import_script.format(jslib + "?ver=" + config.version_time))
     last_import.append("</body>")
     last_import_str = "\n".join(last_import)
     return html_string.replace("</body>", last_import_str)
@@ -1064,7 +963,7 @@ def _getty_install_invtips(html_string, commit_msgs, github_link,
     return html_string
 
 
-def getty_append_semainfo(template_file, targets, go, js_path,
+def getty_append_semainfo(template_file, targets, go, fe_path,
                           commit_msgs, github_link,
                           prev_hash, curr_hash, old_l2m, new_l2m, iso):
     global oldl2m
@@ -1082,7 +981,7 @@ def getty_append_semainfo(template_file, targets, go, js_path,
     print ' - appending invdiffs ...'
     html_string = _getty_append_invdiff(html_string, targets, go, prev_hash, curr_hash, iso)
     print ' - import javascript libs ...'
-    html_string = _import_js(html_string, js_path, go)
+    html_string = _import_js(html_string, fe_path, go)
 #     html_string = _getty_append_invariants(html_string, targets, go, prev_hash, curr_hash)
     print ' - inv txt to html (prev) ...'
     inv_to_html(targets, go, prev_hash)

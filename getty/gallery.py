@@ -6,12 +6,12 @@ from tools.hdiff import diff_to_html, getty_append_semainfo
 from tools.os import sys_call
 
 
-def view(pwd, go, js_path, targets, new_all_cccs, prev_hash, post_hash, old_l2m, new_l2m):
+def view(pwd, go, fe_path, targets, new_all_cccs, prev_hash, post_hash, old_l2m, new_l2m):
     diff_in = pwd[:-1] + ".__getty_output__/text.diff"
     html_out = pwd[:-1] + ".__getty_output__/sema.diff.html"
     diff_to_html(diff_in, html_out, exclude_headers=False, old_l2m=old_l2m, new_l2m=new_l2m)
-    getty_append_semainfo(html_out, targets, go, js_path, prev_hash, post_hash, old_l2m, new_l2m)
-    report(targets, new_all_cccs, prev_hash, post_hash, go, js_path)
+    getty_append_semainfo(html_out, targets, go, fe_path, prev_hash, post_hash, old_l2m, new_l2m)
+    report(targets, new_all_cccs, prev_hash, post_hash, go, fe_path)
     getty_append_report(html_out)
     
     # open with Safari on Mac OS
@@ -20,7 +20,7 @@ def view(pwd, go, js_path, targets, new_all_cccs, prev_hash, post_hash, old_l2m,
 #     sys_call("open " + html_out)
 
 
-def exam(iso, pwd, go, js_path, common_package, all_classes_set,
+def exam(iso, pwd, go, fe_path, common_package, all_classes_set,
          targets, all_refined_target_set,
          new_refined_target_set, old_refined_target_set,
          new_modified_src, new_all_src,
@@ -40,7 +40,7 @@ def exam(iso, pwd, go, js_path, common_package, all_classes_set,
     print 'appending semainfo to the html ....'
     commit_msgs = git_commit_msgs(prev_hash, post_hash)
     github_link = github_info(prev_hash, post_hash)
-    getty_append_semainfo(html_out, refined_targets_parents_set, go, js_path,
+    getty_append_semainfo(html_out, refined_targets_parents_set, go, fe_path,
                           commit_msgs, github_link,
                           prev_hash, post_hash, old_l2m, new_l2m, iso)
     

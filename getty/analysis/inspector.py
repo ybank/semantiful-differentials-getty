@@ -20,22 +20,23 @@ def getty_csi_init(html_file, iso):
                 iso_links += \
                         "    <a id='csi-iso-link-" + iso_type + "' class='csi-iso-ctrl-group' href='#' " + \
                         " style='color: " + tcolor + ";' " + \
-                        "onclick='return iso_type_reset(\"" + iso_type + "\");'><b>" + iso_text + "</b>" + \
+                        "onclick='return iso_type_reset(\"" + iso_type + "\");'>" + iso_text + \
                         "<span class='iso-type-tip'><pre>" + tiptext + "</pre></span></a>\n"
                 if iso_type == "ni":
                     iso_links = "    <span class='more-inv-display-option-listing'>Invariant Changes Due To:</span>\n" + iso_links
             isolation_ctrl = "<div id='csi-iso-ctrl' style='margin-top:10px;'>\n" + iso_links + "</div>\n"
         legends = "<div style='float:right;'>" + \
-            "<span style='margin-left: 32px;'>Legends:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>" + \
-            "<span><b><u>code-updated</u></b>&nbsp;&nbsp;&nbsp;</span>" + \
-            "<span style='color:red;'>invariant-changed</span>&nbsp;&nbsp;&nbsp;" + \
-            "<span style='color:gray;'>invariant-not-changed</span>&nbsp;&nbsp;&nbsp;" + \
-            "<span>...(old-call-count + newly-added-calls)</span>&nbsp;&nbsp;" + \
-            "</div>"
+            "<span class='menu-words' style='margin-left: 32px;'>Legends:&nbsp;&nbsp;&nbsp;&nbsp;</span>" + \
+            "<span class='program-words'>" + \
+            "<span><u>code-updated</u>&nbsp;</span>" + \
+            "<span style='color:red;'>invariant-changed</span>&nbsp;" + \
+            "<span style='color:gray;'>invariant-not-changed</span>&nbsp;" + \
+            "<span>...(old-call-count + newly-added-calls)</span>" + \
+            "</span></div>"
         html_string = html_string.replace(anchor,
             "<div id='csi-output-targets'></div>\n" + \
             "<div id='csi-output-neighbors-outer'>" + \
-            "  <div id='csi-output-menu'>" + \
+            "  <div id='csi-output-menu' class='menu-words'>" + \
             "    <a href='#' id='whether-show-invequal' onclick='return toggle_show_invequal();'>Showing More Methods: YES</a>" + \
             "&nbsp;&nbsp;&nbsp;&nbsp;" + \
             "    <a href='#' id='whether-show-tests' onclick='return toggle_show_tests();'>Showing Tests: YES</a>" + \
@@ -202,44 +203,45 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash, common_package,
     targets_place_holder = "<div id='csi-output-targets'></div>"
     cpkg_disclaimer = ""
     if common_package != '' and common_package is not None:
-        cpkg_disclaimer = "<h4 style='margin: 4px 0 8px 0'>Common Package: " + common_package + "</h4>"
-    compare_commit_msgs = "<b>Compare Commits:</b> " + \
-        "<a id='commit-msg-link' href='#'>" + prev_hash + " vs. " + post_hash + "</a>"
+        common_package_display = "<span class='program-words'>" + common_package + "</span>"
+        cpkg_disclaimer = "<div style='float:right;' class='target-top-row menu-words'>" + \
+            "<b>Common Package:</b>&nbsp;&nbsp;" + common_package_display + "</div>"
+    compare_commit_msgs = "<div class='target-top-row menu-words'><b>Compare Commits:</b>&nbsp;&nbsp;" + \
+        "<a id='commit-msg-link' href='#'>" + prev_hash + " vs. " + post_hash + "</a></div>"
     replace_header = \
-        "<div id='csi-output-targets'>" + compare_commit_msgs + cpkg_disclaimer + \
+        "<div id='csi-output-targets'>" + cpkg_disclaimer + compare_commit_msgs + \
         "<h4 style='margin: 4px 0 8px 0'>Updated Source:</h4>"
     if new_modified_src:
-        replacement = ", ".join([__link_to_show_neighbors(t, common_package) for t in new_modified_src])
+        replacement = ",&nbsp;&nbsp;".join([__link_to_show_neighbors(t, common_package) for t in new_modified_src])
     else:
         replacement = "<span>None</span>"
     embed_test_update = \
         "<br><br><h4 style='margin: 4px 0 8px 0'>Updated Tests:</h4>"
     if all_changed_tests:
-        tests_replacement = ", ".join([__link_to_show_neighbors(t, common_package) for t in all_changed_tests])
+        tests_replacement = ",&nbsp;&nbsp;".join([__link_to_show_neighbors(t, common_package) for t in all_changed_tests])
     else:
         tests_replacement = "<span>None</span>"
     inv_change_update = \
         "<br><br>" + \
-        "<h4 style='margin: 4px 0 8px 0'><span>" + \
-        "<a href='#' id='inv-change-list-link' onclick='$(\"div.invariant-change-list-divs\").toggle();return false;'>" + \
-        "[Show/Hide Methods & Classes with Possible Invariant Changes]" + "</a>" + \
+        "<h4 style='margin: 4px 0 8px 0'>Methods & Classes with Possible Invariant Changes <span>" + \
+        "<a href='#' id='inv-change-list-link' onclick='$(\"div#invariant-change-list-divs\").toggle();return false;'>" + \
+        "[Show/Hide]" + "</a>" + \
         "</span></h4>"
     if all_whose_inv_changed or all_whose_clsobj_inv_changed:
         if all_whose_inv_changed:
-            invch_mtd_replacement = "<span>Methods: </span>" + ", ".join(
+            invch_mtd_replacement = "<span class='menu-words'>Methods: </span>" + ",&nbsp;&nbsp;".join(
                 [__link_to_show_neighbors(t, common_package, "output-invc-highlight") for t in all_whose_inv_changed])
         else:
-            invch_mtd_replacement = "<span>Methods: None</span>"
+            invch_mtd_replacement = "<span class='menu-words'>Methods: None</span>"
         if all_whose_clsobj_inv_changed:
-            invch_cls_replacement = "<span>Classes: </span>" + ", ".join(
+            invch_cls_replacement = "<span class='menu-words'>Classes: </span>" + ",&nbsp;&nbsp;".join(
                 [__link_to_show_neighbors(t, common_package, "output-invc-highlight") for t in all_whose_clsobj_inv_changed])            
         else:
-            invch_cls_replacement = "<span>Classes: None</span>"
+            invch_cls_replacement = "<span class='menu-words'>Classes: None</span>"
         invch_replacement = invch_mtd_replacement + "<br>" + invch_cls_replacement
     else:
         invch_replacement = "<span>None</span>"
-    invch_replacement = "<div class='invariant-change-list-divs'><span>&nbsp;...</span></div>" + \
-        "<div class='invariant-change-list-divs' style='display:none;'>" + invch_replacement + "</div>"
+    invch_replacement = "<div id='invariant-change-list-divs' style='display:none;'>" + invch_replacement + "</div>"
     replace_footer = "</div>"
     html_string = html_string.replace(targets_place_holder,
                                       replace_header + replacement + \

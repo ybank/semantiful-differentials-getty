@@ -106,11 +106,11 @@ def config_env():
         os.makedirs(go)
     
     # javascript path
-    js_path = this_script_dir + "js/"
+    fe_path = this_script_dir + "frontend/"
     cust_mvn_repo = this_script_dir + "lib/repository"
     
     return villa_path, junit_path, sys_classpath, agent_path, \
-        pwd, proj_dir, go, dyng_go, js_path, cust_mvn_repo
+        pwd, proj_dir, go, dyng_go, fe_path, cust_mvn_repo
 
 
 def set_args():
@@ -188,7 +188,7 @@ if __name__ == "__main__":
     
     ## env config
     villa_path, junit_path, sys_classpath, agent_path, \
-        pwd, proj_dir, go, dyng_go, js_path, cust_mvn_repo = config_env()
+        pwd, proj_dir, go, dyng_go, fe_path, cust_mvn_repo = config_env()
     
     ## args checking & setting
     prev_hash, post_hash, go_postfix, iso = set_args()
@@ -301,7 +301,7 @@ if __name__ == "__main__":
     all_changed_tests = list(set(old_changed_tests + new_changed_tests))
     if config.profile_performance:
         profiler.run_and_report(
-            "gallery.exam(iso, pwd, go, js_path, common_package, all_classes_set, \
+            "gallery.exam(iso, pwd, go, fe_path, common_package, all_classes_set, \
                  targets, all_refined_target_set, \
                  new_refined_target_set, old_refined_target_set, \
                  new_improved_changed_methods, new_all_methods, \
@@ -313,7 +313,7 @@ if __name__ == "__main__":
             go + "_getty_x_profile_gallery.profile")
     else:
         gallery.exam(
-            iso, pwd, go, js_path, common_package, all_classes_set,
+            iso, pwd, go, fe_path, common_package, all_classes_set,
             targets, all_refined_target_set,
             new_refined_target_set, old_refined_target_set,
             new_improved_changed_methods, new_all_methods,

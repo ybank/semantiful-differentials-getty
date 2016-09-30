@@ -1,46 +1,16 @@
 # html transformation and manipulation
 
+import config
 from tools.daikon import fsformat
 from tools.ex import read_str_from
 
 
 inv_html_header = """<!-- inv html header -->
-<style>
-    pre .str { color: #EC7600; }
-    pre .kwd { color: #93C763; }
-    pre .com { color: #66747B; }
-    pre .typ { color: #AAC9E8; }
-    pre .lit { color: #FACD22; }
-    pre .pun { color: #F1F2F3; }
-    pre .pln { color: #F1F2F3; }
-    pre .tag { color: #8AC763; }
-    pre .atn { color: #E0E2E4; }
-    pre .atv { color: #EC7600; }
-    pre .dec { color: purple; }
-    pre.prettyprint {
-        border: none !important;
-        background: #000;
-        font-family:'Droid Sans Mono','CPMono_v07','Droid Sans';
-        font-size: 9pt;
-        word-wrap: break-word;
-        white-space: pre-wrap;
-    }
-    body { margin: 0 !important; }
-    ol.linenums {
-        margin-top: 0;
-        margin-bottom: 0;
-        padding-left: 24px;
-    }
-    li.L0, li.L1, li.L2, li.L3, li.L4, li.L5, li.L6, li.L7, li.L8, li.L9 {
-        color: #555;
-        list-style-type: decimal !important;
-    }
-    li.L1, li.L3, li.L5, li.L7, li.L9 {
-        background: #111 !important;
-    }
-</style>
+<head>
+  <link rel="stylesheet" type="text/css" href="styles_inv.css?ver={0}">
+</head>
 <pre class="prettyprint linenums"><code>
-"""
+""".format(config.version_time)
 
 inv_html_footer = """
 </code></pre><script src="./run_prettify.js"></script>
@@ -63,34 +33,9 @@ def inv_to_html(targets, go, commit_hash):
 
 
 src_html_header = """<!-- src html header -->
-<style>
-    pre.prettyprint {
-        display: block;
-        background-color: #333;
-        border: none !important;
-        font-size: 9pt;
-        word-wrap: break-word;
-        white-space: pre-wrap;
-    }
-    pre .nocode { background-color: none; color: #000 }
-    pre .str { color: #ffa0a0 }
-    pre .kwd { color: #f0e68c; font-weight: bold }
-    pre .com { color: #87ceeb }
-    pre .typ { color: #98fb98 }
-    pre .lit { color: #cd5c5c }
-    pre .pun { color: #fff }
-    pre .pln { color: #fff }
-    pre .tag { color: #f0e68c; font-weight: bold }
-    pre .atn { color: #bdb76b; font-weight: bold }
-    pre .atv { color: #ffa0a0 }
-    pre .dec { color: #98fb98 }
-    body { margin: 0 !important; }
-    ol.linenums { margin-top: 0; margin-bottom: 0; color: #AEAEAE }
-    li.L0,li.L1,li.L2,li.L3,li.L5,li.L6,li.L7,li.L8,li.L9 {
-      list-style-type: decimal !important;
-      background: #333 !important;
-    }
-</style>
+<head>
+  <link rel="stylesheet" type="text/css" href="{0}styles_src.css?ver={1}">
+</head>
 <pre class="prettyprint linenums"><code>"""
 
 src_html_footer = """
@@ -115,8 +60,7 @@ def _target_to_path(method_name):
 
 def _to_real_footer(levels):
     levelstr = ""
-    for _ in range(levels):
-        levelstr += "../"
+    levelstr += ("../" * levels)
     return src_html_footer.replace("=LEVELS=", levelstr)
 
 
@@ -160,7 +104,11 @@ def src_to_html(targets, go, commit_hash, install_line_numbers=False):
                     print "  -- installing anchors ..."
                     allsrc = _install_anchors_for(allsrc, f2ts[jp], l4ms)
                 print "  -- syntax highlighting ..."
-                newsrchtml = src_html_header + allsrc + _to_real_footer(filehash[jp])
+                lvs = filehash[jp]
+                newsrchtml = \
+                    src_html_header.format(
+                        "../" * (lvs + 1), config.version_time) + \
+                    allsrc + _to_real_footer(lvs)
             with open(jp + ".html", 'w') as wf:
                 wf.write(newsrchtml)
         except:

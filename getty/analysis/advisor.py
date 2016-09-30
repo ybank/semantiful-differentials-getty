@@ -74,7 +74,7 @@ def _with_invdiff(report_html, targets, go):
 def _with_tips(page, targets, prev_hash, post_hash, go, jspath):
     import_script = "<script type=\"text/javascript\" src=\"{0}\"></script>\n"
     import_jquery = import_script.format(jspath + "jquery-3.1.1.min.js")
-    import_simpletip = import_script.format(jspath + "jquery.simpletip-1.3.1.js")
+    import_simpletip = import_script.format(jspath + "jquery.simpletip-1.3.2.js")
     import_getty = import_script.format(jspath + "getty.js")
     targets_str = "[" + ", ".join("\"" + fsformat(t) + "\"" for t in targets) + "]"
     hashes_str = "\"" + prev_hash + "\", \"" + post_hash + "\""
@@ -86,7 +86,7 @@ def _with_tips(page, targets, prev_hash, post_hash, go, jspath):
     return page.replace("</body>", last_import)
 
 
-def report(targets, cccs, prev_hash, post_hash, go, js_path):
+def report(targets, cccs, prev_hash, post_hash, go, fe_path):
     warnings = examine_cccs(cccs)
     with open(go + advice_file, "w") as report_file:
         report_html = report_header
@@ -99,7 +99,7 @@ def report(targets, cccs, prev_hash, post_hash, go, js_path):
             report_html += ("    <div class='ccc'>" + visualized_ccc + "</div><br>\n")
         report_html += report_foorter
         report_html = _with_invdiff(report_html, targets, go)
-        report_html = _with_tips(report_html, targets, prev_hash, post_hash, go, js_path)
+        report_html = _with_tips(report_html, targets, prev_hash, post_hash, go, fe_path)
         report_file.write(report_html)
 
 

@@ -13,7 +13,7 @@ var current_method_name = "";
 
 function install_msg_tips(cmsg, glink) {
 	config_obj = {
-		position: ["150", "0"],
+		position: ["154", "2"],
 		persistent: true, focus: true,
 		showTime: 200, hideTime: 0, hideEffect: 'none',
 		onBeforeShow: function() {
@@ -320,7 +320,7 @@ function create_src_or_inv_button_link(thetype, theid) {
 	}
 	return "<a href='#' class='src-inv-button-link' id='" + theid + "' " +
 		"style=\"color:" + ((thetype == invdiff_display_with) ? "blue" : "gray") + ";\"" +
-		"onclick='return show_src_or_inv(\"" + theparam + "\");'><b>" + thetext + "</b></a>";
+		"onclick='return show_src_or_inv(\"" + theparam + "\");'>" + thetext + "</a>";
 }
 
 function methodInvsCompareDiv(method_name) {
@@ -363,20 +363,16 @@ function methodInvsCompareDiv(method_name) {
 		"<iframe id='i-right-src' src='" + name_to_path(method_name, post_hash) + "#" + anchor_name + "' " +
 		"class='srctip' style='" + sright + "'></iframe>";
 	mitabs = "<div style='margin-bottom:8px;'>" +
-		"<span class='more-inv-display-option-listing'>Display Options:&nbsp;&nbsp;&nbsp;</span>" +
 		[create_src_or_inv_button_link("none", "src_inv_btn_4none"),
+		 "<span class='more-inv-display-option-listing'>&nbsp;More Display Options:</span>",
 		 create_src_or_inv_button_link("inv", "src_inv_btn_4inv"),
 		 create_src_or_inv_button_link("src", "src_inv_btn_4src")
-		].join("&nbsp;&nbsp;&nbsp;") + "</div>";
+		].join("&nbsp;&nbsp;") + "</div>";
 	return compareInvs + "<br>" + mitabs + preInvs + postInvs + preSrcs + postSrcs;
 }
 
 var neighborhood_table =
-	"<style>\n" + 
-	"  td.exist-neighbor { border:dotted; padding:10px; text-align:center; }\n" + 
-	"  table#neighbors a { display:inline-block; }\n" + 
-	"  table#neighbors span { display:inline-block; }\n</style>" +
-	"<table id='neighbors' style='table-layout:fixed;'>\n" +  
+	"<table id='neighbors'>\n" +  
 	"<tr><td></td><td id='neighbor-north' class='exist-neighbor'>north</td><td></td><tr>\n" +
 	"<tr><td id='neighbor-west' class='exist-neighbor'>west</td>\n" + 
 	"<td id='neighbor-center' class='exist-neighbor'>center</td>" + 
@@ -395,7 +391,7 @@ function bolden_for_modified(method_name) {
 	display_name =
 		method_name.substring(common_prefix_length).replace("<", "&lt;", "g").replace(">", "&gt;", "g");
 	if (all_modified_targets.contains(method_name))
-		return "<b><u>" + display_name + "</u></b>";
+		return "<u>" + display_name + "</u>";
 	else
 		return display_name;
 }
@@ -467,8 +463,6 @@ function active_hidable_test_link_for(method_name, count) {
 }
 
 function span_for_test(method_name, count) {
-	// legacy code use span, but now we prefer to use links
-//	return "<span class='hidable-test-mtd-neighbor hidable-mtd-equal-inv'><b>" + bolden_for_modified(method_name) + " (" + count + ")" + "</b></span>";
 	js_cmd = "return structure_neighbors(\"" + method_name + "\");";
 	return "<a href='#' class='hidable-test-mtd-neighbor hidable-mtd-equal-inv' onclick='" + js_cmd + "'>" + bolden_for_modified(method_name) + " (" + count + ")" + "</a>";
 }
