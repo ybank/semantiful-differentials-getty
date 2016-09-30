@@ -39,7 +39,7 @@ src_html_header = """<!-- src html header -->
 <pre class="prettyprint linenums"><code>"""
 
 src_html_footer = """
-</code></pre><script src="../=LEVELS=run_prettify.js"></script>
+</code></pre><script src="../{0}run_prettify.js"></script>
 """
 
 def _target_to_path(method_name):
@@ -56,12 +56,6 @@ def _target_to_path(method_name):
         else:
             rel_path = method_name[:dollar_index].replace(".", "/")
     return rel_path + ".java", rel_path.count("/")
-
-
-def _to_real_footer(levels):
-    levelstr = ""
-    levelstr += ("../" * levels)
-    return src_html_footer.replace("=LEVELS=", levelstr)
 
 
 def _install_anchors_for(original, targets, l4ms):
@@ -108,7 +102,7 @@ def src_to_html(targets, go, commit_hash, install_line_numbers=False):
                 newsrchtml = \
                     src_html_header.format(
                         "../" * (lvs + 1), config.version_time) + \
-                    allsrc + _to_real_footer(lvs)
+                    allsrc + src_html_footer.format("../" * lvs)
             with open(jp + ".html", 'w') as wf:
                 wf.write(newsrchtml)
         except:

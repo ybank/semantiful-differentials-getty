@@ -63,11 +63,11 @@ html_hdr = """<!DOCTYPE html>
     xmlns:dc="http://purl.org/dc/terms/">
 <head>
     <meta charset="{1}" />
-    <meta name="generator" content="diff2html.py (http://git.droids-corp.org/gitweb/?p=diff2html)" />
-    <!--meta name="author" content="Fill in" /-->
     <title>Getty - Semantiful Differentials {0}</title>
     <link rel="shortcut icon"
-        href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAgMAAABinRfyAAAACVBMVEXAAAAAgAD///+K/HwIAAAAJUlEQVQI12NYBQQM2IgGBQ4mCIEQW7oyK4phampkGIQAc1G1AQCRxCNbyW92oQAAAABJRU5ErkJggg=="
+        href="data:image/png;base64,
+            iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAgMAAABinRfyAAAACVBMVEXAAAAAgAD///
+            +K/HwIAAAAJUlEQVQI12NYBQQM2IgGBQ4mCIEQW7oyK4phampkGIQAc1G1AQCRxCNbyW92oQAAAABJRU5ErkJggg=="
         type="image/png" />
     <link rel="stylesheet" type="text/css" href="styles.css?ver={6}">
     <meta property="dc:language" content="{5}" />

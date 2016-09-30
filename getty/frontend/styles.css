@@ -4,12 +4,19 @@ table {
     width: 100%;
     font-size:0.90em;
     font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
+    color: #636363;
     table-layout: fixed;
 }
 td.line { color:#8080a0 }
 table.diff tr td.diffpresent { word-wrap: break-word; white-space: pre-wrap; width: 49%; }
 table.diff tr td.diffpresent span { word-wrap: break-word; white-space: pre-wrap; }
-th { background: lightgray; color: #333333; border-bottom: 2px solid whitesmoke; }
+th {
+	background: lightgray;
+	color: #4D4D4D;
+	font-size: 0.90em;
+	font-weight: normal;
+	border-bottom: 2px solid whitesmoke;
+}
 tr.diffunmodified > td { background: #D0D0E0 }
 tr.diffhunk > td { background: #A0A0A0 }
 tr.diffadded > td { background: #CCFFCC }
@@ -19,11 +26,11 @@ span.diffchanged2 { background: #E0C880 }
 span.diffponct { color: #B08080 }
 tr.diffmisc td {}
 tr.diffseparator td {}
-tr.invheader > td { background: #A8A8A8; color: lightyellow; font-weight: bold }
+tr.invheader > td { background: #B8B8B8; color: lightyellow; }
 a#inv-change-list-link { text-decoration: none }
 h4 span a#inv-change-list-link:hover { background-color: lightgray }
 a.special-neighbor-link { color: red }
-a.hidable-mtd-equal-inv { color: gray }
+a.hidable-mtd-equal-inv { color: darkgray }
 a.output-invc-highlight { color: red; text-decoration: none }
 a.csi-iso-ctrl-group {
     -webkit-appearance: button;
@@ -35,7 +42,6 @@ a.csi-iso-ctrl-group {
     position: relative;
 }
 span.more-inv-display-option-listing {
-    font-family: sans-serif;
     margin-left: 2px;
     margin-right: 4px;
 }
@@ -58,13 +64,23 @@ div#csi-output-targets {
     margin: 8px 0 0 0;
     border-radius: 10px;
 }
-.menu-words { font-family: sans-serif; }
+div.target-sep { margin: 0px 8px 0px 0px; display: inline-block; }
+.menu-words {
+	font-family:sans-serif;
+	font-size: 0.95em;
+	color: #4C4C4C;
+}
 .program-words {
     font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
     font-size: 0.95em;
+    color: #636363;
 }
 div#csi-output-targets div.target-top-row { margin: 4px 0px; }
-div#csi-output-targets h4 { font-family: sans-serif; }
+div#csi-output-targets h4 {
+	font-family: sans-serif;
+	font-size: 0.95em;
+	color: #585858;
+}
 div#csi-output-targets a.target-linkstyle {
     font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
     font-size: 0.95em;
@@ -90,6 +106,7 @@ div#csi-output-invcomp-outer {
     border-radius: 8px;
 }
 div#csi-output-invcomp-outer a { font-family: sans-serif; }
+div.link-button-tabs-bottom { display: inline-block; border-bottom: 2px solid darkgray; }
 div.inv-cmp-title { margin: 8px 0px 4px 0px; }
 table#neighbors a { text-decoration: none; display:inline-block; }
 table#neighbors span { display:inline-block; }

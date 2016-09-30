@@ -363,10 +363,10 @@ function methodInvsCompareDiv(method_name) {
 		"<iframe id='i-right-src' src='" + name_to_path(method_name, post_hash) + "#" + anchor_name + "' " +
 		"class='srctip' style='" + sright + "'></iframe>";
 	mitabs = "<div style='margin-bottom:8px;'>" +
-		[create_src_or_inv_button_link("none", "src_inv_btn_4none"),
-		 "<span class='more-inv-display-option-listing'>&nbsp;More Display Options:</span>",
+		["<span class='more-inv-display-option-listing menu-words'>More Display Options:</span>",
+		 "<div class='link-button-tabs-bottom'>" + create_src_or_inv_button_link("none", "src_inv_btn_4none"),
 		 create_src_or_inv_button_link("inv", "src_inv_btn_4inv"),
-		 create_src_or_inv_button_link("src", "src_inv_btn_4src")
+		 create_src_or_inv_button_link("src", "src_inv_btn_4src") + "</div>"
 		].join("&nbsp;&nbsp;") + "</div>";
 	return compareInvs + "<br>" + mitabs + preInvs + postInvs + preSrcs + postSrcs;
 }
@@ -527,7 +527,7 @@ function selected_show_hide() {
 
 function structure_neighbors(method_name) {
 	$('div#csi-output-neighbors').html(neighborhood_table);
-	$('table#neighbors td#neighbor-center').html("&lt;&nbsp;" + bolden_for_modified(method_name) + "&nbsp;&gt;");
+	$('table#neighbors td#neighbor-center').html("<&nbsp;" + bolden_for_modified(method_name) + "&nbsp;>");
 	update_neighbor(method_name, 'north', post_affected_caller_of, prev_affected_caller_of);
 	update_neighbor(method_name, 'south', post_affected_callee_of, prev_affected_callee_of);
 	update_neighbor(method_name, 'west', post_affected_pred_of, prev_affected_pred_of);

@@ -22,15 +22,16 @@ def getty_csi_init(html_file, iso):
                         " style='color: " + tcolor + ";' " + \
                         "onclick='return iso_type_reset(\"" + iso_type + "\");'>" + iso_text + \
                         "<span class='iso-type-tip'><pre>" + tiptext + "</pre></span></a>\n"
-                if iso_type == "ni":
-                    iso_links = "    <span class='more-inv-display-option-listing'>Invariant Changes Due To:</span>\n" + iso_links
-            isolation_ctrl = "<div id='csi-iso-ctrl' style='margin-top:10px;'>\n" + iso_links + "</div>\n"
+            iso_links = "<div class='link-button-tabs-bottom'>" + iso_links + "</div>"
+            isolation_ctrl = "<div id='csi-iso-ctrl' style='margin-top:10px;'>\n" + \
+                "    <span class='more-inv-display-option-listing menu-words'>Invariant Changes Due To:</span>\n" + \
+                iso_links + "</div>\n"
         legends = "<div style='float:right;'>" + \
             "<span class='menu-words' style='margin-left: 32px;'>Legends:&nbsp;&nbsp;&nbsp;&nbsp;</span>" + \
             "<span class='program-words'>" + \
             "<span><u>code-updated</u>&nbsp;</span>" + \
             "<span style='color:red;'>invariant-changed</span>&nbsp;" + \
-            "<span style='color:gray;'>invariant-not-changed</span>&nbsp;" + \
+            "<span style='color:darkgray;'>invariant-not-changed</span>&nbsp;" + \
             "<span>...(old-call-count + newly-added-calls)</span>" + \
             "</span></div>"
         html_string = html_string.replace(anchor,
@@ -212,13 +213,15 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash, common_package,
         "<div id='csi-output-targets'>" + cpkg_disclaimer + compare_commit_msgs + \
         "<h4 style='margin: 4px 0 8px 0'>Updated Source:</h4>"
     if new_modified_src:
-        replacement = ",&nbsp;&nbsp;".join([__link_to_show_neighbors(t, common_package) for t in new_modified_src])
+        replacement = "<div class='target-sep'>,</div>".join(
+                            [__link_to_show_neighbors(t, common_package) for t in new_modified_src])
     else:
         replacement = "<span>None</span>"
     embed_test_update = \
         "<br><br><h4 style='margin: 4px 0 8px 0'>Updated Tests:</h4>"
     if all_changed_tests:
-        tests_replacement = ",&nbsp;&nbsp;".join([__link_to_show_neighbors(t, common_package) for t in all_changed_tests])
+        tests_replacement = "<div class='target-sep'>,</div>".join(
+                                [__link_to_show_neighbors(t, common_package) for t in all_changed_tests])
     else:
         tests_replacement = "<span>None</span>"
     inv_change_update = \
@@ -229,13 +232,15 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash, common_package,
         "</span></h4>"
     if all_whose_inv_changed or all_whose_clsobj_inv_changed:
         if all_whose_inv_changed:
-            invch_mtd_replacement = "<span class='menu-words'>Methods: </span>" + ",&nbsp;&nbsp;".join(
-                [__link_to_show_neighbors(t, common_package, "output-invc-highlight") for t in all_whose_inv_changed])
+            invch_mtd_replacement = "<span class='menu-words'>Methods: </span>" + \
+                "<div class='target-sep'>,</div>".join(
+                    [__link_to_show_neighbors(t, common_package, "output-invc-highlight") for t in all_whose_inv_changed])
         else:
             invch_mtd_replacement = "<span class='menu-words'>Methods: None</span>"
         if all_whose_clsobj_inv_changed:
-            invch_cls_replacement = "<span class='menu-words'>Classes: </span>" + ",&nbsp;&nbsp;".join(
-                [__link_to_show_neighbors(t, common_package, "output-invc-highlight") for t in all_whose_clsobj_inv_changed])            
+            invch_cls_replacement = "<span class='menu-words'>Classes: </span>" + \
+                "<div class='target-sep'>,</div>".join(
+                    [__link_to_show_neighbors(t, common_package, "output-invc-highlight") for t in all_whose_clsobj_inv_changed])            
         else:
             invch_cls_replacement = "<span class='menu-words'>Classes: None</span>"
         invch_replacement = invch_mtd_replacement + "<br>" + invch_cls_replacement
