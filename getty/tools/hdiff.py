@@ -58,7 +58,7 @@ desc = "File comparison"
 dtnow = datetime.datetime.now()
 modified_date = "%s+01:00"%dtnow.isoformat()
 
-html_hdr = """<!DOCTYPE html>
+basic_html_hdr = """<!DOCTYPE html>
 <html lang="{5}" dir="ltr"
     xmlns:dc="http://purl.org/dc/terms/">
 <head>
@@ -76,8 +76,11 @@ html_hdr = """<!DOCTYPE html>
     <meta name="description" content="{2}" />
     <meta property="dc:abstract" content="{2}" />
 </head>
+"""
+
+html_hdr = basic_html_hdr + """
 <body>
-    <a href='#' id='getty-advice-title' onclick='return false;'>{{{{{{__getty_advice__}}}}}}</a><br>
+    __getty_stub__
     <a href='#' style='padding-left:4px; padding-bottom:4px;'
         onclick='$(\"div#getty-full-code-diff\").toggle();return false;'>Show/Hide All Code Changes</a>
     <div id='getty-full-code-diff' style="display:none;">
@@ -563,11 +566,15 @@ def parse_input(input_file, output_file, input_file_name, output_file_name,
     global line1, line2
     global hunk_off1, hunk_size1, hunk_off2, hunk_size2
 
+    title_suffix = ' ' + input_file_name
     if not exclude_headers:
-        title_suffix = ' ' + input_file_name
         output_file.write(
             html_hdr.format(
                 title_suffix, encoding, desc, "", modified_date, lang, config.version_time).encode(encoding))
+    else:
+        output_file.write(basic_html_hdr.format(
+            title_suffix, encoding, desc, "", modified_date, lang, config.version_time).encode(encoding))
+    
     output_file.write(table_hdr.encode(encoding))
 
     while True:
@@ -737,15 +744,27 @@ def parse_from_memory(txt, exclude_headers, show_hunk_infos, with_ln=True):
     return output_stream.getvalue()
 
 
+def srcdiff2html(input_diff_file, output_html_file,
+                 exclude_headers=False, old_l2m={}, new_l2m={}):
+    global oldl2m
+    global newl2m
+    oldl2m = old_l2m
+    newl2m = new_l2m
+    
+    # TODO: ##########################################################
+    
+    with open(input_diff_file, 'r') as inputf, open(output_html_file, 'w') as outputf:
+        parse_input(inputf, outputf, '', '', exclude_headers, True, cont=False)
+
+
 def diff_to_html(input_diff_file, output_html_file,
-                 exclude_headers=False, old_l2m={}, new_l2m={},
-                 cont=True):
+                 exclude_headers=False, old_l2m={}, new_l2m={}):
     global oldl2m
     global newl2m
     oldl2m = old_l2m
     newl2m = new_l2m
     with open(input_diff_file, 'r') as inputf, open(output_html_file, 'w') as outputf:
-        parse_input(inputf, outputf, '', '', exclude_headers, True, cont=cont)
+        parse_input(inputf, outputf, '', '', exclude_headers, True, cont=True)
 
 
 def __denoise(dstring):

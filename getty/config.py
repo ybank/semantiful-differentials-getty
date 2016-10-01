@@ -59,6 +59,7 @@ jump_to_method = True
 
 # misc
 version_time = str(int(time.time()))
+max_context_line = 65536
 max_diff_lines = 1000
 max_diff_line_size = 1000
 use_tmp_files = False

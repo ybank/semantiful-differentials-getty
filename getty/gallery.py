@@ -1,23 +1,8 @@
 import config
-from analysis.advisor import getty_append_report, report
 from analysis.inspector import getty_csi_init, getty_csi_targets_prep
 from tools.git import git_commit_msgs, github_info
-from tools.hdiff import diff_to_html, getty_append_semainfo
+from tools.hdiff import diff_to_html, getty_append_semainfo, srcdiff2html
 from tools.os import sys_call
-
-
-def view(pwd, go, fe_path, targets, new_all_cccs, prev_hash, post_hash, old_l2m, new_l2m):
-    diff_in = pwd[:-1] + ".__getty_output__/text.diff"
-    html_out = pwd[:-1] + ".__getty_output__/sema.diff.html"
-    diff_to_html(diff_in, html_out, exclude_headers=False, old_l2m=old_l2m, new_l2m=new_l2m)
-    getty_append_semainfo(html_out, targets, go, fe_path, prev_hash, post_hash, old_l2m, new_l2m)
-    report(targets, new_all_cccs, prev_hash, post_hash, go, fe_path)
-    getty_append_report(html_out)
-    
-    # open with Safari on Mac OS
-    sys_call("open -a /Applications/Safari.app/Contents/MacOS/Safari " + html_out)
-#     # open with default app
-#     sys_call("open " + html_out)
 
 
 def exam(iso, pwd, go, fe_path, common_package, all_classes_set,
@@ -32,11 +17,23 @@ def exam(iso, pwd, go, fe_path, common_package, all_classes_set,
     
     refined_targets_parents_set = all_refined_target_set | all_classes_set
     
-    diff_in = go + "text.diff"
-    html_out = go + "sema.diff.html"
+    print 'generating full diff html ...'
+    # get extra diff file for full diff of each changed file
+    full_src_diff_in = go + "full.text.diff"
+    full_src_diff_out = go + "src.diff.html"
+    sys_call(
+        "git diff -U{3} {0} {1} > {2}".format(
+            prev_hash, post_hash, full_src_diff_in, config.max_context_line))
+    srcdiff2html(
+        full_src_diff_in, full_src_diff_out,
+        exclude_headers=True, old_l2m=old_l2m, new_l2m=new_l2m)
     
-    print 'generating html from diff ...'
-    diff_to_html(diff_in, html_out, exclude_headers=False, old_l2m=old_l2m, new_l2m=new_l2m)
+    print 'generating main html from diff ...'
+    diff_in = go + "text.diff"
+    html_out = go + "sema.diff.html"    
+    diff_to_html(diff_in, html_out,
+        exclude_headers=False, old_l2m=old_l2m, new_l2m=new_l2m)
+    
     print 'appending semainfo to the html ....'
     commit_msgs = git_commit_msgs(prev_hash, post_hash)
     github_link = github_info(prev_hash, post_hash)

@@ -19,7 +19,7 @@ def _create_show_hide_toggle(btn_name, btn_id, cb_fn_str, checked=True, extra_st
 def getty_csi_init(html_file, iso):
     with open(html_file, 'r+') as f:
         html_string = f.read()
-        anchor = "<a href='#' id='getty-advice-title' onclick='return false;'>{{{__getty_advice__}}}</a>"
+        anchor = "__getty_stub__"
         isolation_ctrl = "<div id='csi-iso-ctrl' style='display:none;'><p>No Impact Isolation</p></div>\n"
         if iso:
             iso_links = ""

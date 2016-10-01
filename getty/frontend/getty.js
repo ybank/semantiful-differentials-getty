@@ -11,6 +11,11 @@ var invdiff_display_with = "none";
 
 var current_method_name = "";
 
+function set_commit_hashes(prev, post) {
+	prev_hash = prev;
+	post_hash = post;
+}
+
 function install_msg_tips(cmsg, glink) {
 	config_obj = {
 		position: ["154", "2"],
@@ -60,11 +65,6 @@ function methodName(classNames) {
 		return arr[2].substring(9);
 	else
 		return undefined;
-}
-
-function set_commit_hashes(prev, post) {
-	prev_hash = prev;
-	post_hash = post;
 }
 
 function installInvTips(post, prev, newl2m, oldl2m) {
@@ -142,59 +142,6 @@ function installInvTips(post, prev, newl2m, oldl2m) {
 				};
 				the_rows.eq(j).simpletip(config_obj);
 			}
-		}
-	}
-}
-
-function installAdvisorTips(adviceFile) {
-	var style = "width:1200px;height:640px;";
-	$("#getty-advice-title").eq(0).simpletip({
-		fixed: true, position: ["100px", "15px"],
-		content: "<iframe src='./" + adviceFile + "' class='advtip' style='" + style + "'></iframe>",
-		showTime: 200, hideTime: 0, hideEffect: 'none'
-	})
-}
-
-function reportTipFor(theMtd, prev, post) {
-	var invdiff = $("div#vsinvs-" + iso_type + "-" + theMtd);
-	if (invdiff.length != 1) {
-		return "<span>NOT CONSIDERED</span>";
-	} else {
-		compareInvs = invdiff[0].outerHTML;
-		left = 
-			"width:48%;height:400px;background-color: #5A5F5A;" + 
-			"display:inline-block;position:relative;border:2px dotted #A8BBA8;";
-		preInvs = 
-			"<iframe src='" + fsname_to_inv_path(theMtd, prev) + "' " +
-					"class='invtip' style='" + left + "'></iframe>";
-		right = 
-			"width:48%;height:400px;background-color: #5A5F5A;" + 
-			"display:inline-block;position:absolute;right:15px;border:2px dotted #A8BBA8;";
-		postInvs = 
-			"<iframe src='" + fsname_to_inv_path(theMtd, post) + "' " +
-					"class='invtip' style='" + right + "'></iframe>";
-		htmlContent = compareInvs + "<br>" + preInvs + postInvs;
-		return "<body>" + htmlContent + "</body>";
-	}
-}
-
-function installInvTips4Advice(methods, prev, post) {
-	for (i = 0; i < methods.length; i ++) {
-		the_spans = $(".report-" + methods[i])
-		for (j = 0; j < the_spans.length; j ++) {
-			this_span = the_spans.eq(j);
-			config_obj = {
-				fixed: true, position: 'bottom',
-				onBeforeShow: function() {
-					theMethod = this.getParent().attr('class').substring(7);
-					this.update(reportTipFor(theMethod, prev, post));
-				},
-				onHide: function() {
-					this.update("");
-				},
-				showTime: 200, hideTime: 0, hideEffect: 'none'
-			};
-			this_span.simpletip(config_obj);
 		}
 	}
 }
