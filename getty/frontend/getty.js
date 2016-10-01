@@ -423,11 +423,9 @@ var show_test_methods_neighbor = true;
 
 function toggle_show_invequal() {
 	if (show_methods_equal_inv) {
-		$("div#csi-output-menu a#whether-show-invequal").text("Showing More Methods: NO");
 		$("a.hidable-mtd-equal-inv").hide();
 		show_methods_equal_inv = false;
 	} else {
-		$("div#csi-output-menu a#whether-show-invequal").text("Showing More Methods: YES");
 		$("a.hidable-mtd-equal-inv").show();
 		show_methods_equal_inv = true;
 	}

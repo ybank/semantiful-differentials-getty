@@ -5,6 +5,17 @@ from analysis.solver import is_different, is_possibly_different
 from tools.daikon import fsformat
 
 
+def _create_show_hide_toggle(btn_name, btn_id, cb_fn_str, checked=True, extra_style=None):
+    cm = " checked" if checked else ""
+    es = "" if extra_style is None else " style='" + extra_style + "'"
+    return "<div class='onoffswitch'" + es + ">" + \
+        "<input type='checkbox' name='" + btn_name + "' class='onoffswitch-checkbox' " + \
+        "id='" + btn_id + "' onchange='" + cb_fn_str + "'" + cm + ">" + \
+        "<label class='onoffswitch-label' for='" + btn_id + "'>" + \
+        "<span class='onoffswitch-inner'></span><span class='onoffswitch-switch'></span>" + \
+        "</label></div>"
+
+
 def getty_csi_init(html_file, iso):
     with open(html_file, 'r+') as f:
         html_string = f.read()
@@ -38,9 +49,10 @@ def getty_csi_init(html_file, iso):
             "<div id='csi-output-targets'></div>\n" + \
             "<div id='csi-output-neighbors-outer'>" + \
             "  <div id='csi-output-menu' class='menu-words'>" + \
-            "    <a href='#' id='whether-show-invequal' onclick='return toggle_show_invequal();'>Showing More Methods: YES</a>" + \
-            "&nbsp;&nbsp;&nbsp;&nbsp;" + \
-            "    <a href='#' id='whether-show-tests' onclick='return toggle_show_tests();'>Showing Tests: YES</a>" + \
+            "<span style='margin-right:4px;'>More Methods </span>\n" + \
+            "  " + _create_show_hide_toggle("onoffswitch", "moremethodscb", "return toggle_show_invequal();") + \
+            "<span style='margin: 0px 4px 0 96px;'>Tests </span>" + \
+            "  " + _create_show_hide_toggle("onoffswitch", "moretestscb", "return toggle_show_tests();") + \
             legends + \
             "  </div>\n" + \
             "  <div id='csi-output-neighbors' style='margin:8px;'>" + \
@@ -211,25 +223,23 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash, common_package,
         "<a id='commit-msg-link' href='#'>" + prev_hash + " vs. " + post_hash + "</a></div>"
     replace_header = \
         "<div id='csi-output-targets'>" + cpkg_disclaimer + compare_commit_msgs + \
-        "<h4 style='margin: 4px 0 8px 0'>Updated Source:</h4>"
+        "<div class='menu-words entry-header'><b>Updated Source:</b></div>"
     if new_modified_src:
         replacement = "<div class='target-sep'>,</div>".join(
                             [__link_to_show_neighbors(t, common_package) for t in new_modified_src])
     else:
         replacement = "<span>None</span>"
-    embed_test_update = \
-        "<br><br><h4 style='margin: 4px 0 8px 0'>Updated Tests:</h4>"
+    embed_test_update = "<br><div class='menu-words entry-header'><b>Updated Tests:</b></div>"
     if all_changed_tests:
         tests_replacement = "<div class='target-sep'>,</div>".join(
                                 [__link_to_show_neighbors(t, common_package) for t in all_changed_tests])
     else:
         tests_replacement = "<span>None</span>"
     inv_change_update = \
-        "<br><br>" + \
-        "<h4 style='margin: 4px 0 8px 0'>Methods & Classes with Possible Invariant Changes <span>" + \
-        "<a href='#' id='inv-change-list-link' onclick='$(\"div#invariant-change-list-divs\").toggle();return false;'>" + \
-        "[Show/Hide]" + "</a>" + \
-        "</span></h4>"
+        "<div class='menu-words entry-header'><b>Methods & Classes with Possible Invariant Changes </b></div>" + \
+        _create_show_hide_toggle("onoffswitch", "inv-change-list-sh",
+            "$(\"div#invariant-change-list-divs\").toggle();return false;", checked=False,
+            extra_style="margin-top:8px;")
     if all_whose_inv_changed or all_whose_clsobj_inv_changed:
         if all_whose_inv_changed:
             invch_mtd_replacement = "<span class='menu-words'>Methods: </span>" + \
@@ -251,7 +261,7 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash, common_package,
     html_string = html_string.replace(targets_place_holder,
                                       replace_header + replacement + \
                                       embed_test_update + tests_replacement + \
-                                      inv_change_update + invch_replacement + \
+                                      "<div>" + inv_change_update + invch_replacement + "</div>" + \
                                       replace_footer)
 
     html_string = _getty_csi_setvars(html_string, go, prev_hash, post_hash, common_package,
