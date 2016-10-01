@@ -51,7 +51,7 @@ def getty_csi_init(html_file, iso):
             "  <div id='csi-output-menu' class='menu-words'>" + \
             "<span style='margin-right:4px;'>More Methods </span>\n" + \
             "  " + _create_show_hide_toggle("onoffswitch", "moremethodscb", "return toggle_show_invequal();") + \
-            "<span style='margin: 0px 4px 0 96px;'>Tests </span>" + \
+            "<span style='margin: 0px 4px 0 80px;'>Tests </span>" + \
             "  " + _create_show_hide_toggle("onoffswitch", "moretestscb", "return toggle_show_tests();") + \
             legends + \
             "  </div>\n" + \

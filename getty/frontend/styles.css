@@ -98,7 +98,7 @@ div#csi-output-invcomp-outer {
     border: 2px solid gray;
     padding: 4px 4px 4px 4px;
     margin: 8px 0 0 0;
-    border-radius: 8px;
+    border-radius: 4px;
 }
 div#csi-output-invcomp-outer a { font-family: sans-serif; }
 div.link-button-tabs-bottom { display: inline-block; border-bottom: 2px solid darkgray; }
@@ -142,7 +142,7 @@ span.iso-type-tip pre { margin: 2px 0; }
     display: none;
 }
 .onoffswitch-label {
-    display: inline-block; position: relative; 
+    display: inline-block; position: relative;
     overflow: hidden; cursor: pointer;
     width: 54px; height: 14px;
     border: 2px solid #AAAAAA; border-radius: 16px;
@@ -173,11 +173,11 @@ span.iso-type-tip pre { margin: 2px 0; }
     position: absolute; top: 0; bottom: 0;
     right: 36px;
     border: 2px solid #AAAAAA; border-radius: 16px;
-    transition: all 0.1s ease-in 0s; 
+    transition: all 0.1s ease-in 0s;
 }
 .onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-inner {
     margin-left: 0;
 }
 .onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-switch {
-    right: 0px; 
+    right: 0px;
 }
