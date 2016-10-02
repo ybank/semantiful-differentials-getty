@@ -81,15 +81,21 @@ basic_html_hdr = """<!DOCTYPE html>
 html_hdr = basic_html_hdr + """
 <body>
     __getty_stub__
-    <a href='#' style='padding-left:4px; padding-bottom:4px;'
-        onclick='$(\"div#getty-full-code-diff\").toggle();return false;'>Show/Hide All Code Changes</a>
+    <div style='display:none;padding-left:4px;margin-top:8px;' id='hidden-show-srcdiff-switch'>
+      <a href='#'
+        onclick='$(\"div#getty-full-code-diff\").toggle();return false;'>Show/Hide All Code Changes
+      </a>
+    </div>
     <div id='getty-full-code-diff' style="display:none;">
         <h4 style="margin-top:0px;margin-bottom:0px;">Full Code Differentials</h4>
 """
 
 continue_hdr = """</div>
-    <a href='#' style='padding-left:4px; display:none;'
-        onclick='$(\"div#hide-all\").toggle();return false;'>Show/Hide Full Invariant Differentials</a>
+    <div style='display:none;padding-left:4px;margin-top:8px;' id='hidden-show-invs-switch'>
+      <a href='#'
+        onclick='$(\"div#hide-all\").toggle();return false;'>Show/Hide Full Invariant Differentials
+      </a>
+    </div>
     <div id='hide-all' style='display:none;'>
 """
 
@@ -128,6 +134,9 @@ TOO_LONG_MSG = "THIS LINE IS TOO LONG TO BE SHOWN: "
 PRSV_LEFT = "[a/] -- "
 PRSV_RIGHT = "[b/] -- "
 PRSV_TMP = ".tagged.tmp"
+
+# anchor prefix for finding the first line of target change
+TARGET_ANCHOR_PREFIX = "-getty-ta-"
 
 # for matching invariant point headers
 header_regex = "^(.*\[.*(a|b).*/.*\].*-.*-).*:.*:.*:.*"
@@ -750,11 +759,8 @@ def srcdiff2html(input_diff_file, output_html_file,
     global newl2m
     oldl2m = old_l2m
     newl2m = new_l2m
-    
-    # TODO: ##########################################################
-    
     with open(input_diff_file, 'r') as inputf, open(output_html_file, 'w') as outputf:
-        parse_input(inputf, outputf, '', '', exclude_headers, True, cont=False)
+        parse_input(inputf, outputf, '', '', exclude_headers, None, with_ln=True, cont=False)
 
 
 def diff_to_html(input_diff_file, output_html_file,
@@ -764,7 +770,7 @@ def diff_to_html(input_diff_file, output_html_file,
     oldl2m = old_l2m
     newl2m = new_l2m
     with open(input_diff_file, 'r') as inputf, open(output_html_file, 'w') as outputf:
-        parse_input(inputf, outputf, '', '', exclude_headers, True, cont=True)
+        parse_input(inputf, outputf, '', '', exclude_headers, None, cont=True)
 
 
 def __denoise(dstring):
@@ -975,8 +981,7 @@ def _getty_install_invtips(html_string, commit_msgs, github_link,
         "    install_msg_tips(" + js_commit_msgs + ", " + js_github_link + ");" + \
         "    window.onbeforeunload = function() { return true; };\n" + \
         iso_setup + extra_tooltips_installation + \
-        "    $(\"tr.diffhunk\").hide();\n" + \
-        "    $(\"tr.diff-ignore\").css('display', 'none');\n" + \
+        "    $(\"tr.diff-ignore\").hide();\n" + \
         "</script>\n</body>"
     html_string = html_string.replace("</body>", install_line)
     return html_string

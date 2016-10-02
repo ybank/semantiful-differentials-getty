@@ -206,6 +206,9 @@ function name_to_path(m, hash_value) {
 	return "./_getty_allcode_" + hash_value + "_/" + rel_path + ".java.html";
 }
 
+active_lbtn_style = {"color": "blue", "background": "whitesmoke"};
+inactive_lbtn_style = {"color": "gray", "background": "linear-gradient(whitesmoke, lightgray)"};
+
 function show_src_or_inv(which) {
 	if (which == "inv") {
 		$('iframe.srctip').hide();
@@ -231,8 +234,8 @@ function show_src_or_inv(which) {
 				console.log("incorrect iso_type: " + iso_type);
 		}
 		$('iframe.invtip').css("display", "inline-block");
-		$('a.src-inv-button-link').css("color", "gray");
-		$('a#src_inv_btn_4inv').css("color", "blue");
+		$('a.src-inv-button-link').css(inactive_lbtn_style);
+		$('a#src_inv_btn_4inv').css(active_lbtn_style);
 	} else if (which == "src") {
 		$('iframe.invtip').hide();
 		anchor_name = fsformat(current_method_name);
@@ -240,13 +243,13 @@ function show_src_or_inv(which) {
 		$('iframe#i-left-src').attr('src', name_to_path(current_method_name, prev_hash) + "#" + anchor_name);
 		$('iframe#i-right-src').attr('src', name_to_path(current_method_name, post_hash) + "#" + anchor_name);
 		$('iframe.srctip').css("display", "inline-block");
-		$('a.src-inv-button-link').css("color", "gray");
-		$('a#src_inv_btn_4src').css("color", "blue");
+		$('a.src-inv-button-link').css(inactive_lbtn_style);
+		$('a#src_inv_btn_4src').css(active_lbtn_style);
 	} else {
 		$('iframe.invtip').hide();
 		$('iframe.srctip').hide();
-		$('a.src-inv-button-link').css("color", "gray");
-		$('a#src_inv_btn_4none').css("color", "blue");
+		$('a.src-inv-button-link').css(inactive_lbtn_style);
+		$('a#src_inv_btn_4none').css(active_lbtn_style);
 	}
 	invdiff_display_with = which;
 	return false;
@@ -492,8 +495,8 @@ function activateNeighbors(method_name) {
 }
 
 function iso_type_reset(it) {
-	$('a.csi-iso-ctrl-group').css("color", "gray");
-	$('a#csi-iso-link-' + it).css("color", "blue");
+	$('a.csi-iso-ctrl-group').css(inactive_lbtn_style);
+	$('a#csi-iso-link-' + it).css(active_lbtn_style);
 	iso_type = it;
 	if (current_method_name != "")
 		output_inv_diff();

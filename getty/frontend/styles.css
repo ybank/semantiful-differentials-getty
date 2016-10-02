@@ -17,7 +17,7 @@ th {
 	font-weight: normal;
 	border-bottom: 2px solid whitesmoke;
 }
-tr.diffunmodified > td { background: #D0D0E0 }
+tr.diffunmodified > td { background: #EEEEEE }
 tr.diffhunk > td { background: #A0A0A0 }
 tr.diffadded > td { background: #CCFFCC }
 tr.diffdeleted > td { background: #FFCCCC }
@@ -29,15 +29,18 @@ tr.diffseparator td {}
 tr.invheader > td { background: #B8B8B8; color: lightyellow; }
 a.special-neighbor-link { color: red }
 a.hidable-mtd-equal-inv { color: darkgray }
-a.output-invc-highlight { color: red; text-decoration: none }
+a.output-invc-highlight { color: red! important; text-decoration: none }
 a.csi-iso-ctrl-group {
     -webkit-appearance: button;
     -moz-appearance: button;
     appearance: button;
     text-decoration: none;
-    padding: 4px 8px;
+    background: linear-gradient(whitesmoke, lightgray);
+    padding: 2px 8px;
     margin: 0 2px 0 2px;
     position: relative;
+    border: 1px solid gray;
+    padding: 4px 8px 2px 8px;
 }
 span.more-inv-display-option-listing {
     margin-left: 2px;
@@ -48,8 +51,11 @@ a.src-inv-button-link {
     -moz-appearance: button;
     appearance: button;
     text-decoration: none;
-    padding: 4px 12px;
+    background: linear-gradient(whitesmoke, lightgray);
+    padding: 2px 12px;
     margin-left: 2px;
+    border: 1px solid gray;
+    padding: 4px 8px 2px 8px;
 }
 div#getty-full-code-diff {
     border:2px solid gray;
@@ -62,6 +68,7 @@ div#csi-output-targets {
     margin: 8px 0 0 0;
     border-radius: 4px;
 }
+div#csi-output-targets a { color: blue }
 div.target-sep { margin: 0px 8px 0px 0px; display: inline-block; }
 .menu-words {
 	font-family:sans-serif;
@@ -101,7 +108,11 @@ div#csi-output-invcomp-outer {
     border-radius: 4px;
 }
 div#csi-output-invcomp-outer a { font-family: sans-serif; }
-div.link-button-tabs-bottom { display: inline-block; border-bottom: 2px solid darkgray; }
+div.link-button-tabs-bottom {
+	display: inline-block;
+	border-bottom: 2px solid gray;
+	padding: 0 4px 0 4px;
+}
 div.inv-cmp-title { margin: 8px 0px 4px 0px; }
 table#neighbors a { text-decoration: none; display:inline-block; }
 table#neighbors span { display:inline-block; }

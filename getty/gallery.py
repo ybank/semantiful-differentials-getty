@@ -43,15 +43,18 @@ def exam(iso, pwd, go, fe_path, common_package, all_classes_set,
     
     print 'initialize csi report ...'
     getty_csi_init(html_out, iso)
+    
     print 'setting csi target variables ...'
-    getty_csi_targets_prep(html_out, go, prev_hash, post_hash, common_package,
-                           all_changed_tests, old_changed_tests, new_changed_tests,
-                           new_modified_src, new_all_src,
-                           old_test_set, new_test_set,
-                           old_caller_of, old_callee_of, old_pred_of, old_succ_of,
-                           new_caller_of, new_callee_of, new_pred_of, new_succ_of,
-                           old_refined_target_set, new_refined_target_set, all_refined_target_set,
-                           all_classes_set, iso)
+    getty_csi_targets_prep(
+        html_out, go, prev_hash, post_hash, common_package,
+        all_changed_tests, old_changed_tests, new_changed_tests,
+        new_modified_src, new_all_src,
+        old_test_set, new_test_set,
+        old_caller_of, old_callee_of, old_pred_of, old_succ_of,
+        new_caller_of, new_callee_of, new_pred_of, new_succ_of,
+        old_refined_target_set, new_refined_target_set, all_refined_target_set,
+        all_classes_set, iso)
+    
     print 'csi report page is set.'
     
     if config.review_auto_open:
