@@ -347,38 +347,26 @@ def __path_to_image(fpath):
     return "--" + re.sub("\W", "--", fpath) + "--"
 
 
-preimage = ""
-postimage = ""
-prefile = ""
-postfile = ""
-image2filename = {}
+prefile = None
+postfile = None
 oldl2m = {}
 newl2m = {}
-def __filepath_to_image(pathname):
-    if pathname.startswith("/"):
-        return "_dev_null_"
-    elif pathname.startswith("a/") or pathname.startswith("b/"):
-        filepath = re.match("^(a|b)/(.*)", pathname).group(2)
-        imagename = __path_to_image(filepath)
-        image2filename[imagename] = filepath 
-        return imagename
-    elif pathname == "BEFORE" or pathname == "AFTER":
-        return ""
+
+
+def __hunkpath_to_filepath(hp):
+    if hp.startswith("/"):
+        return None
+    elif hp.startswith("a/") or hp.startswith("b/"):
+        return hp[2:]
     else:
         return None
 
 
 def add_filename(f1, f2, output_file):
-    global preimage
-    global postimage
     global prefile
     global postfile
-    global image2filename
-    preimage = __filepath_to_image(f1)
-    postimage = __filepath_to_image(f2)
-    prefile = (f1[2:] if not f1.startswith("/") else f1)
-    postfile = (f2[2:] if not f2.startswith("/") else f2)
-    
+    prefile = __hunkpath_to_filepath(f1)
+    postfile = __hunkpath_to_filepath(f2)
     display1 = f1 if f1 != "BEFORE" else "REMOVED"
     output_file.write(("<tr><th colspan='2'>%s</th>"%convert(display1, linesize=linesize)).encode(encoding))
     display2 = f2 if f2 != "AFTER" else "ADDED"
@@ -431,15 +419,15 @@ def add_line(s1, s2, output_file, with_ln=True):
         else:
             type_name = "unmodified"
     elif (s1 is None or s1.strip() == "") and s2 is not None:
-        type_name = "added "
+        type_name = "added"
         line2_active_flag = True
     elif (s2 is None or s2.strip() == "") and s1 is not None:
-        type_name = "deleted "
+        type_name = "deleted"
         line1_active_flag = True
     elif s1 == s2 and not (s1.startswith(TOO_LONG_MSG) and s2.startswith(TOO_LONG_MSG)):
         type_name = "unmodified"
     else:
-        type_name = "changed "
+        type_name = "changed"
         line2_active_flag = True
         if algorithm == 1:
             s1, s2 = diff_changed_words_ts(orig1, orig2)
@@ -448,18 +436,19 @@ def add_line(s1, s2, output_file, with_ln=True):
         else: # default
             s1, s2 = linediff(orig1, orig2)
     
+    extra_anchor_names = set()
+    
     if (not line1_active_flag) and (not line2_active_flag):
-        pass
-    elif line2_active_flag:
-        possible_nk = (postfile, int(line2))
-        if possible_nk in newl2m:
-            type_name += (" -related-" + fsformat(newl2m[possible_nk]))
-    elif line1_active_flag:
-        possible_ok = (prefile, int(line1))
-        if possible_ok in oldl2m:
-            type_name += (" -related-" + fsformat(oldl2m[possible_ok]))
+        extra_anchor_names.clear()
     else:
-        raise ValueError("adding a line with wrong flags: " + str(line1_active_flag) + " " + str(line2_active_flag))
+        if line2_active_flag:
+            possible_nk = (postfile, int(line2))
+            if possible_nk in newl2m:
+                extra_anchor_names.add(TARGET_ANCHOR_PREFIX + fsformat(newl2m[possible_nk]))
+        if line1_active_flag:
+            possible_ok = (prefile, int(line1))
+            if possible_ok in oldl2m:
+                extra_anchor_names.add(TARGET_ANCHOR_PREFIX + fsformat(oldl2m[possible_ok]))
     
     if (orig1 is not None and orig1.startswith(PRSV_LEFT)) or \
             (orig2 is not None and orig2.startswith(PRSV_RIGHT)):
@@ -515,14 +504,20 @@ def add_line(s1, s2, output_file, with_ln=True):
             cached_header += ('<td colspan="2"></td>')
         cached_header += ('</tr>\n')
     else:
+        extra_anchors = ""
+        for ean in extra_anchor_names:
+            extra_anchors += ("<a name='" + ean + "'></a>")
         if s1 != None and s1 != "":
-            output_file.write(('<td class="diffline">%s </td>' % _ln(line1, with_ln)).encode(encoding))
+            output_file.write(
+                ('<td class="diffline">' +
+                 extra_anchors +
+                 '%s </td>' % _ln(line1, with_ln)).encode(encoding))
             output_file.write('<td class="diffpresent">'.encode(encoding))
             output_file.write(convert(s1, linesize=linesize, ponct=1).encode(encoding))
             output_file.write('</td>')
         else:
             s1 = ""
-            output_file.write('<td colspan="2"></td>')
+            output_file.write('<td colspan="2">' + extra_anchors + '</td>')
     
         if s2 != None and s2 != "":
             output_file.write(('<td class="diffline">%s </td>' % _ln(line2, with_ln)).encode(encoding))
