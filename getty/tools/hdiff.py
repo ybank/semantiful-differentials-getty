@@ -431,15 +431,15 @@ def add_line(s1, s2, output_file, with_ln=True):
         else:
             type_name = "unmodified"
     elif (s1 is None or s1.strip() == "") and s2 is not None:
-        type_name = "added " + postimage
+        type_name = "added "
         line2_active_flag = True
     elif (s2 is None or s2.strip() == "") and s1 is not None:
-        type_name = "deleted " + preimage
+        type_name = "deleted "
         line1_active_flag = True
     elif s1 == s2 and not (s1.startswith(TOO_LONG_MSG) and s2.startswith(TOO_LONG_MSG)):
         type_name = "unmodified"
     else:
-        type_name = "changed " + postimage
+        type_name = "changed "
         line2_active_flag = True
         if algorithm == 1:
             s1, s2 = diff_changed_words_ts(orig1, orig2)

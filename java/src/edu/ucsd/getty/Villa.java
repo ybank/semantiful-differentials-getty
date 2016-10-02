@@ -537,22 +537,30 @@ public class Villa {
 	private static Set<String> get_changed_src_methods(
 			String test_path, Map<String, Integer[]> file_revision_lines, String commit_hash, String output_dir) {
 		System.out.println("\nGetting changed methods (in .java files only, excluding tests) ...\n");
+		IMethodRecognizer ast_inspector_lm = new ASTInspector();
+		Set<String> exclusion_lm = new HashSet<String>();
+		
+		// get all l2m and m2l for both src and test
+		for (String file : file_revision_lines.keySet())
+			if (!file.endsWith(".java"))  // remove all non-java files
+				exclusion_lm.add(file);
+		for (String ext : exclusion_lm)
+			file_revision_lines.remove(ext);
+		ast_inspector_lm.changedMethods(file_revision_lines);
+		Map<String, String> l2m = ast_inspector_lm.l2m();
+		Map<String, Set<String>> m2l = ast_inspector_lm.m2l();
+		output_m2l_l2m(output_dir, l2m, m2l, commit_hash);
+		
+		// get all revised methods in src
 		IMethodRecognizer ast_inspector = new ASTInspector();
 		Set<String> exclusion = new HashSet<String>();
 		for (String file : file_revision_lines.keySet())
-			if (!file.endsWith(".java") || file.startsWith(test_path))
+			if (file.startsWith(test_path))  // remove all test files
 				exclusion.add(file);
 		for (String ext : exclusion)
 			file_revision_lines.remove(ext);
-			
-		Set<String> revised_methods = ast_inspector.changedMethods(file_revision_lines);
-		Map<String, String> l2m = ast_inspector.l2m();
-//		System.out.println(l2m);
-		Map<String, Set<String>> m2l = ast_inspector.m2l();
-//		System.out.println(m2l);
-		output_m2l_l2m(output_dir, l2m, m2l, commit_hash);
 		
-		return revised_methods;
+		return ast_inspector.changedMethods(file_revision_lines);
 	}
 	
 	private static void output_m2l_l2m(
