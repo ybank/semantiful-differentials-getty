@@ -255,6 +255,8 @@ function show_src_or_inv(which) {
 	return false;
 }
 
+active_style = "color:blue;background:whitesmoke;"
+inactive_style = "color:gray;background:linear-gradient(whitesmoke, lightgray);"
 function create_src_or_inv_button_link(thetype, theid) {
 	var theparam;
 	var thetext;
@@ -269,7 +271,7 @@ function create_src_or_inv_button_link(thetype, theid) {
 		thetext = "Invariant Diff Only";
 	}
 	return "<a href='#' class='src-inv-button-link' id='" + theid + "' " +
-		"style=\"color:" + ((thetype == invdiff_display_with) ? "blue" : "gray") + ";\"" +
+		"style=\"" + ((thetype == invdiff_display_with) ? active_style : inactive_style) + "\"" +
 		"onclick='return show_src_or_inv(\"" + theparam + "\");'>" + thetext + "</a>";
 }
 

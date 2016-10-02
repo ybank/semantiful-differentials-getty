@@ -23,16 +23,18 @@ def getty_csi_init(html_file, iso):
         isolation_ctrl = "<div id='csi-iso-ctrl' style='display:none;'><p>No Impact Isolation</p></div>\n"
         if iso:
             iso_links = ""
-            for iso_type, iso_text, tcolor, tiptext in [
-                        ("ni", "Source & Test Change", "blue", "old src & tests\nvs.\nnew src & tests"),
-                        ("si", "Source Change Only", "gray", "old vs. new src\n(with same tests)"),
-                        ("ti4o", "Test Change (for OLD Source)", "gray", "old tests vs. new tests\n(both for old src)"),
-                        ("ti4n", "Test Change (for NEW Source)", "gray", "old tests vs. new tests\n(both for new src)")]:
+            active_style = "color:blue;background:whitesmoke;"
+            inactive_style = "color:gray;background:linear-gradient(whitesmoke, lightgray);"
+            for iso_type, iso_text, link_style, tiptext in [
+                    ("ni", "Source & Test Change", active_style, "old src & tests\nvs.\nnew src & tests"),
+                    ("si", "Source Change Only", inactive_style, "old vs. new src\n(with same tests)"),
+                    ("ti4o", "Test Change (for OLD Source)", inactive_style, "old tests vs. new tests\n(both for old src)"),
+                    ("ti4n", "Test Change (for NEW Source)", inactive_style, "old tests vs. new tests\n(both for new src)")]:
                 iso_links += \
-                        "    <a id='csi-iso-link-" + iso_type + "' class='csi-iso-ctrl-group' href='#' " + \
-                        " style='color: " + tcolor + ";' " + \
-                        "onclick='return iso_type_reset(\"" + iso_type + "\");'>" + iso_text + \
-                        "<span class='iso-type-tip'><pre>" + tiptext + "</pre></span></a>\n"
+                    "    <a id='csi-iso-link-" + iso_type + "' class='csi-iso-ctrl-group' href='#' " + \
+                    " style='" + link_style + "' " + \
+                    "onclick='return iso_type_reset(\"" + iso_type + "\");'>" + iso_text + \
+                    "<span class='iso-type-tip'><pre>" + tiptext + "</pre></span></a>\n"
             iso_links = "<div class='link-button-tabs-bottom'>" + iso_links + "</div>"
             isolation_ctrl = "<div id='csi-iso-ctrl' style='margin-top:10px;'>\n" + \
                 "    <span class='more-inv-display-option-listing menu-words'>Invariant Changes Due To:</span>\n" + \
