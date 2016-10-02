@@ -572,12 +572,14 @@ def parse_input(input_file, output_file, input_file_name, output_file_name,
 
     title_suffix = ' ' + input_file_name
     if not exclude_headers:
-        output_file.write(
-            html_hdr.format(
-                title_suffix, encoding, desc, "", modified_date, lang, config.version_time).encode(encoding))
-    else:
-        output_file.write(basic_html_hdr.format(
-            title_suffix, encoding, desc, "", modified_date, lang, config.version_time).encode(encoding))
+        if exclude_headers is None:
+            output_file.write(basic_html_hdr.format(
+                    title_suffix, encoding, desc, "",
+                    modified_date, lang, config.version_time).encode(encoding))
+        else:
+            output_file.write(html_hdr.format(
+                    title_suffix, encoding, desc, "",
+                    modified_date, lang, config.version_time).encode(encoding))
     
     output_file.write(table_hdr.encode(encoding))
 
@@ -749,7 +751,7 @@ def parse_from_memory(txt, exclude_headers, show_hunk_infos, with_ln=True):
 
 
 def srcdiff2html(input_diff_file, output_html_file,
-                 exclude_headers=False, old_l2m={}, new_l2m={}):
+                 exclude_headers=None, old_l2m={}, new_l2m={}):
     global oldl2m
     global newl2m
     oldl2m = old_l2m

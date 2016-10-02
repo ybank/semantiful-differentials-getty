@@ -11,6 +11,8 @@ var invdiff_display_with = "none";
 
 var current_method_name = "";
 
+var target_anchor_prefix = "-getty-ta-"
+
 function set_commit_hashes(prev, post) {
 	prev_hash = prev;
 	post_hash = post;
@@ -212,6 +214,7 @@ inactive_lbtn_style = {"color": "gray", "background": "linear-gradient(whitesmok
 function show_src_or_inv(which) {
 	if (which == "inv") {
 		$('iframe.srctip').hide();
+		$('iframe.srcdifftip').hide();
 		tfs = fsformat(current_method_name)
 		switch (iso_type) {
 			case "ni":
@@ -238,6 +241,7 @@ function show_src_or_inv(which) {
 		$('a#src_inv_btn_4inv').css(active_lbtn_style);
 	} else if (which == "src") {
 		$('iframe.invtip').hide();
+		$('iframe.srcdifftip').hide();
 		anchor_name = fsformat(current_method_name);
 		// reset link with anchor for better display
 		$('iframe#i-left-src').attr('src', name_to_path(current_method_name, prev_hash) + "#" + anchor_name);
@@ -245,6 +249,14 @@ function show_src_or_inv(which) {
 		$('iframe.srctip').css("display", "inline-block");
 		$('a.src-inv-button-link').css(inactive_lbtn_style);
 		$('a#src_inv_btn_4src').css(active_lbtn_style);
+	} else if (which == "srcdiff") {
+		$('iframe.invtip').hide();
+		$('iframe.srctip').hide();
+		srcdiff_anchor_name = target_anchor_prefix + fsformat(current_method_name);
+		$('iframe#i-mid-srcdiff').attr('src', './src.diff.html#' + srcdiff_anchor_name);
+		$('iframe.srcdifftip').css("display", "inline-block");
+		$('a.src-inv-button-link').css(inactive_lbtn_style);
+		$('a#src_inv_btn_4srcdiff').css(active_lbtn_style);
 	} else {
 		$('iframe.invtip').hide();
 		$('iframe.srctip').hide();
@@ -266,6 +278,9 @@ function create_src_or_inv_button_link(thetype, theid) {
 	} else if (thetype == "src") {
 		theparam = "src";
 		thetext = "Source Code";
+	} else if (thetype == "srcdiff") {
+		theparam = "srcdiff";
+		thetext = "Source Code Diff";
 	} else {
 		theparam = "none";
 		thetext = "Invariant Diff Only";
@@ -296,6 +311,8 @@ function methodInvsCompareDiv(method_name) {
 	iright =
 		"width:49%;height:400px;background-color:#000;" +
 		"display:none;position:absolute;right:15px;border:2px dotted #A8BBA8;";
+	sdiff =
+		"width:99.2%;height:400px;display:none;padding:4px;border:2px dotted #A8BBA8;";
 	preInvs =
 		"<iframe id='iinvprev' name='iinvprev' src='" + fsname_to_inv_path(theMtd, prev_hash) + "' " +
 		"class='invtip' style='" + ileft + "'></iframe>";
@@ -314,13 +331,17 @@ function methodInvsCompareDiv(method_name) {
 	postSrcs =
 		"<iframe id='i-right-src' src='" + name_to_path(method_name, post_hash) + "#" + anchor_name + "' " +
 		"class='srctip' style='" + sright + "'></iframe>";
+	srcDiffs =
+		"<iframe id='i-mid-srcdiff' src='" + name_to_path(method_name, post_hash) + "#" + anchor_name + "' " +
+		"class='srcdifftip' style='" + sdiff + "'></iframe>";
 	mitabs = "<div style='margin-bottom:8px;'>" +
 		["<span class='more-inv-display-option-listing menu-words'>More Display Options:</span>",
 		 "<div class='link-button-tabs-bottom'>" + create_src_or_inv_button_link("none", "src_inv_btn_4none"),
 		 create_src_or_inv_button_link("inv", "src_inv_btn_4inv"),
-		 create_src_or_inv_button_link("src", "src_inv_btn_4src") + "</div>"
+		 create_src_or_inv_button_link("src", "src_inv_btn_4src"),
+		 create_src_or_inv_button_link("srcdiff", "src_inv_btn_4srcdiff") + "</div>"
 		].join("&nbsp;&nbsp;") + "</div>";
-	return compareInvs + "<br>" + mitabs + preInvs + postInvs + preSrcs + postSrcs;
+	return compareInvs + "<br>" + mitabs + preInvs + postInvs + preSrcs + postSrcs + srcDiffs;
 }
 
 var neighborhood_table =

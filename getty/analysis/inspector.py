@@ -44,7 +44,7 @@ def getty_csi_init(html_file, iso):
             "<span class='program-words'>" + \
             "<span><u>code-updated</u>&nbsp;</span>" + \
             "<span style='color:red;'>invariant-changed</span>&nbsp;" + \
-            "<span style='color:darkgray;'>invariant-not-changed</span>&nbsp;" + \
+            "<span style='color:darkgray;'>invariant-unchanged</span>&nbsp;" + \
             "<span>...(old-call-count + newly-added-calls)</span>" + \
             "</span></div>"
         html_string = html_string.replace(anchor,

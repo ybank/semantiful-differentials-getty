@@ -26,7 +26,7 @@ def exam(iso, pwd, go, fe_path, common_package, all_classes_set,
             prev_hash, post_hash, full_src_diff_in, config.max_context_line))
     srcdiff2html(
         full_src_diff_in, full_src_diff_out,
-        exclude_headers=True, old_l2m=old_l2m, new_l2m=new_l2m)
+        exclude_headers=None, old_l2m=old_l2m, new_l2m=new_l2m)
     
     print 'generating main html from diff ...'
     diff_in = go + "text.diff"
