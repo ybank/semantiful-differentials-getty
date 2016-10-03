@@ -11,7 +11,9 @@ var invdiff_display_with = "none";
 
 var current_method_name = "";
 
-var target_anchor_prefix = "-getty-ta-"
+var target_anchor_prefix = "-getty-ta-";
+
+var load_timeout = 200;  // 0.2s
 
 function set_commit_hashes(prev, post) {
 	prev_hash = prev;
@@ -244,19 +246,34 @@ function show_src_or_inv(which) {
 		$('iframe.srcdifftip').hide();
 		anchor_name = fsformat(current_method_name);
 		// reset link with anchor for better display
-		$('iframe#i-left-src').attr('src', name_to_path(current_method_name, prev_hash) + "#" + anchor_name);
-		$('iframe#i-right-src').attr('src', name_to_path(current_method_name, post_hash) + "#" + anchor_name);
+		$('iframe#i-left-src').attr('src', name_to_path(current_method_name, prev_hash));
+		$('iframe#i-right-src').attr('src', name_to_path(current_method_name, post_hash));
 		$('iframe.srctip').css("display", "inline-block");
 		$('a.src-inv-button-link').css(inactive_lbtn_style);
 		$('a#src_inv_btn_4src').css(active_lbtn_style);
+		window.setTimeout(function() {
+			$('iframe#i-left-src').ready(function() {
+				$('iframe#i-left-src').attr(
+						'src', name_to_path(current_method_name, prev_hash) + "#" + anchor_name);
+			});
+			$('iframe#i-right-src').ready(function() {
+				$('iframe#i-right-src').attr(
+						'src', name_to_path(current_method_name, post_hash) + "#" + anchor_name);
+			});
+		}, load_timeout);
 	} else if (which == "srcdiff") {
 		$('iframe.invtip').hide();
 		$('iframe.srctip').hide();
 		srcdiff_anchor_name = target_anchor_prefix + fsformat(current_method_name);
-		$('iframe#i-mid-srcdiff').attr('src', './src.diff.html#' + srcdiff_anchor_name);
+		$('iframe#i-mid-srcdiff').attr('src', './src.diff.html');
 		$('iframe.srcdifftip').css("display", "inline-block");
 		$('a.src-inv-button-link').css(inactive_lbtn_style);
 		$('a#src_inv_btn_4srcdiff').css(active_lbtn_style);
+		window.setTimeout(function() {
+			$('iframe#i-mid-srcdiff').ready(function() {
+				$('iframe#i-mid-srcdiff').attr('src', './src.diff.html#' + srcdiff_anchor_name);
+			});
+		}, load_timeout);
 	} else {
 		$('iframe.invtip').hide();
 		$('iframe.srctip').hide();
