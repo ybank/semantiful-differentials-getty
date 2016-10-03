@@ -278,7 +278,7 @@ function create_src_or_inv_button_link(thetype, theid) {
 		thetext = "Complete Invariants";
 	} else if (thetype == "src") {
 		theparam = "src";
-		thetext = "Source Code";
+		thetext = "Source Code (No Method Diff)";
 	} else if (thetype == "srcdiff") {
 		theparam = "srcdiff";
 		thetext = "Source Code Diff";
@@ -293,7 +293,7 @@ function create_src_or_inv_button_link(thetype, theid) {
 
 function methodInvsCompareDiv(method_name) {
 	theMtd = fsformat(method_name);
-	targetInvComp = $("div#hide-all div#vsinvs-" + iso_type + "-" + theMtd)[0]
+	targetInvComp = $("div#getty-full-inv-diff div#vsinvs-" + iso_type + "-" + theMtd)[0]
 	
 	if (targetInvComp == undefined)
 		// return htmlContent = "Choose a neighbor target to show its invariant change";
@@ -335,14 +335,20 @@ function methodInvsCompareDiv(method_name) {
 	srcDiffs =
 		"<iframe id='i-mid-srcdiff' src='" + name_to_path(method_name, post_hash) + "#" + anchor_name + "' " +
 		"class='srcdifftip' style='" + sdiff + "'></iframe>";
+	src_tab_choice = "";
+	if (all_modified_targets.contains(method_name)) {
+		if (invdiff_display_with == 'src') invdiff_display_with = 'srcdiff';
+		src_tab_choice = create_src_or_inv_button_link("srcdiff", "src_inv_btn_4srcdiff");
+	} else {
+		if (invdiff_display_with == 'srcdiff') invdiff_display_with = 'src';
+		src_tab_choice = create_src_or_inv_button_link("src", "src_inv_btn_4src");
+	}
 	mitabs = "<div style='margin-bottom:8px;'>" +
 		"<span class='more-inv-display-option-listing menu-words'>More Display Options:</span>&nbsp;&nbsp;" +
 		"<div class='link-button-tabs-bottom'>" +
 		[create_src_or_inv_button_link("none", "src_inv_btn_4none"),
 		 create_src_or_inv_button_link("inv", "src_inv_btn_4inv"),
-		 create_src_or_inv_button_link("src", "src_inv_btn_4src"),
-		 create_src_or_inv_button_link("srcdiff", "src_inv_btn_4srcdiff")
-		].join("&nbsp;&nbsp;") + "</div></div>";
+		 src_tab_choice].join("&nbsp;&nbsp;") + "</div></div>";
 	return compareInvs + "<br>" + mitabs + preInvs + postInvs + preSrcs + postSrcs + srcDiffs;
 }
 

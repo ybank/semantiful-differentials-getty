@@ -57,9 +57,9 @@ a.src-inv-button-link {
     border: 1px solid gray;
     padding: 4px 8px 2px 8px;
 }
-div#getty-full-code-diff {
+div#getty-full-code-diff, div#getty-full-inv-diff {
     border:2px solid gray;
-    border-radius:10px;
+    border-radius:8px;
     padding:8px;
 }
 div#csi-output-targets {

@@ -7,6 +7,7 @@ from tools.ex import read_str_from
 
 inv_html_header = """<!-- inv html header -->
 <head>
+  <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
   <link rel="stylesheet" type="text/css" href="styles_inv.css?ver={0}">
 </head>
 <pre class="prettyprint linenums"><code>
@@ -34,6 +35,7 @@ def inv_to_html(targets, go, commit_hash):
 
 src_html_header = """<!-- src html header -->
 <head>
+  <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
   <link rel="stylesheet" type="text/css" href="{0}styles_src.css?ver={1}">
 </head>
 <pre class="prettyprint linenums"><code>"""
@@ -107,3 +109,13 @@ def src_to_html(targets, go, commit_hash, install_line_numbers=False):
                 wf.write(newsrchtml)
         except:
             pass
+
+def create_show_hide_toggle(btn_name, btn_id, cb_fn_str, checked=True, extra_style=None):
+    cm = " checked" if checked else ""
+    es = "" if extra_style is None else " style='" + extra_style + "'"
+    return "<div class='onoffswitch'" + es + ">" + \
+        "<input type='checkbox' name='" + btn_name + "' class='onoffswitch-checkbox' " + \
+        "id='" + btn_id + "' onchange='" + cb_fn_str + "'" + cm + ">" + \
+        "<label class='onoffswitch-label' for='" + btn_id + "'>" + \
+        "<span class='onoffswitch-inner'></span><span class='onoffswitch-switch'></span>" + \
+        "</label></div>"

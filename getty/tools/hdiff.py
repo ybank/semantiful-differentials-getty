@@ -40,7 +40,7 @@ import sys, re, htmlentitydefs, getopt, StringIO, codecs, datetime, difflib, jso
 import config
 from analysis import solver
 from tools.daikon import fsformat
-from tools.html import inv_to_html
+from tools.html import inv_to_html, create_show_hide_toggle
 from tools.os import from_sys_call_enforce, remove_many_files
 from tools.diffutil import diff
 
@@ -70,6 +70,7 @@ basic_html_hdr = """<!DOCTYPE html>
             +K/HwIAAAAJUlEQVQI12NYBQQM2IgGBQ4mCIEQW7oyK4phampkGIQAc1G1AQCRxCNbyW92oQAAAABJRU5ErkJggg=="
         type="image/png" />
     <link rel="stylesheet" type="text/css" href="styles.css?ver={6}">
+    <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
     <meta property="dc:language" content="{5}" />
     <!--meta property="dc:date" content="{3}" /-->
     <meta property="dc:modified" content="{4}" />
@@ -81,29 +82,34 @@ basic_html_hdr = """<!DOCTYPE html>
 html_hdr = basic_html_hdr + """
 <body>
     __getty_stub__
-    <div style='display:none;padding-left:4px;margin-top:8px;' id='hidden-show-srcdiff-switch'>
-      <a href='#'
-        onclick='$(\"div#getty-full-code-diff\").toggle();return false;'>Show/Hide All Code Changes
-      </a>
-    </div>
+    <div style='display:none;padding-left:4px;' id='sh-srcdiff-switch'>
+      <div class='menu-words' style='margin: 24px 0 8px 0;'>
+        List of All Code Changes&nbsp;&nbsp;
+        {0}
+    </div></div>
     <div id='getty-full-code-diff' style="display:none;">
         <h4 style="margin-top:0px;margin-bottom:0px;">Full Code Differentials</h4>
-"""
+""".format(create_show_hide_toggle('btn-sh-sd', 'btn-sh-sd',
+                '$(\"div#getty-full-code-diff\").toggle();return false;', checked=False))
 
 continue_hdr = """</div>
-    <div style='display:none;padding-left:4px;margin-top:8px;' id='hidden-show-invs-switch'>
-      <a href='#'
-        onclick='$(\"div#hide-all\").toggle();return false;'>Show/Hide Full Invariant Differentials
-      </a>
-    </div>
-    <div id='hide-all' style='display:none;'>
+    <div style='display:none;padding-left:4px;margin-top:8px;' id='sh-invdiff-switch'>
+      <div class='menu-words' style='margin: 24px 0 8px 0;'>
+        List of Invariant Differentials&nbsp;&nbsp;
+        {0}
+    </div></div>
+    <div id='getty-full-inv-diff' style='display:none;'>
+""".format(create_show_hide_toggle('btn-sh-id', 'btn-sh-id',
+                '$(\"div#getty-full-inv-diff\").toggle();return false;', checked=False))
+
+footer_info = """<footer>
+    <p><br>--------<br>Generated at {0}. Getty - Semantiful Differentials.    </p>
+</footer>
 """
 
 html_footer = """
 </div>
-<footer>
-    <p><br>--------<br>Generated at {1}. Getty - Semantiful Differentials.    </p>
-</footer>
+{0}
 </body>
 </html>
 """
@@ -655,7 +661,11 @@ def parse_input(input_file, output_file, input_file_name, output_file_name,
     if not exclude_headers:
         if exclude_headers is not None:
             output_file.write("<br>{{{__getty_invariant_diff__}}}<br>")
-        output_file.write(html_footer.format("", dtnow.strftime("%b. %d, %Y")).encode(encoding))
+            output_file.write(
+                html_footer.format(
+                    footer_info.format(dtnow.strftime("%b. %d, %Y"))).encode(encoding))
+        else:
+            output_file.write(html_footer.format("").encode(encoding))
 
 
 def usage():

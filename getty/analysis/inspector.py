@@ -3,17 +3,7 @@
 import config
 from analysis.solver import is_different, is_possibly_different
 from tools.daikon import fsformat
-
-
-def _create_show_hide_toggle(btn_name, btn_id, cb_fn_str, checked=True, extra_style=None):
-    cm = " checked" if checked else ""
-    es = "" if extra_style is None else " style='" + extra_style + "'"
-    return "<div class='onoffswitch'" + es + ">" + \
-        "<input type='checkbox' name='" + btn_name + "' class='onoffswitch-checkbox' " + \
-        "id='" + btn_id + "' onchange='" + cb_fn_str + "'" + cm + ">" + \
-        "<label class='onoffswitch-label' for='" + btn_id + "'>" + \
-        "<span class='onoffswitch-inner'></span><span class='onoffswitch-switch'></span>" + \
-        "</label></div>"
+from tools.html import create_show_hide_toggle
 
 
 def getty_csi_init(html_file, iso):
@@ -52,9 +42,9 @@ def getty_csi_init(html_file, iso):
             "<div id='csi-output-neighbors-outer'>" + \
             "  <div id='csi-output-menu' class='menu-words'>" + \
             "<span style='margin-right:4px;'>More Methods </span>\n" + \
-            "  " + _create_show_hide_toggle("onoffswitch", "moremethodscb", "return toggle_show_invequal();") + \
+            "  " + create_show_hide_toggle("onoffswitch", "moremethodscb", "return toggle_show_invequal();") + \
             "<span style='margin: 0px 4px 0 80px;'>Tests </span>" + \
-            "  " + _create_show_hide_toggle("onoffswitch", "moretestscb", "return toggle_show_tests();") + \
+            "  " + create_show_hide_toggle("onoffswitch", "moretestscb", "return toggle_show_tests();") + \
             legends + \
             "  </div>\n" + \
             "  <div id='csi-output-neighbors' style='margin:8px;'>" + \
@@ -239,7 +229,7 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash, common_package,
         tests_replacement = "<span>None</span>"
     inv_change_update = \
         "<div class='menu-words entry-header'><b>Methods & Classes with Possible Invariant Changes </b></div>" + \
-        _create_show_hide_toggle("onoffswitch", "inv-change-list-sh",
+        create_show_hide_toggle("onoffswitch", "inv-change-list-sh",
             "$(\"div#invariant-change-list-divs\").toggle();return false;", checked=False,
             extra_style="margin-top:8px;")
     if all_whose_inv_changed or all_whose_clsobj_inv_changed:
