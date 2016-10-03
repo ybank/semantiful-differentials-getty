@@ -131,7 +131,7 @@ The projects Getty can analyze should satisfy the following criteria:
   
   That's it!
 
-###*Screenshot & Misc*
+###*Demos & Misc*
 [Here](http://sosa08.ucsd.edu:7999/sema.diff.html) is an *outdated* demo of the source-impact isolated CSI view, for the commit ("#7") we discussed in our submitted CSI paper, which is currently under ICSE's review. Please note that [our latest user interface](http://sosa08.ucsd.edu:8000/sema.diff.html) has been changed moderately (a refined UI style, more enriched features and integration of impact-isolated views), but most other part of the UI resembles the past.
 
 We have also updated the textual-diffing algorithm for invariant matching, which gives slightly cleaner diffing results; but ideally, we would like to further enhance it to a real semantic diffing algorithm backed by a theorem prover, which is currently WIP for future applications.
