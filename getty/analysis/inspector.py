@@ -32,10 +32,10 @@ def getty_csi_init(html_file, iso):
         legends = "<div style='float:right;'>" + \
             "<span class='menu-words' style='margin-left: 32px;'>Legends:&nbsp;&nbsp;&nbsp;&nbsp;</span>" + \
             "<span class='program-words'>" + \
-            "<span><u>code-updated</u>&nbsp;</span>" + \
+            "<span><u>code-changed</u>&nbsp;</span>" + \
             "<span style='color:red;'>invariant-changed</span>&nbsp;" + \
             "<span style='color:darkgray;'>invariant-unchanged</span>&nbsp;" + \
-            "<span>...(old-call-count + newly-added-calls)</span>" + \
+            "<span>...(#old-calls + #newly-added)</span>" + \
             "</span></div>"
         html_string = html_string.replace(anchor,
             "<div id='csi-output-targets'></div>\n" + \

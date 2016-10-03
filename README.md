@@ -127,12 +127,12 @@ The projects Getty can analyze should satisfy the following criteria:
   
     `/path/to/your/example/project.__getty_output__/iso_19f4281_a562db1/sema.diff.html`
   
-  [This screenshot](http://sosa01.ucsd.edu:8000/sema.diff.html) shows the above view. For best viewing results, [Safari](http://www.apple.com/safari/), [Chrome](https://www.google.com/chrome/) and [Firefox](https://www.mozilla.org/en-US/firefox/new/) are recommanded to open the rendered html pages. We have not tested our results on Internet Explorer (IE) so it is not currently recommended.
+  [This UI demo](http://sosa01.ucsd.edu:8000/sema.diff.html) shows the above view. For best viewing results, [Safari](http://www.apple.com/safari/), [Chrome](https://www.google.com/chrome/) and [Firefox](https://www.mozilla.org/en-US/firefox/new/) are recommanded to open the rendered html pages. We have not tested our results on Internet Explorer (IE) so it is not currently recommended.
   
   That's it!
 
 ###*Screenshot & Misc*
-[Here](http://sosa08.ucsd.edu:7999/sema.diff.html) is an *outdated* screenshot of the source-impact isolated CSI view, for the commit ("#7") we discussed in our submitted CSI paper, which is currently under ICSE's review. Please note that [our latest user interface](http://sosa08.ucsd.edu:8000/sema.diff.html) has been changed moderately (a refined UI style, more enriched features and integration of impact-isolated views), but most other part of the UI resembles the past.
+[Here](http://sosa08.ucsd.edu:7999/sema.diff.html) is an *outdated* demo of the source-impact isolated CSI view, for the commit ("#7") we discussed in our submitted CSI paper, which is currently under ICSE's review. Please note that [our latest user interface](http://sosa08.ucsd.edu:8000/sema.diff.html) has been changed moderately (a refined UI style, more enriched features and integration of impact-isolated views), but most other part of the UI resembles the past.
 
 We have also updated the textual-diffing algorithm for invariant matching, which gives slightly cleaner diffing results; but ideally, we would like to further enhance it to a real semantic diffing algorithm backed by a theorem prover, which is currently WIP for future applications.
   
