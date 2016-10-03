@@ -260,6 +260,7 @@ function show_src_or_inv(which) {
 	} else {
 		$('iframe.invtip').hide();
 		$('iframe.srctip').hide();
+		$('iframe.srcdifftip').hide();
 		$('a.src-inv-button-link').css(inactive_lbtn_style);
 		$('a#src_inv_btn_4none').css(active_lbtn_style);
 	}
@@ -335,12 +336,13 @@ function methodInvsCompareDiv(method_name) {
 		"<iframe id='i-mid-srcdiff' src='" + name_to_path(method_name, post_hash) + "#" + anchor_name + "' " +
 		"class='srcdifftip' style='" + sdiff + "'></iframe>";
 	mitabs = "<div style='margin-bottom:8px;'>" +
-		["<span class='more-inv-display-option-listing menu-words'>More Display Options:</span>",
-		 "<div class='link-button-tabs-bottom'>" + create_src_or_inv_button_link("none", "src_inv_btn_4none"),
+		"<span class='more-inv-display-option-listing menu-words'>More Display Options:</span>&nbsp;&nbsp;" +
+		"<div class='link-button-tabs-bottom'>" +
+		[create_src_or_inv_button_link("none", "src_inv_btn_4none"),
 		 create_src_or_inv_button_link("inv", "src_inv_btn_4inv"),
 		 create_src_or_inv_button_link("src", "src_inv_btn_4src"),
-		 create_src_or_inv_button_link("srcdiff", "src_inv_btn_4srcdiff") + "</div>"
-		].join("&nbsp;&nbsp;") + "</div>";
+		 create_src_or_inv_button_link("srcdiff", "src_inv_btn_4srcdiff")
+		].join("&nbsp;&nbsp;") + "</div></div>";
 	return compareInvs + "<br>" + mitabs + preInvs + postInvs + preSrcs + postSrcs + srcDiffs;
 }
 

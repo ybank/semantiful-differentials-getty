@@ -653,9 +653,8 @@ def parse_input(input_file, output_file, input_file_name, output_file_name,
         output_file.write(continue_hdr)
     
     if not exclude_headers:
-        output_file.write("<br>{{{__getty_invariant_diff__}}}<br>")
-        output_file.write("<br>{{{__getty_invariants__}}}<br>")
-        output_file.write("<br>{{{__getty_source_code__}}}<br>")
+        if exclude_headers is not None:
+            output_file.write("<br>{{{__getty_invariant_diff__}}}<br>")
         output_file.write(html_footer.format("", dtnow.strftime("%b. %d, %Y")).encode(encoding))
 
 
@@ -870,6 +869,7 @@ def __generate_append_diff(target, diff_type, prev_invf, post_invf, diff_htmlf):
 def _getty_append_invdiff(html_string, targets, go, prev_hash, curr_hash, iso):
     global ignore_all_ws
     ignore_all_ws = True
+    anchor = "<br>{{{__getty_invariant_diff__}}}<br>"
     for target in sorted(targets, reverse=True):
         if config.install_diffinv_only and solver.is_different(target, go, prev_hash, curr_hash):
             print '  -- processing inv diff for ' + target
@@ -886,10 +886,10 @@ def _getty_append_invdiff(html_string, targets, go, prev_hash, curr_hash, iso):
                     ("ti4o", osot_invf, osnt_invf, invdiff_outft[:-10]+".ti4o.diff.html"),
                     ("ti4n", nsot_invf, nsnt_invf, invdiff_outft[:-10]+".ti4n.diff.html")]
             for ds in diff_settings:
-                anchor = "<br>{{{__getty_invariant_diff__}}}<br>"
                 replacement = anchor + "\n" + \
                     __generate_append_diff(target, ds[0], ds[1], ds[2], ds[3])
                 html_string = html_string.replace(anchor, replacement)
+    html_string = html_string.replace(anchor, "")
     if config.use_tmp_files:
         remove_many_files(go, "*"+PRSV_TMP)
     ignore_all_ws = False
@@ -917,26 +917,6 @@ def __add_inv_js_line(html_string, tfs, prev_hash, prev_invs, curr_hash, curr_in
         curr_invs.replace("'", "\\'").replace("\n", "\\n") + "');\n"
     replacement = prev_script_line + curr_script_line + "</script>\n</body>"
     html_string = html_string.replace("</script>\n</body>", replacement)
-    return html_string
-
-
-def _getty_append_invariants(html_string, targets, go, prev_hash, curr_hash):
-    html_string = html_string.replace("</body>", "<script>\n</script>\n</body>")
-    for target in sorted(targets):
-        tfs = fsformat(target)
-        prev_invs_file = go + "_getty_inv__" + tfs + "__" + prev_hash + "_.inv.out"
-        with open(prev_invs_file, 'r') as prevf:
-            prev_invs = prevf.read()
-        curr_invs_file = go + "_getty_inv__" + tfs + "__" + curr_hash + "_.inv.out"
-        with open(curr_invs_file, 'r') as currf:
-            curr_invs = currf.read()
-        # html replacement
-        anchor_html = "<br>{{{__getty_invariants__}}}<br>"
-        invs_html = "<invariants id='" + tfs + "'></invariants>"
-        rpmt_html = anchor_html + "\n" + invs_html + "\n"
-        html_string = html_string.replace(anchor_html, rpmt_html)
-        # javascript replacement
-        html_string = __add_inv_js_line(html_string, tfs, prev_hash, prev_invs, curr_hash, curr_invs)
     return html_string
 
 
@@ -1003,7 +983,6 @@ def getty_append_semainfo(template_file, targets, go, fe_path,
     html_string = _getty_append_invdiff(html_string, targets, go, prev_hash, curr_hash, iso)
     print ' - import javascript libs ...'
     html_string = _import_js(html_string, fe_path, go)
-#     html_string = _getty_append_invariants(html_string, targets, go, prev_hash, curr_hash)
     print ' - inv txt to html (prev) ...'
     inv_to_html(targets, go, prev_hash)
     print ' - inv txt to html (post) ...'
