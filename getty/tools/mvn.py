@@ -45,7 +45,7 @@ def full_classpath(junit_path, sys_classpath, bin_output, test_output):
 def junit_torun_str(cust_mvn_repo):
     if config.no_mvn_customization:
         extract_cmd = "mvn test -q | grep ^Running\ *"
-        print 'Running tests to get all test & test cases ...'
+        print '\nRunning tests to get all test & test cases ...'
         cmd_output = from_sys_call_enforce(extract_cmd).strip()
         filtered = []
         matching = "Running (.*)"

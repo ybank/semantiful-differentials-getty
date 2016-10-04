@@ -2,8 +2,8 @@
 import multiprocessing, time
 
 # default junit version to use uniformly
-default_junit_version = "4.12-getty"
-use_special_junit_for_dyn = True
+default_junit_version = "4.13-getty"
+use_special_junit_for_dyn = False
 special_junit_version = "4.11"
 
 # whether to infer invariants for tests
