@@ -389,7 +389,7 @@ function bolden_for_modified(method_name) {
 	display_name =
 		method_name.substring(common_prefix_length)
 			.replace(/</g, "&lt;").replace(/>g/, "&gt;")
-			.replace(/:/g, ":&#8203;").replace(/\$/g, "&#8203;$");
+			.replace(/:/g, ":&#8203;").replace(/\$/g, "&#8203;$$");
 	if (all_modified_targets.contains(method_name))
 		return "<u>" + display_name + "</u>";
 	else
