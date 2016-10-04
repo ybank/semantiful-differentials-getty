@@ -218,13 +218,15 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash, common_package,
         "<div class='menu-words entry-header'><b>Updated Source:</b></div>"
     if new_modified_src:
         replacement = "<div class='target-sep'>,</div>".join(
-                            [__link_to_show_neighbors(t, common_package) for t in new_modified_src])
+                            [__link_to_show_neighbors(t, common_package)
+                                for t in sorted(list(new_modified_src))])
     else:
         replacement = "<span>None</span>"
     embed_test_update = "<br><div class='menu-words entry-header'><b>Updated Tests:</b></div>"
     if all_changed_tests:
         tests_replacement = "<div class='target-sep'>,</div>".join(
-                                [__link_to_show_neighbors(t, common_package) for t in all_changed_tests])
+                                [__link_to_show_neighbors(t, common_package)
+                                    for t in sorted(list(all_changed_tests))])
     else:
         tests_replacement = "<span>None</span>"
     inv_change_update = \
@@ -236,13 +238,15 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash, common_package,
         if all_whose_inv_changed:
             invch_mtd_replacement = "<span class='menu-words'>Methods: </span>" + \
                 "<div class='target-sep'>,</div>".join(
-                    [__link_to_show_neighbors(t, common_package, "output-invc-highlight") for t in all_whose_inv_changed])
+                    [__link_to_show_neighbors(t, common_package, "output-invc-highlight")
+                        for t in sorted(list(all_whose_inv_changed))])
         else:
             invch_mtd_replacement = "<span class='menu-words'>Methods: None</span>"
         if all_whose_clsobj_inv_changed:
             invch_cls_replacement = "<span class='menu-words'>Classes: </span>" + \
                 "<div class='target-sep'>,</div>".join(
-                    [__link_to_show_neighbors(t, common_package, "output-invc-highlight") for t in all_whose_clsobj_inv_changed])            
+                    [__link_to_show_neighbors(t, common_package, "output-invc-highlight")
+                        for t in sorted(list(all_whose_clsobj_inv_changed))])
         else:
             invch_cls_replacement = "<span class='menu-words'>Classes: None</span>"
         invch_replacement = invch_mtd_replacement + "<br>" + invch_cls_replacement

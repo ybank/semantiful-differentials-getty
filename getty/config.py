@@ -43,7 +43,7 @@ show_debug_info = True
 show_debug_details = False
 
 # effortless mvn setup
-# BETA - unstable to set it True
+no_mvn_customization = True  # BETA
 effortless_mvn_setup = False
 
 # include test coverage report

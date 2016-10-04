@@ -107,6 +107,8 @@ def config_env():
     
     # javascript path
     fe_path = this_script_dir + "frontend/"
+    
+    # FIXME: better copy to and use go folder
     cust_mvn_repo = this_script_dir + "lib/repository"
     
     return villa_path, junit_path, sys_classpath, agent_path, \
