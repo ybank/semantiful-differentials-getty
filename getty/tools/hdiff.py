@@ -82,7 +82,7 @@ basic_html_hdr = """<!DOCTYPE html>
 html_hdr = basic_html_hdr + """
 <body>
     __getty_stub__
-    <div style='display:none;padding-left:4px;' id='sh-srcdiff-switch'>
+    <div style='padding-left:4px;' id='sh-srcdiff-switch'>
       <div class='menu-words' style='margin: 24px 0 8px 0;'>
         List of All Code Changes&nbsp;&nbsp;
         {0}
@@ -334,10 +334,12 @@ def convert(s, linesize=0, ponct=0):
     return t
 
 
-def add_comment(s, output_file):
-    ph_ln_td = "<td colspan='1' style='width:1%'>&nbsp;</td>"
-    ph_ln_td_e = "<td colspan='1' style='width:1%'></td>"
-    ph_content_td = "<td colspan='1' style='width:49%'></td>"
+def add_comment(s, output_file, with_ln=True):
+    thenarrow = str(2 if with_ln else 1)
+    thewide = str(48 if with_ln else 49)
+    ph_ln_td = "<td colspan='1' style='width:" + thenarrow + "%'>&nbsp;</td>"
+    ph_ln_td_e = "<td colspan='1' style='width:" + thenarrow + "%'></td>"
+    ph_content_td = "<td colspan='1' style='width:" + thewide + "%'></td>"
     fixed_layout_first_row = ph_ln_td + ph_content_td + ph_ln_td + ph_content_td
     fixed_layout_empty_row = ph_ln_td_e + ph_content_td + ph_ln_td_e + ph_content_td
     if re.match("^diff --git", s):
@@ -619,7 +621,7 @@ def parse_input(input_file, output_file, input_file_name, output_file_name,
 
         if hunk_size1 == 0 and hunk_size2 == 0:
             empty_buffer(output_file, with_ln=with_ln)
-            add_comment(l, output_file)
+            add_comment(l, output_file, with_ln=with_ln)
             continue
 
         if re.match("^\+", l):
@@ -650,7 +652,7 @@ def parse_input(input_file, output_file, input_file_name, output_file_name,
             continue
         
         empty_buffer(output_file, with_ln=with_ln)
-        add_comment(l, output_file)
+        add_comment(l, output_file, with_ln=with_ln)
 
     empty_buffer(output_file, with_ln=with_ln)
     output_file.write(table_footer.encode(encoding))
