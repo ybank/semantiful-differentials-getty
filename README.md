@@ -13,8 +13,7 @@ Like Continuous Integration (CI) that supports effortless testing, CSI provides 
     *  Linux family (e.g., Ubuntu 14.04+)
     *  Windows 10 Editions, 64-bit with Bash shell (Windows Subsystem for Linux)
   * Programming Languages and Tools:
-    * [Java (SDK 7)](http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html)
-      * [Maven (3.x)](https://maven.apache.org/) (needs customization, see next section)
+    * [Java (SDK 7)](http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html) and [Maven (3.x)](https://maven.apache.org/)
     * [Python (2.7.x)](https://www.python.org/)
   * Version Control System:
     * [Git 2.2.x](https://git-scm.com/)
@@ -28,16 +27,13 @@ The projects Getty can analyze should satisfy the following criteria:
 \*Disclaimer of [Maven multi-module](https://maven.apache.org/guides/mini/guide-multiple-modules.html) project support - The mechanism (reactor) in Maven that handles multi-module projects collects all available modules (sub-projects), sorts and builds all selected ones in their correct build order. The use of multiple modules remains controversal ([discussion in reddit](https://www.reddit.com/r/programming/comments/1ns6ae/maven_is_broken_by_design/?st=itjkarzb&sh=4aee9c04), [discussion in stackoverflow](http://stackoverflow.com/questions/11730791/why-and-when-to-create-a-multi-module-maven-project), etc.). As a more general case, Getty targets single-module Maven projects. Though Getty does not provide direct support towards multi-module projects, however, you can still analyze each of their included single modules separately.
 
 ###*Prep*
-  * Confirm system requirements are met: all executables should be set on your path and you can run them without specifying full path. For example:
+  * Confirm system requirements are met: all executables should be set on your path and you can run them __without specifying full path__. For example:
   
   ```bash
   $ java -version
   java version "1.7.0_71"
   Java(TM) SE Runtime Environment (build 1.7.0_71-b14)
   Java HotSpot(TM) 64-Bit Server VM (build 24.71-b01, mixed mode)
-  
-  $ python --version
-  Python 2.7.11
   
   $ mvn -v
   Apache Maven 3.2.1 (ea8b2b07643dbb1b84b6d16e1f08391b666bc1e9; 2014-02-14T09:37:52-08:00)
@@ -47,16 +43,11 @@ The projects Getty can analyze should satisfy the following criteria:
   Default locale: en_US, platform encoding: UTF-8
   OS name: "mac os x", version: "10.11.5", arch: "x86_64", family: "mac"
   
+  $ python --version
+  Python 2.7.11
+  
   $ git --version
   git version 2.2.1
-  ```
-  
-  * Install customized surefire plugin
-  
-  ```bash
-  $ git clone https://github.com/ybank/maven-surefire-getty.git
-  $ cd maven-surefire-getty
-  $ mvn install -DskipTests -Drat.skip=true -Dcheckstyle.skip=true -Dmaven.plugin.skip=true
   ```
 
 ###*Using Getty*
@@ -72,7 +63,7 @@ The projects Getty can analyze should satisfy the following criteria:
   ```bash
   $ /path/to/your/Getty/semantiful-differentials-getty/getty/csi --help
   villa.jar path: /your/path/to/villa.jar
-  junit-x-getty.jar path: /your/path/to/junit-4.12-getty.jar
+  junit-x-getty.jar path: /your/path/to/junit-4.13-getty.jar
   jdyncg-0.1-getty-dycg-agent.jar path: /your/path/to/jdyncg-0.4-getty-dycg-agent.jar
   
   == Usage ==
