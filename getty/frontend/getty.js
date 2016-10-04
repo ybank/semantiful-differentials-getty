@@ -187,7 +187,7 @@ function real_name(s) {
 
 function fsformat(s) {
 	s = real_name(s);
-	return s.replace(":", "_", "g").replace("$", "_", "g").replace(/\./g, '_');
+	return s.replace(/:/g, "_").replace(/\$/g, "_").replace(/\./g, '_');
 }
 
 function name_to_path(m, hash_value) {
@@ -315,7 +315,7 @@ function methodInvsCompareDiv(method_name) {
 	if (targetInvComp == undefined)
 		// return htmlContent = "Choose a neighbor target to show its invariant change";
 		compareInvs = "<div>No invariants inferred for <b>" +
-			method_name.replace("<", "&lt;", "g").replace(">", "&gt;", "g") + "</b></div>";
+			method_name.replace(/</g, "&lt;").replace(/>/g, "&gt;") + "</b></div>";
 	else
 		compareInvs = targetInvComp.outerHTML;
 	
@@ -387,7 +387,9 @@ var common_prefix_length = 0;
 
 function bolden_for_modified(method_name) {
 	display_name =
-		method_name.substring(common_prefix_length).replace("<", "&lt;", "g").replace(">", "&gt;", "g");
+		method_name.substring(common_prefix_length)
+			.replace(/</g, "&lt;").replace(/>g/, "&gt;")
+			.replace(/:/g, ":&#8203;").replace(/\$/g, "&#8203;$");
 	if (all_modified_targets.contains(method_name))
 		return "<u>" + display_name + "</u>";
 	else

@@ -115,7 +115,7 @@ div.link-button-tabs-bottom {
 	padding: 0 4px 0 4px;
 }
 div.inv-cmp-title { margin: 8px 0px 4px 0px; }
-table#neighbors a { text-decoration: none; display:inline-block; }
+table#neighbors a { text-decoration: none; display: inline-block; }
 table#neighbors span { display:inline-block; }
 .tooltip {
     position: absolute;
