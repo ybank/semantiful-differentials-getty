@@ -80,7 +80,7 @@ basic_html_hdr = """<!DOCTYPE html>
 """
 
 html_hdr = basic_html_hdr + """
-<body>
+<body style='overflow-y:scroll;'>
     __getty_stub__
     <div style='padding-left:4px;' id='sh-srcdiff-switch'>
       <div class='menu-words' style='margin: 24px 0 8px 0;'>
