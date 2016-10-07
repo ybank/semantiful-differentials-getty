@@ -118,7 +118,7 @@ The projects Getty can analyze should satisfy the following criteria:
   
     `/path/to/your/example/project.__getty_output__/iso_19f4281_a562db1/sema.diff.html`
   
-  [This UI demo](http://sosa01.ucsd.edu:8000/sema.diff.html) shows the above view. For best viewing results, [Safari](http://www.apple.com/safari/), [Chrome](https://www.google.com/chrome/) and [Firefox](https://www.mozilla.org/en-US/firefox/new/) are recommanded to open the rendered html pages. We have not tested our results on Internet Explorer (IE) so it is not currently recommended.
+  [This UI demo](http://sosa01.ucsd.edu:8000/sema.diff.html) shows the above view. For best viewing results, [Firefox](https://www.mozilla.org/en-US/firefox/new/), [Safari](http://www.apple.com/safari/) and [Chrome](https://www.google.com/chrome/) are recommanded to open the rendered html pages. On Windows 10, [Internet Explorer](https://www.microsoft.com/en-us/download/internet-explorer.aspx) and [Edge](https://www.microsoft.com/en-us/windows/microsoft-edge) are also good to open and view results.
   
   That's it!
 

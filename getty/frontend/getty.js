@@ -361,11 +361,11 @@ function methodInvsCompareDiv(method_name) {
 
 var neighborhood_table =
 	"<table id='neighbors'>\n" +  
-	"<tr><td></td><td id='neighbor-north' class='exist-neighbor'>north</td><td></td><tr>\n" +
-	"<tr><td id='neighbor-west' class='exist-neighbor'>west</td>\n" + 
-	"<td id='neighbor-center' class='exist-neighbor'>center</td>" + 
-	"<td id='neighbor-east' class='exist-neighbor'>east</td><tr>\n" +
-	"<tr><td></td><td id='neighbor-south' class='exist-neighbor'>south</td><td></td><tr>\n" +
+	"<tr><td></td><td id='neighbor-north' class='exist-neighbor'>north</td><td></td></tr>\n" +
+	"<tr><td id='neighbor-west' class='exist-neighbor'>west</td>" +
+	"<td id='neighbor-center' class='exist-neighbor'>center</td>" +
+	"<td id='neighbor-east' class='exist-neighbor'>east</td></tr>\n" +
+	"<tr><td></td><td id='neighbor-south' class='exist-neighbor'>south</td><td></td></tr>\n" +
 	"</table>\n";
 
 // common_package discovered and set by getty
@@ -515,7 +515,12 @@ function selected_show_hide() {
 
 function structure_neighbors(method_name) {
 	$('div#csi-output-neighbors').html(neighborhood_table);
-	$('table#neighbors td#neighbor-center').html("<&nbsp;" + bolden_for_modified(method_name) + "&nbsp;>");
+	center_show = "[&nbsp;" + bolden_for_modified(method_name) + "&nbsp;]";
+	if (all_whose_inv_changed.contains(method_name))
+		center_show = "<span style='color:red;'>" + center_show + "</span>";
+	else
+		center_show = "<span style='color:darkgray;'>" + center_show + "</span>";
+	$('table#neighbors td#neighbor-center').html(center_show);
 	update_neighbor(method_name, 'north', post_affected_caller_of, prev_affected_caller_of);
 	update_neighbor(method_name, 'south', post_affected_callee_of, prev_affected_callee_of);
 	update_neighbor(method_name, 'west', post_affected_pred_of, prev_affected_pred_of);
