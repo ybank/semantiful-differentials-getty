@@ -214,9 +214,9 @@ active_lbtn_style = {"color": "blue", "background": "whitesmoke"};
 inactive_lbtn_style = {"color": "gray", "background": "linear-gradient(whitesmoke, lightgray)"};
 
 function show_src_or_inv(which) {
+	$('div#csi-output-invcomp .addition-invdiff-output-options').hide();
+	$('a.src-inv-button-link').css(inactive_lbtn_style);
 	if (which == "inv") {
-		$('iframe.srctip').hide();
-		$('iframe.srcdifftip').hide();
 		tfs = fsformat(current_method_name)
 		switch (iso_type) {
 			case "ni":
@@ -239,17 +239,13 @@ function show_src_or_inv(which) {
 				console.log("incorrect iso_type: " + iso_type);
 		}
 		$('iframe.invtip').css("display", "inline-block");
-		$('a.src-inv-button-link').css(inactive_lbtn_style);
 		$('a#src_inv_btn_4inv').css(active_lbtn_style);
 	} else if (which == "src") {
-		$('iframe.invtip').hide();
-		$('iframe.srcdifftip').hide();
 		anchor_name = fsformat(current_method_name);
 		// reset link with anchor for better display
 		$('iframe#i-left-src').attr('src', name_to_path(current_method_name, prev_hash));
 		$('iframe#i-right-src').attr('src', name_to_path(current_method_name, post_hash));
 		$('iframe.srctip').css("display", "inline-block");
-		$('a.src-inv-button-link').css(inactive_lbtn_style);
 		$('a#src_inv_btn_4src').css(active_lbtn_style);
 		window.setTimeout(function() {
 			$('iframe#i-left-src').ready(function() {
@@ -262,23 +258,20 @@ function show_src_or_inv(which) {
 			});
 		}, load_timeout);
 	} else if (which == "srcdiff") {
-		$('iframe.invtip').hide();
-		$('iframe.srctip').hide();
-		srcdiff_anchor_name = target_anchor_prefix + fsformat(current_method_name);
-		$('iframe#i-mid-srcdiff').attr('src', './src.diff.html');
-		$('iframe.srcdifftip').css("display", "inline-block");
-		$('a.src-inv-button-link').css(inactive_lbtn_style);
+		if (all_modified_targets.contains(current_method_name)) {
+			srcdiff_anchor_name = target_anchor_prefix + fsformat(current_method_name);
+			$('iframe#i-mid-srcdiff').attr('src', './src.diff.html');
+			$('iframe.srcdifftip').css("display", "inline-block");
+			window.setTimeout(function() {
+				$('iframe#i-mid-srcdiff').ready(function() {
+					$('iframe#i-mid-srcdiff').attr('src', './src.diff.html#' + srcdiff_anchor_name);
+				});
+			}, load_timeout);
+		} else {
+			$('div#display-no-diff-msg').show();
+		}
 		$('a#src_inv_btn_4srcdiff').css(active_lbtn_style);
-		window.setTimeout(function() {
-			$('iframe#i-mid-srcdiff').ready(function() {
-				$('iframe#i-mid-srcdiff').attr('src', './src.diff.html#' + srcdiff_anchor_name);
-			});
-		}, load_timeout);
 	} else {
-		$('iframe.invtip').hide();
-		$('iframe.srctip').hide();
-		$('iframe.srcdifftip').hide();
-		$('a.src-inv-button-link').css(inactive_lbtn_style);
 		$('a#src_inv_btn_4none').css(active_lbtn_style);
 	}
 	invdiff_display_with = which;
@@ -295,10 +288,10 @@ function create_src_or_inv_button_link(thetype, theid) {
 		thetext = "Complete Invariants";
 	} else if (thetype == "src") {
 		theparam = "src";
-		thetext = "Source Code (No Method Diff)";
+		thetext = "Source Code";
 	} else if (thetype == "srcdiff") {
 		theparam = "srcdiff";
-		thetext = "Source Code Diff";
+		thetext = "Source Diff";
 	} else {
 		theparam = "none";
 		thetext = "Invariant Diff Only";
@@ -333,10 +326,10 @@ function methodInvsCompareDiv(method_name) {
 		"width:99.2%;height:400px;display:none;padding:4px;border:2px dotted #A8BBA8;";
 	preInvs =
 		"<iframe id='iinvprev' name='iinvprev' src='" + fsname_to_inv_path(theMtd, prev_hash) + "' " +
-		"class='invtip' style='" + ileft + "'></iframe>";
+		"class='invtip addition-invdiff-output-options' style='" + ileft + "'></iframe>";
 	postInvs =
 		"<iframe id='iinvpost' name='iinvpost' src='" + fsname_to_inv_path(theMtd, post_hash) + "' " +
-		"class='invtip' style='" + iright + "'></iframe>";
+		"class='invtip addition-invdiff-output-options' style='" + iright + "'></iframe>";
 	sleft =
 		"width:49%;height:400px;background-color:#333;" +
 		"display:none;position:relative;border:2px dotted #A8BBA8;";
@@ -345,28 +338,25 @@ function methodInvsCompareDiv(method_name) {
 		"display:none;position:absolute;right:15px;border:2px dotted #A8BBA8;";
 	preSrcs =
 		"<iframe id='i-left-src' src='" + name_to_path(method_name, prev_hash) + "#" + anchor_name + "' " +
-		"class='srctip' style='" + sleft + "'></iframe>";
+		"class='srctip addition-invdiff-output-options' style='" + sleft + "'></iframe>";
 	postSrcs =
 		"<iframe id='i-right-src' src='" + name_to_path(method_name, post_hash) + "#" + anchor_name + "' " +
-		"class='srctip' style='" + sright + "'></iframe>";
+		"class='srctip addition-invdiff-output-options' style='" + sright + "'></iframe>";
 	srcDiffs =
 		"<iframe id='i-mid-srcdiff' src='" + name_to_path(method_name, post_hash) + "#" + anchor_name + "' " +
-		"class='srcdifftip' style='" + sdiff + "'></iframe>";
-	src_tab_choice = "";
-	if (all_modified_targets.contains(method_name)) {
-		if (invdiff_display_with == 'src') invdiff_display_with = 'srcdiff';
-		src_tab_choice = create_src_or_inv_button_link("srcdiff", "src_inv_btn_4srcdiff");
-	} else {
-		if (invdiff_display_with == 'srcdiff') invdiff_display_with = 'src';
-		src_tab_choice = create_src_or_inv_button_link("src", "src_inv_btn_4src");
-	}
+		"class='srcdifftip addition-invdiff-output-options' style='" + sdiff + "'></iframe>";
+	no_diff_msg = "<div id='display-no-diff-msg' class='addition-invdiff-output-options'" +
+						"style='margin: 8px 4px; text-align: center;'>" +
+					"Its source code is NOT changed.</div>";
+	srcdiff_tab = create_src_or_inv_button_link("srcdiff", "src_inv_btn_4srcdiff");
+	src_tab = create_src_or_inv_button_link("src", "src_inv_btn_4src");
 	mitabs = "<div style='margin-bottom:8px;'>" +
 		"<span class='more-inv-display-option-listing menu-words'>More Display Options:</span>&nbsp;&nbsp;" +
 		"<div class='link-button-tabs-bottom'>" +
 		[create_src_or_inv_button_link("none", "src_inv_btn_4none"),
 		 create_src_or_inv_button_link("inv", "src_inv_btn_4inv"),
-		 src_tab_choice].join("&nbsp;&nbsp;") + "</div></div>";
-	return compareInvs + "<br>" + mitabs + preInvs + postInvs + preSrcs + postSrcs + srcDiffs;
+		 srcdiff_tab, src_tab].join("&nbsp;&nbsp;") + "</div></div>";
+	return compareInvs + "<br>" + mitabs + preInvs + postInvs + preSrcs + postSrcs + srcDiffs + no_diff_msg;
 }
 
 var neighborhood_table =

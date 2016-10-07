@@ -99,6 +99,7 @@ div#csi-output-neighbors table#neighbors {
     font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
     font-size: 0.90em;
 }
+div#csi-output-neighbors table#neighbors td#neighbor-center { font-weight: bold; }
 div#csi-output-neighbors a:hover { background-color: yellow }
 td.exist-neighbor { border: 2px dotted gray; padding:10px; text-align:center; } 
 div#csi-output-invcomp-outer {
