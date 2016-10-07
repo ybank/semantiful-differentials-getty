@@ -81,7 +81,7 @@ The projects Getty can analyze should satisfy the following criteria:
   	  csi < preimage_commit > < postimage_commit > [issue:<ISSUE_NAME>]
   	  csi < ~relative_index > < postimage_commit > [issue:<ISSUE_NAME>]
   	  csi < -preimage_index > < -postimage_index > [issue:<ISSUE_NAME>]
-  	  csi < -preimage_commit > < -postimage_commit > -i
+  	  csi < preimage_commit > < postimage_commit > -i
   ```
 
   * Clone the project to analyze. For example, get the following example project:
