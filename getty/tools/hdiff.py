@@ -88,7 +88,6 @@ html_hdr = basic_html_hdr + """
         {0}
     </div></div>
     <div id='getty-full-code-diff' style="display:none;">
-        <h4 style="margin-top:0px;margin-bottom:0px;">Full Code Differentials</h4>
 """.format(create_show_hide_toggle('btn-sh-sd', 'btn-sh-sd',
                 '$(\"div#getty-full-code-diff\").toggle();return false;', checked=False))
 
