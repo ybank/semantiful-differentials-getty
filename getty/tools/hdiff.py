@@ -131,7 +131,7 @@ line1, line2 = 0, 0
 hunk_off1, hunk_size1, hunk_off2, hunk_size2 = 0, 0, 0, 0
 
 # Characters we're willing to word wrap on
-WORDBREAK = " \t;.,/):-"
+WORDBREAK = " \t;.,/)]}:-"
 
 # When the line is too long to be analyzed and shown
 TOO_LONG_MSG = "THIS LINE IS TOO LONG TO BE SHOWN: "
