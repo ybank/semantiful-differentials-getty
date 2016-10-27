@@ -8,6 +8,7 @@ special_junit_version = "4.11"
 
 # whether to infer invariants for tests
 analyze_tests = True
+analyze_less_tests = True
 
 # whether to limit interested into a relatively smaller set
 limit_interest = True

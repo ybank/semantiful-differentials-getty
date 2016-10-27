@@ -400,8 +400,6 @@ def visit(junit_path, sys_classpath, agent_path, cust_mvn_repo, separate_go, pre
         middle pass: set common interests
     '''
     refined_target_set = old_refined_target_set | new_refined_target_set
-    if config.analyze_tests:
-        refined_target_set = refined_target_set | set(old_changed_tests) | set(new_changed_tests)
     
     html.src_to_html(refined_target_set, go, prev_hash, install_line_numbers=config.jump_to_method)
     html.src_to_html(refined_target_set, go, post_hash, install_line_numbers=config.jump_to_method)
