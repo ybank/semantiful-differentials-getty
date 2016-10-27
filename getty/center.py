@@ -120,7 +120,7 @@ def seq_get_invs(target_set_index_pair, java_cmd, junit_torun, go, this_hash):
         out_file = go+"_getty_inv__"+target_ff+"__"+this_hash+"_.inv.out"
         run_printinv = \
             " ".join([java_cmd, "daikon.PrintInvariants", "--format Daikon", \
-                      "--ppt-select-pattern=\'"+daikon.dfformat(tgt)+"\'", \
+                      "--ppt-select-pattern=\'"+daikon.dpformat(tgt)+"\'", \
                       "--output", out_file, inv_gz])
         if SHOW_DEBUG_INFO:
             current_count += 1

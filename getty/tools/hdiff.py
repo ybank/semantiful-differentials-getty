@@ -467,6 +467,8 @@ def add_line(s1, s2, output_file, with_ln=True):
             (orig2 is not None and str(orig2).strip().startswith("================"))) or \
              ((orig2 is None or str(orig2).strip() == "") and 
               (orig1 is not None and str(orig1).strip().startswith("================"))) or \
+             ((orig1 is not None and str(orig1).strip().startswith("================")) and
+              (orig2 is not None and str(orig2).strip().startswith("================"))) or \
              (orig1 is None and orig2 is not None and str(orig2).strip() == "") or \
              (orig2 is None and orig1 is not None and str(orig1).strip() == "") or \
              (ignore_all_ws and str(orig1).strip() == "" and str(orig2).strip() == ""):

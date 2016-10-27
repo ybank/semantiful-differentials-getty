@@ -169,6 +169,10 @@ var post_affected_pred_of;  // = new buckets.Dictionary();
 var post_affected_succ_of;  // = new buckets.Dictionary();
 
 function real_name(s) {
+	return s;
+}
+
+function real_name_ff(s) {
 	colon_index = s.lastIndexOf(":");
 	if (colon_index == -1)
 		return s;
@@ -179,14 +183,14 @@ function real_name(s) {
 		mtd_name = s.substring(chop_index+1, colon_index);
 		return s.substring(0, colon_index+1) + mtd_name;
 	} else if (s.substring(colon_index+1) == "<clinit>") {
-		return s.substring(0, colon_index);
+		return s.substring(0, colon_index) + ".class.init";
 	} else {
 		return s;
 	}
 }
 
 function fsformat(s) {
-	s = real_name(s);
+	s = real_name_ff(s);
 	return s.replace(/:/g, "_").replace(/\$/g, "_").replace(/\./g, '_');
 }
 

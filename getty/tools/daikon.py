@@ -6,7 +6,7 @@
 # package.class:<init> -> pachage.class:class
 # package.class:<clinit> -> package.class
 # package.outerclass$innerclass:<init> -> package.outerclass$innerclass:innerclass
-def real_name(target):
+def real_name_ff(target):
     colon_index = target.rfind(":")
     if colon_index == -1:
         # not a target, but a class name, for example
@@ -18,9 +18,36 @@ def real_name(target):
         methodname = target[chop_i+1:colon_index]
         return target[:colon_index+1] + methodname
     elif target[colon_index+1:] == "<clinit>":
-        return target[:colon_index]
+        return target[:colon_index] + ".class.init"
     else:
         return target
+
+
+# Recognize constructor and reformat it
+# pachage.class:method -> package.class:method
+# package.class:<init> -> pachage.class:class
+# package.class:<clinit> -> package.class
+# package.outerclass$innerclass:<init> -> package.outerclass$innerclass:innerclass
+def real_name_pi(target):
+    colon_index = target.rfind(":")
+    if colon_index == -1:
+        # not a target, but a class name, for example
+        return target
+    elif target[colon_index+1:] == "<init>":
+        prd_i = target.rfind(".")
+        dlr_i = target.rfind("$")
+        chop_i = max(prd_i, dlr_i)
+        methodname = target[chop_i+1:colon_index]
+        return target[:colon_index+1] + methodname
+    elif target[colon_index+1:] == "<clinit>":
+        return target[:colon_index] + ":::CLASS"
+    else:
+        return target
+
+
+# real name should be just as it is from BCEL!
+def real_name(target):
+    return target
 
 
 def real_names(targets):
@@ -129,9 +156,9 @@ def reformat_all(targets, more_ppts=False):
     return "|".join(all_to_go)
 
 
-# reformat one method (etc.) so it is recognizable by Daikon filter
-def dfformat(target, more_ppts=False):
-    target = real_name(target)
+# reformat one method (etc.) so it is recognizable by Daikon.PrintInvariants filter
+def dpformat(target, more_ppts=False):
+    target = real_name_pi(target)
     colon_index = target.rfind(":")
     if colon_index == -1:
         if more_ppts:
@@ -263,5 +290,5 @@ def target_s2m(target_set):
 # reformat one target so it is recognizable by Daikon filter
 def fsformat(target, for_daikon=True):
     if for_daikon:
-        target = real_name(target)
+        target = real_name_ff(target)
     return target.replace(":", "_").replace("$", "_").replace(".", "_")
