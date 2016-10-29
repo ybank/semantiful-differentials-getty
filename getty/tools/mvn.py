@@ -57,8 +57,8 @@ def junit_torun_str(cust_mvn_repo):
     else:
         local_repo = ""
         if config.effortless_mvn_setup:
-            local_repo = " -Dmaven.repo.local=" + cust_mvn_repo
-        mvn_cmd = "mvn" + local_repo + \
+            local_repo = "-Dmaven.repo.local=" + cust_mvn_repo
+        mvn_cmd = "mvn " + local_repo + \
             " org.apache.maven.plugins:maven-surefire-plugin:2.19.2-SNAPSHOT:test" + \
             " | " + "grep __for__getty__\ __junit"
         output_raw = subprocess.check_output(mvn_cmd, shell=True).strip()

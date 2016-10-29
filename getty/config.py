@@ -35,6 +35,7 @@ def compose_block_daikon_invs_exp(blacklist):
         exps.append("--config_option " + blackout + "=false")
     return " ".join(exps)
 blacked_daikon_invs_exp = compose_block_daikon_invs_exp(blocked_daikon_invs)
+output_inv_format = "Daikon"
 
 # whether to use compressed inv file
 compress_inv = False

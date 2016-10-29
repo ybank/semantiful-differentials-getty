@@ -157,8 +157,13 @@ def reformat_all(targets, more_ppts=False):
 
 
 # reformat one method (etc.) so it is recognizable by Daikon.PrintInvariants filter
+# filter pattern example:
+#     --ppt-select-pattern="^org\.apache\.commons\.csv\.QuoteMode.QuoteMode\(.*String, .*int\):::EXIT"
 def dpformat(target, more_ppts=False):
     target = real_name_pi(target)
+    tci = target.rfind(":::")
+    if tci != -1:
+        return "^" + target[:tci].replace(":", ".").replace(".", "\.").replace("$", "\$") + target[tci:]
     colon_index = target.rfind(":")
     if colon_index == -1:
         if more_ppts:

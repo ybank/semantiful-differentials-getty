@@ -83,35 +83,15 @@ def seq_get_invs(target_set_index_pair, java_cmd, junit_torun, go, this_hash):
     daikon_display_args = " ".join(daikon_control_opt_list)
     # run Chicory + Daikon (online) for invariants without trace I/O
     run_chicory_daikon = \
-        " ".join([java_cmd, "daikon.Chicory --daikon-online --exception-handling", \
-                  "--daikon-args=\""+daikon_display_args, \
-                  "-o", inv_gz+"\"", \
-                  "--ppt-select-pattern=\""+select_pattern+"\"", \
+        " ".join([java_cmd, "daikon.Chicory --daikon-online --exception-handling",
+                  "--daikon-args=\""+daikon_display_args,
+                  "-o", inv_gz+"\"",
+                  "--ppt-select-pattern=\""+select_pattern+"\"",
                   junit_torun])
     if SHOW_DEBUG_INFO:
         print "\n=== Daikon:Chicory+Daikon(online) command to run: \n" + run_chicory_daikon
     os.sys_call(run_chicory_daikon, ignore_bad_exit=True)
         
-#     # run Chicory for trace
-#     run_chicory = \
-#         " ".join([java_cmd, "daikon.Chicory --exception-handling", \
-#                   "--dtrace-file="+rel_go(go)+"_getty_trace_"+this_hash+"_."+index+".dtrace.gz", \
-#                   "--ppt-select-pattern=\""+select_pattern+"\"", \
-#                   junit_torun])
-#     if SHOW_DEBUG_INFO:
-#         print "\n=== Daikon:Chicory command to run: \n" + run_chicory
-#     os.sys_call(run_chicory, ignore_bad_exit=True)
-#     
-#     # run Daikon for invariants
-#     run_daikon = \
-#         " ".join([java_cmd, "daikon.Daikon --show_progress --no_text_output", \
-#                   go+"_getty_trace_"+this_hash+"_."+index+".dtrace.gz", \
-#                   "-o", inv_gz+"\"", \
-# #                   "--ppt-select-pattern=\""+select_pattern+"\"", \
-#                   junit_torun])
-#     if SHOW_DEBUG_INFO:
-#         print "\n=== Daikon:Daikon command to run: \n" + run_daikon
-#     os.sys_call(run_daikon, ignore_bad_exit=True)
     if SHOW_DEBUG_INFO:
         current_count = 0
         total_count = len(target_set)
@@ -119,8 +99,9 @@ def seq_get_invs(target_set_index_pair, java_cmd, junit_torun, go, this_hash):
         target_ff = daikon.fsformat(tgt)
         out_file = go+"_getty_inv__"+target_ff+"__"+this_hash+"_.inv.out"
         run_printinv = \
-            " ".join([java_cmd, "daikon.PrintInvariants", "--format Daikon", \
-                      "--ppt-select-pattern=\'"+daikon.dpformat(tgt)+"\'", \
+            " ".join([java_cmd, "daikon.PrintInvariants",
+                      "--format", config.output_inv_format,
+                      "--ppt-select-pattern=\'"+daikon.dpformat(tgt)+"\'",
                       "--output", out_file, inv_gz])
         if SHOW_DEBUG_INFO:
             current_count += 1
