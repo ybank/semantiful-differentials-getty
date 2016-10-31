@@ -150,7 +150,11 @@ orig_header_regex = "^(\[(a|b)/\] -- ).*:::(ENTER|EXIT|CLASS|OBJECT|THROW).*"
 
 # TODO: ideally, the table should be parsed to decide whether it is empty
 def is_empty(table):
-    return len(table) == 221
+    return (
+        table.count("<tr") <= 2 and
+        table.count("<tr class=\"diffmisc\">") <= 1 and
+        table.count("<tr>") <= 1
+    )
 
 
 def sane(x):
@@ -884,7 +888,7 @@ def _getty_append_invdiff(html_string, targets, go, prev_hash, curr_hash, iso):
     ignore_all_ws = True
     anchor = "<br>{{{__getty_invariant_diff__}}}<br>"
     for target in sorted(targets, reverse=True):
-        if config.install_diffinv_only and solver.is_different(target, go, prev_hash, curr_hash):
+        if config.install_diffinv_only:
             print '  -- processing inv diff for ' + target
             tfs = fsformat(target)
             osot_invf = go + "_getty_inv__" + tfs + "__" + prev_hash + "_.inv.out"

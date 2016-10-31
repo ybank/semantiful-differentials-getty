@@ -82,7 +82,7 @@ def refine_targets(target_set, test_set,
             all_neighbors = set()
             all_related = all_related | all_for_current
             for tgt in all_for_current:
-                if tgt in test_set and not config.analyze_less_tests:
+                if tgt not in test_set or not config.analyze_less_tests:
                     all_neighbors |= _neighbor_for(tgt, pred_of)
                     all_neighbors |= _neighbor_for(tgt, succ_of)
                     all_neighbors |= _neighbor_for(tgt, caller_of)
