@@ -73,7 +73,7 @@ def refine_targets(target_set, test_set,
                    inner_dataflow_methods, outer_dataflow_methods):
     refined_target_set = deepcopy(target_set)
     if config.analyze_tests:
-        refined_target_set = refined_target_set | test_set
+        refined_target_set = refined_target_set | test_set | set(changed_tests)
     if config.limit_interest:
         # do not use static call graph information for now, but consider to use it for better results!
         all_related = set()
