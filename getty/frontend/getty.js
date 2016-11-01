@@ -520,7 +520,8 @@ function selected_show_hide() {
 function structure_neighbors(method_name) {
 	$('div#csi-output-neighbors').html(neighborhood_table);
 	center_show = "[&nbsp;" + bolden_for_modified(method_name) + "&nbsp;]";
-	if (all_whose_inv_changed.contains(method_name))
+	if (all_whose_inv_changed.contains(method_name) ||
+			all_whose_clsobj_inv_changed.contains(method_name))
 		center_show = "<span style='color:red;'>" + center_show + "</span>";
 	else
 		center_show = "<span style='color:darkgray;'>" + center_show + "</span>";
