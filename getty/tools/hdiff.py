@@ -492,11 +492,11 @@ def add_line(s1, s2, output_file, with_ln=True):
         om1 = re.match(orig_header_regex, str(orig1))
         if om1:
             m1 = re.match(header_regex, str(s1))
-            s1 = str(s1)[len(m1.group(1)):].strip()
+            s1 = str(s1)[len(m1.group(1)):].strip() if m1 else str(s1).strip()
         om2 = re.match(orig_header_regex, str(orig2))
         if om2:
             m2 = re.match(header_regex, str(s2))
-            s2 = str(s2)[len(m2.group(1)):].strip()
+            s2 = str(s2)[len(m2.group(1)):].strip() if m2 else str(s2).strip()
 
         if s1 != None and s1 != "":
             cached_header += (('<td class="diffline">%s </td>' % _ln(line1, with_ln)).encode(encoding))
