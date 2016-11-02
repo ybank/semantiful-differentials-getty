@@ -34,7 +34,7 @@ def compose_block_daikon_invs_exp(blacklist):
     for blackout in blacklist:
         exps.append("--config_option " + blackout + "=false")
     return " ".join(exps)
-blacked_daikon_invs_exp = compose_block_daikon_invs_exp(blocked_daikon_invs)
+blocked_daikon_invs_exp = compose_block_daikon_invs_exp(blocked_daikon_invs)
 output_inv_format = "Daikon"
 
 # whether to use compressed inv file
@@ -57,13 +57,15 @@ profile_performance = False
 # review options
 review_auto_open = False
 install_extra_tips = False
+install_inv_tips = False
+install_diffinv_only = True
 jump_to_method = True
-
-# misc
-version_time = str(int(time.time()))
 max_context_line = 65536
 max_diff_lines = 1000
 max_diff_line_size = 1000
+change_alignment = True
+similarity_bar = 0.8
+
+# misc
+version_time = str(int(time.time()))
 use_tmp_files = False
-install_inv_tips = False
-install_diffinv_only = True

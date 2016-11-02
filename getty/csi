@@ -137,7 +137,7 @@ def set_args():
             prev_hash = sys.argv[1]
             post_hash = get_hash("HEAD")
     elif len(sys.argv) == 3 or len(sys.argv) == 4:
-        hash_regex = "([a-z0-9]{5,})(~(\d+)){0,1}"
+        hash_regex = "(([a-z0-9]{5,})|HEAD)(~(\d+)*){0,1}"
         index_regex = "(^-(\d+))|0"
         absolute_index_regex = "^~(\d+)"
         arg1_groups = re.match(hash_regex, sys.argv[1])

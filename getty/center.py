@@ -27,7 +27,7 @@ def rel_go(go):
 def sort_txt_inv(out_file):
     inv_map = {}
     current_key = None
-    with open(out_file, 'r') as f:
+    with open(out_file, 'r+') as f:
         lines = f.read().strip().split("\n")
         if lines != ['']:
             for line in lines:
@@ -39,7 +39,8 @@ def sort_txt_inv(out_file):
                     inv_map[current_key] = []
                 else:
                     inv_map[current_key].append(line)
-    with open(out_file, 'w') as f:
+        f.seek(0)
+        f.truncate()
         if lines != [''] and len(inv_map):
             for title in sorted(inv_map):
                 f.write("\n================\n")
@@ -79,7 +80,7 @@ def seq_get_invs(target_set_index_pair, java_cmd, junit_torun, go, this_hash):
         daikon_control_opt_list.append("--omit_from_output 0r")
     if config.daikon_format_only:
         daikon_control_opt_list.append("--format Daikon")
-    daikon_control_opt_list.append(config.blacked_daikon_invs_exp)
+    daikon_control_opt_list.append(config.blocked_daikon_invs_exp)
     daikon_display_args = " ".join(daikon_control_opt_list)
     # run Chicory + Daikon (online) for invariants without trace I/O
     run_chicory_daikon = \

@@ -38,7 +38,7 @@
 import sys, re, htmlentitydefs, getopt, StringIO, codecs, datetime, difflib, json
 
 import config
-from analysis import solver
+# from analysis import solver
 from tools.daikon import fsformat
 from tools.html import inv_to_html, create_show_hide_toggle
 from tools.os import from_sys_call_enforce, remove_many_files
@@ -564,14 +564,46 @@ def empty_buffer(output_file, with_ln=True):
                 l0.append(l[0])
             if l[1] != None:
                 l1.append(l[1])
-        max_len = (len(l0) > len(l1)) and len(l0) or len(l1)
-        for i in range(max_len):
-            s0, s1 = "", ""
-            if i < len(l0):
-                s0 = l0[i]
-            if i < len(l1):
-                s1 = l1[i]
-            add_line(s0, s1, output_file, with_ln=with_ln)
+        
+        l0size = len(l0)
+        l1size = len(l1)
+        if config.change_alignment:
+            difflines = []
+            left_index = 0
+            right_index = 0
+            threshold = config.similarity_bar
+            while left_index < l0size and right_index < l1size:
+                fm_index = None
+                for i in range(right_index, l1size):
+                    similarity = difflib.SequenceMatcher(a=l0[left_index], b=l1[i]).ratio()
+                    if similarity >= threshold:
+                        fm_index = i
+                        break
+                if fm_index is None:
+                    difflines.append((l0[left_index], None))
+                else:
+                    for j in range(right_index, fm_index):
+                        difflines.append((None, l1[j]))
+                    difflines.append((l0[left_index], l1[fm_index]))
+                    right_index = fm_index + 1
+                left_index += 1
+            if left_index < l0size:
+                for k in range(left_index, l0size):
+                    difflines.append((l0[k], None))
+            if right_index < l1size:
+                for l in range(right_index, l1size):
+                    difflines.append((None, l1[l]))
+            for aline in difflines:
+                add_line(aline[0], aline[1], output_file, with_ln=with_ln)
+        else:
+            max_len = max(l0size, l1size)
+            for i in range(max_len):
+                s0, s1 = "", ""
+                if i < l0size:
+                    s0 = l0[i]
+                if i < l1size:
+                    s1 = l1[i]
+                add_line(s0, s1, output_file, with_ln=with_ln)
 
     add_cpt, del_cpt = 0, 0
     buf = []
