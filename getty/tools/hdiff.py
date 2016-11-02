@@ -508,13 +508,21 @@ def add_line(s1, s2, output_file, with_ln=True):
             cached_header += ('<td colspan="2"></td>')
 
         if s2 != None and s2 != "":
-            cached_header += (('<td class="diffline">%s </td>' % _ln(line2, with_ln)).encode(encoding))
+            if with_ln:
+                cached_header += (
+                    ('<td class="diffline">%s </td>' % _ln(line2, with_ln)).encode(encoding))
+            else:
+                cached_header += (
+                    ('<td class="diffline with_liner">%s </td>' % _ln(line2, with_ln)).encode(encoding))
             cached_header += ('<td class="diffpresent">')
             cached_header += (convert(s2, linesize=linesize, ponct=1).encode(encoding))
             cached_header += ('</td>')
         else:
             s2 = ""
-            cached_header += ('<td colspan="2"></td>')
+            if with_ln:
+                cached_header += ('<td colspan="2"></td>')
+            else:
+                cached_header += ('<td class="with_liner" colspan="2"></td>')
         cached_header += ('</tr>\n')
     else:
         extra_anchors = ""
@@ -533,13 +541,21 @@ def add_line(s1, s2, output_file, with_ln=True):
             output_file.write('<td colspan="2">' + extra_anchors + '</td>')
     
         if s2 != None and s2 != "":
-            output_file.write(('<td class="diffline">%s </td>' % _ln(line2, with_ln)).encode(encoding))
+            if with_ln:
+                output_file.write(
+                    ('<td class="diffline">%s </td>' % _ln(line2, with_ln)).encode(encoding))
+            else:
+                output_file.write(
+                    ('<td class="diffline with_liner">%s </td>' % _ln(line2, with_ln)).encode(encoding))
             output_file.write('<td class="diffpresent">')
             output_file.write(convert(s2, linesize=linesize, ponct=1).encode(encoding))
             output_file.write('</td>')
         else:
             s2 = ""
-            output_file.write('<td colspan="2"></td>')
+            if with_ln:
+                output_file.write('<td colspan="2"></td>')
+            else:
+                output_file.write('<td class="with_liner" colspan="2"></td>')
         output_file.write('</tr>\n')
     
     if s1 != "":
