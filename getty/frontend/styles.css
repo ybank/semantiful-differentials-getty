@@ -10,7 +10,7 @@ table {
 td.line { color:#8080a0 }
 table.diff tr td.diffpresent { word-wrap: break-word; white-space: pre-wrap; width: 49%; }
 table.diff tr td.diffpresent span { word-wrap: break-word; white-space: pre-wrap; }
-table.diff td.with_liner { border-left: 2px solid #999999; }
+table.diff td.with_liner { border-left: 1px solid #999999; }
 th {
 	background: lightgray;
 	color: #333333;
