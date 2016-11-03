@@ -70,6 +70,7 @@ basic_html_hdr = """<!DOCTYPE html>
             +K/HwIAAAAJUlEQVQI12NYBQQM2IgGBQ4mCIEQW7oyK4phampkGIQAc1G1AQCRxCNbyW92oQAAAABJRU5ErkJggg=="
         type="image/png" />
     <link rel="stylesheet" type="text/css" href="styles.css?ver={6}">
+    <link rel="stylesheet" type="text/css" href="jquery-ui-1.12.1.min.css?ver={6}">
     <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
     <meta property="dc:language" content="{5}" />
     <!--meta property="dc:date" content="{3}" /-->
@@ -373,7 +374,7 @@ def __hunkpath_to_filepath(hp):
         return None
 
 
-def add_filename(f1, f2, output_file):
+def add_filename(f1, f2, output_file, same_table=True):
     global prefile
     global postfile
     prefile = __hunkpath_to_filepath(f1)
@@ -382,6 +383,9 @@ def add_filename(f1, f2, output_file):
     output_file.write(("<tr><th colspan='2'>%s</th>"%convert(display1, linesize=linesize)).encode(encoding))
     display2 = f2 if f2 != "AFTER" else "ADDED"
     output_file.write(("<th colspan='2'>%s</th></tr>\n"%convert(display2, linesize=linesize)).encode(encoding))
+    if not same_table:
+        output_file.write("</table>\n<div class='scrollable-table'>" + table_hdr)
+        add_comment("empty-row", output_file, with_ln=False)
 
 
 def add_hunk(output_file, show_hunk_infos):
@@ -659,7 +663,7 @@ def parse_input(input_file, output_file, input_file_name, output_file_name,
                 if m:
                     file2 = m.groups()[0]
                     break
-            add_filename(file1, file2, output_file)
+            add_filename(file1, file2, output_file, same_table=with_ln)
             hunk_off1, hunk_size1, hunk_off2, hunk_size2 = 0, 0, 0, 0
             continue
 
@@ -709,6 +713,8 @@ def parse_input(input_file, output_file, input_file_name, output_file_name,
 
     empty_buffer(output_file, with_ln=with_ln)
     output_file.write(table_footer.encode(encoding))
+    if not with_ln:
+        output_file.write("\n</div>")
     
     if cont:
         output_file.write(continue_hdr)
@@ -964,9 +970,9 @@ def _getty_append_invdiff(html_string, targets, go, prev_hash, curr_hash, iso):
 def _import_js(html_string, fe_path, go):
     import_script = "<script type=\"text/javascript\" src=\"{0}\"></script>"
     last_import = []
-    for cssfile in ["styles.css", "styles_inv.css", "styles_src.css"]:
+    for cssfile in ["styles.css", "styles_inv.css", "styles_src.css", "jquery-ui-1.12.1.min.css"]:
         from_sys_call_enforce(" ".join(["cp", fe_path + cssfile, go + cssfile]))
-    for jslib in ["jquery-3.1.1.min.js", "jquery.simpletip-1.3.2.js",
+    for jslib in ["jquery-3.1.1.min.js", "jquery-ui-1.12.1.min.js", "jquery.simpletip-1.3.2.js",
                   "buckets.min.js", "run_prettify.js", "getty.js"]:
         from_sys_call_enforce(" ".join(["cp", fe_path + jslib, go + jslib]))
         last_import.append(import_script.format(jslib + "?ver=" + config.version_time))

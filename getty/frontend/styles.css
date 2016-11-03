@@ -28,6 +28,7 @@ span.diffponct { color: #B08080 }
 tr.diffmisc td {}
 tr.diffseparator td {}
 tr.invheader > td { background: #B8B8B8; color: lightyellow; }
+div.scrollable-table { max-height: 320px; overflow: auto; }
 a.special-neighbor-link { color: red }
 a.hidable-mtd-equal-inv { color: darkgray }
 a.output-invc-highlight { color: red! important; text-decoration: none }
@@ -104,11 +105,15 @@ div#csi-output-neighbors table#neighbors td#neighbor-center {
 	font-weight: bold;
 	background: lightyellow;
 }
+div#csi-output-neighbors table#neighbors td div {
+    max-height: 100px;
+    overflow: auto;
+}
 div#csi-output-neighbors a:hover { background-color: yellow }
 div#csi-output-neighbors td.exist-neighbor {
 	border: 2px dotted gray;
-	padding:10px;
-	text-align:center;
+	padding: 8px 4px 8px 4px;
+	text-align: center;
 }
 div#csi-output-invcomp-outer {
     border: 2px solid gray;

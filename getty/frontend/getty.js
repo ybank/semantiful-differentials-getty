@@ -496,7 +496,7 @@ function update_neighbor(method_name, direction, ref_var, ref_prev_var) {
 //		html_content = all_link_elements.join("<br>");
 		html_content = all_link_elements.join("&nbsp;&nbsp;");
 	}
-	$('table#neighbors td#neighbor-' + direction).html(html_content);
+	$('table#neighbors td#neighbor-' + direction).html("<div>" + html_content + "</div>");
 }
 
 function output_inv_diff() {
