@@ -188,7 +188,7 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash, common_package,
         all_considered = set(new_all_src)
     for mtd in all_considered:
         if iso:
-            if is_possibly_different(mtd, go, prev_hash, post_hash):
+            if is_possibly_different(mtd, go, prev_hash, post_hash, preprocessed=True):
                 all_whose_inv_changed.add(mtd);
         else:
             if is_different(mtd, go, prev_hash, post_hash):
@@ -197,7 +197,7 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash, common_package,
     all_whose_clsobj_inv_changed = set()
     for cls in all_classes_set:
         if iso:
-            if is_possibly_different(cls, go, prev_hash, post_hash):
+            if is_possibly_different(cls, go, prev_hash, post_hash, preprocessed=True):
                 all_whose_clsobj_inv_changed.add(cls)
         else:
             if is_different(cls, go, prev_hash, post_hash):

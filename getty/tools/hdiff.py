@@ -139,6 +139,7 @@ TOO_LONG_MSG = "THIS LINE IS TOO LONG TO BE SHOWN: "
 # for temp invariant files for prettier html diff
 PRSV_LEFT = "[a/] -- "
 PRSV_RIGHT = "[b/] -- "
+PRSV_LEN = max(len(PRSV_LEFT), len(PRSV_RIGHT))
 PRSV_TMP = ".tagged.tmp"
 
 # anchor prefix for finding the first line of target change
@@ -485,6 +486,7 @@ def add_line(s1, s2, output_file, with_ln=True):
               (orig2 is not None and str(orig2).strip().startswith("================"))) or \
              (orig1 is None and orig2 is not None and str(orig2).strip() == "") or \
              (orig2 is None and orig1 is not None and str(orig1).strip() == "") or \
+             (orig1 is not None and orig2 is not None and type_name == "unmodified" and not with_ln) or \
              (ignore_all_ws and str(orig1).strip() == "" and str(orig2).strip() == ""):
             if caching_stage:
                 cached_header += (('<tr class="diff-ignore diff%s">' % type_name).encode(encoding))
@@ -574,7 +576,7 @@ def add_line(s1, s2, output_file, with_ln=True):
         line2 += 1
 
 
-inv_header_general_regex = ".*\(.*\):::(ENTER|EXIT(\d*)|THROW(SCOMBINED)?).*"
+inv_header_general_regex = ".*\(.*\):::(ENTER|EXIT(\d*)|THROW(S)?(COMBINED)?).*"
 def _calc_similarity(a, b, ma=None, mb=None):
     if ma is None:
         ma = re.match(inv_header_general_regex, a)
@@ -583,15 +585,24 @@ def _calc_similarity(a, b, ma=None, mb=None):
     if ma and mb:
         if ma.group(1) != mb.group(1):
             return 0
-        elif ((ma.group(2) != mb.group(2) or ma.group(3) != mb.group(3)) and
+        elif ((ma.group(2) != mb.group(2) or
+               ma.group(3) != mb.group(3) or
+               ma.group(4) != mb.group(4)) and
               ((ma.group(2) is None and mb.group(2) is not None) or
                (ma.group(2) is not None and mb.group(2) is None) or
                (ma.group(3) is None and mb.group(3) is not None) or
-               (ma.group(3) is not None and mb.group(3) is None))):
+               (ma.group(3) is not None and mb.group(3) is None) or
+               (ma.group(4) is None and mb.group(4) is not None) or
+               (ma.group(4) is not None and mb.group(4) is None))):
             return 0
     elif ma or mb:
         return 0
-    return difflib.SequenceMatcher(a=a, b=b).ratio()
+    if ma and mb:
+        raw_a = a[PRSV_LEN:]
+        raw_b = b[PRSV_LEN:]
+        return difflib.SequenceMatcher(a=raw_a, b=raw_b).ratio()
+    else:
+        return difflib.SequenceMatcher(a=a, b=b).ratio()
 
 
 def empty_buffer(output_file, with_ln=True):
