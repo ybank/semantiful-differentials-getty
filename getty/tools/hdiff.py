@@ -152,8 +152,14 @@ orig_header_regex = "^(\[(a|b)/\] -- ).*:::(ENTER|EXIT|CLASS|OBJECT|THROW).*"
 # TODO: ideally, the table should be parsed to decide whether it is empty
 def is_empty(table):
     return (
+        table.count("<table class=\"diff\">") == 1 and
         table.count("<tr") <= 2 and
         table.count("<tr class=\"diffmisc\">") <= 1 and
+        table.count("<tr>") <= 1
+    ) or (
+        table.count("<table class=\"diff\">") == 2 and
+        table.count("<tr") <= 3 and
+        table.count("<tr class=\"diffmisc\">") <= 2 and
         table.count("<tr>") <= 1
     )
 
@@ -568,6 +574,26 @@ def add_line(s1, s2, output_file, with_ln=True):
         line2 += 1
 
 
+inv_header_general_regex = ".*\(.*\):::(ENTER|EXIT(\d*)|THROW(SCOMBINED)?).*"
+def _calc_similarity(a, b, ma=None, mb=None):
+    if ma is None:
+        ma = re.match(inv_header_general_regex, a)
+    if mb is None:
+        mb = re.match(inv_header_general_regex, b)
+    if ma and mb:
+        if ma.group(1) != mb.group(1):
+            return 0
+        elif ((ma.group(2) != mb.group(2) or ma.group(3) != mb.group(3)) and
+              ((ma.group(2) is None and mb.group(2) is not None) or
+               (ma.group(2) is not None and mb.group(2) is None) or
+               (ma.group(3) is None and mb.group(3) is not None) or
+               (ma.group(3) is not None and mb.group(3) is None))):
+            return 0
+    elif ma or mb:
+        return 0
+    return difflib.SequenceMatcher(a=a, b=b).ratio()
+
+
 def empty_buffer(output_file, with_ln=True):
     global buf
     global add_cpt
@@ -594,19 +620,26 @@ def empty_buffer(output_file, with_ln=True):
             threshold = config.similarity_bar
             while left_index < l0size and right_index < l1size:
                 fm_index = None
+                ma = re.match(inv_header_general_regex, l0[left_index])
                 for i in range(right_index, l1size):
-                    similarity = difflib.SequenceMatcher(a=l0[left_index], b=l1[i]).ratio()
+                    similarity = _calc_similarity(l0[left_index], l1[i], ma=ma)
                     if similarity >= threshold:
                         fm_index = i
                         break
                 if fm_index is None:
                     difflines.append((l0[left_index], None))
+                    left_index += 1
+                    if ma:
+                        while (left_index < l0size and
+                               not re.match(inv_header_general_regex, l0[left_index])):
+                            difflines.append((l0[left_index], None))
+                            left_index += 1
                 else:
                     for j in range(right_index, fm_index):
                         difflines.append((None, l1[j]))
                     difflines.append((l0[left_index], l1[fm_index]))
                     right_index = fm_index + 1
-                left_index += 1
+                    left_index += 1
             if left_index < l0size:
                 for k in range(left_index, l0size):
                     difflines.append((l0[k], None))
