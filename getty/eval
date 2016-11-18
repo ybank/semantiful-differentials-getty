@@ -1,0 +1,122 @@
+#!/usr/bin/env python
+
+import re, sys
+from os import getcwd, listdir
+from os.path import isfile
+
+from tools.daikon import fsformat
+from tools.ex import read_str_from
+from tools.hdiff import is_empty
+
+
+wrapped_fsname_regex = "_getty_inv__(.*)__.*"
+
+
+def get_all_inv_files(p):
+    return set([f for f in listdir(p)
+                    if isfile(f) and
+                        f.endswith('.inv.out') and
+                        f.startswith('_getty_inv__')])
+
+
+def all_inv_files_for(commit_hash, p):
+    return set([f for f in listdir(p)
+                    if isfile(f) and
+                        f.endswith('__' + commit_hash + '_.inv.out') and
+                        f.startswith('_getty_inv__')])
+
+
+def all_inv_diff_files_with(iso_type, p):
+    if iso_type is None:
+        extra = ''
+    elif iso_type == 'si':
+        extra = '.si'
+    elif iso_type == 'to':
+        extra = '.ti4o'
+    elif iso_type == 'tn':
+        extra = '.ti4n'
+    else:
+        raise ValueError('must be one of None, si, to, and tn')
+    return set([f for f in listdir(p)
+                    if isfile(f) and
+                        f.endswith('__.inv' + extra + '.diff.html') and
+                        f.startswith('_getty_inv__')])
+
+
+def _get_all_targets(p, files):
+    ms = set()
+    if not p.endswith('/'):
+        p += '/'
+    for afile in files:
+        for m in read_str_from(p + afile):
+            ms.add(m)
+    return ms
+
+
+def get_all_methods(p, prev, post):
+    files = ['_getty_allmtd_src_' + prev + '_.ex',
+             '_getty_allmtd_src_' + post + '_.ex']
+    return _get_all_targets(p, files)
+
+
+def get_all_updated_methods(p, prev, post):
+    files = ['_getty_chgmtd_src_' + prev + '_' + post + '_.ex',
+             '_getty_chgmtd_src_' + post + '_' + prev + '_.ex']
+    return _get_all_targets(p, files)
+
+
+def get_all_updated_tests(p):
+    files = [f for f in listdir(p)
+                if isfile(f) and
+                    f.startswith('_getty_chgmtd_test_') and
+                    f.endswith('.ex')]
+    return _get_all_targets(p, files)
+
+
+def no_diff(table):
+    return is_empty(table) or table.count("<table class=\"diff\">") == 0
+
+
+def count_diff_lines(diff_table):
+    all_trs = diff_table.count("<tr ")
+    all_headers = diff_table.count("<tr class=\"invheader")
+    all_ignored = diff_table.count("<tr class=\"diff-ignore")
+    all_misc = diff_table.count("<tr class=\"diffmisc")
+    return all_trs - all_headers - all_ignored - all_misc
+
+
+def main(path=None, flag=None, prev=None, post=None):
+    if flag is None:
+        flag = sys.argv[0]
+    if prev is None:
+        prev = sys.argv[1]
+    if post is None:
+        post = sys.argv[2]
+    if path is None:
+        path = getcwd()
+    if not path.endswith('/'):
+        path += '/'
+    if flag == '-a':
+        all_new_inv_fs = all_inv_files_for(post, path)
+        all_old_inv_fs = all_inv_files_for(prev, path)
+        all_invdiff_fs = all_inv_diff_files_with(None, path)
+        print ",".join([str(len(all_new_inv_fs)), str(len(all_old_inv_fs)), str(len(all_invdiff_fs))])
+    elif flag == '-m':
+        raise NotImplementedError('-m')
+    elif flag == '-t':
+        raise NotImplementedError('-t')
+    elif flag == '-u':
+        raise NotImplementedError('-u')
+    elif flag == '-i':
+        pass
+    elif flag == '--updated-methods':
+        pass
+    elif flag == '--updated-tests':
+        raise NotImplementedError('--updated-tests')
+    else:
+        raise ValueError(
+            'flag must be one of {-a, -m, -t, -u, -i, --updated-methods, --updated-tests}')
+
+
+if __name__ == "__main__":
+    main()

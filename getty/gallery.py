@@ -22,7 +22,9 @@ def exam(iso, pwd, go, fe_path, common_package, all_classes_set,
     full_src_diff_in = go + "full.text.diff"
     full_src_diff_out = go + "src.diff.html"
     sys_call(
-        "git diff -U{3} {0} {1} > {2}".format(
+        " ".join(["git diff",
+                  "--unified={3}", str(config.git_diff_extra_ops),
+                  "{0} {1} > {2}"]).format(
             prev_hash, post_hash, full_src_diff_in, config.max_context_line))
     srcdiff2html(
         full_src_diff_in, full_src_diff_out,

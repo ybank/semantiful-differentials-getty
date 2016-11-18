@@ -951,12 +951,14 @@ def __generate_append_diff(target, diff_type, prev_invf, post_invf, diff_htmlf):
         prev_invs_file_tagged = __prediff_process(prev_invf, PRSV_LEFT, PRSV_TMP)
         curr_invs_file_tagged = __prediff_process(post_invf, PRSV_RIGHT, PRSV_TMP)
         dstring = from_sys_call_enforce(
-            " ".join(["git diff --unified=0", prev_invs_file_tagged, curr_invs_file_tagged]))
+            " ".join(["git diff", "--unified="+str(config.inv_diff_context_lines),
+                      prev_invs_file_tagged, curr_invs_file_tagged]))
     else:
         prev_invs_tagged = __prediff_process_in_memory(prev_invf, PRSV_LEFT)
         curr_invs_tagged = __prediff_process_in_memory(post_invf, PRSV_RIGHT)
         dstring = "diff --git a/invariants b/invariants\n"
-        for ln in difflib.unified_diff(prev_invs_tagged, curr_invs_tagged, n=0):
+        for ln in difflib.unified_diff(prev_invs_tagged, curr_invs_tagged,
+                                       n=config.inv_diff_context_lines):
             dstring += ln
 
     cached_header = None

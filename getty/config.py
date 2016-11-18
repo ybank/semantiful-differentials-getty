@@ -55,6 +55,7 @@ analyze_test_coverage = False
 profile_performance = False
 
 # review options
+git_diff_extra_ops = "-b --ignore-blank-lines"
 review_auto_open = False
 install_extra_tips = False
 install_inv_tips = False
@@ -63,6 +64,7 @@ jump_to_method = True
 max_context_line = 65536
 max_diff_lines = 1000
 max_diff_line_size = 1000
+inv_diff_context_lines = 0
 change_alignment = True
 similarity_bar = 0.8
 

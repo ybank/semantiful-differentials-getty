@@ -1,5 +1,6 @@
 from os import chdir
 
+import config
 from tools import ex, git, mvn, os
 
 
@@ -32,7 +33,9 @@ def visit(villa_path, pwd, proj_dir, go, prev_hash, post_hash, pkg_prefix="-"):
     print "current working directory: " + pwd + "\n"
     
     diff_out = go + "text.diff"
-    os.sys_call("git diff {0} {1} > {2}".format(prev_hash, post_hash, diff_out))
+    os.sys_call(" ".join(["git diff",
+                          str(config.git_diff_extra_ops),
+                          "{0} {1} > {2}"]).format(prev_hash, post_hash, diff_out))
     
     '''
         1-st pass: checkout prev_commit as detached head, and get all sets and etc, in simple (bare) mode (-s)
