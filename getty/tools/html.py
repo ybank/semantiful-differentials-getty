@@ -17,6 +17,23 @@ inv_html_footer = """
 </code></pre><script src="./run_prettify.js"></script>
 """
 
+legends = "<div id='legends'><div style='float:right;'><br>" + \
+    "<span class='program-words'>" + \
+    "<span><u>method_name</u>: source code was changed</span><br>" + \
+    "<span>" + \
+    "  <span style='color:red;'>method_name</span>: invariants were changed" + \
+    "</span><br>" + \
+    "<span>" + \
+    "  <span style='color:darkgray;'>method_name</span>: invariants were NOT changed" + \
+    "</span><br>" + \
+    "<span>method_name <b>(x + y)</b>: <br>" + \
+    "&nbsp;&nbsp;before the commit, this method is called x times;<br>" + \
+    "&nbsp;&nbsp;after the commit, it is called y more times<br></span>" + \
+    "<br><span>Example: <span style='color:darkgray'><u>foobar</u> (5 - 2)</span></span><br>" + \
+    "&nbsp;&nbsp;foobar\'s code has been changed, but invariants were not.<br>" + \
+    "&nbsp;&nbsp;It was executed 5 times before, and now 2 times less, 3.<br><br>" + \
+    "</span></div></div>"
+
 def inv_to_html(targets, go, commit_hash):
 #     filtered_targets = [t for t in targets if not t.endswith(":<clinit>")]
     for target in targets:
@@ -119,3 +136,6 @@ def create_show_hide_toggle(btn_name, btn_id, cb_fn_str, checked=True, extra_sty
         "<label class='onoffswitch-label' for='" + btn_id + "'>" + \
         "<span class='onoffswitch-inner'></span><span class='onoffswitch-switch'></span>" + \
         "</label></div>"
+
+def create_legends_tooltip():
+    return "<div style='float:right;'><a id='legends-tooltip' href='#'>Legends</a></div>"

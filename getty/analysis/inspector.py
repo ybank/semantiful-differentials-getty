@@ -3,7 +3,7 @@
 import config
 from analysis.solver import is_different, is_possibly_different
 from tools.daikon import fsformat
-from tools.html import create_show_hide_toggle
+from tools.html import create_show_hide_toggle, create_legends_tooltip
 
 
 def getty_csi_init(html_file, iso):
@@ -29,23 +29,15 @@ def getty_csi_init(html_file, iso):
             isolation_ctrl = "<div id='csi-iso-ctrl' style='margin-top:10px;'>\n" + \
                 "    <span class='more-inv-display-option-listing menu-words'>Invariant Changes Due To:</span>\n" + \
                 iso_links + "</div>\n"
-        legends = "<div style='float:right;'>" + \
-            "<span class='menu-words' style='margin-left: 32px;'>Legends:&nbsp;&nbsp;&nbsp;&nbsp;</span>" + \
-            "<span class='program-words'>" + \
-            "<span><u>code-changed</u>&nbsp;</span>" + \
-            "<span style='color:red;'>invariant-changed</span>&nbsp;" + \
-            "<span style='color:darkgray;'>invariant-unchanged</span>&nbsp;" + \
-            "<span>...(#old-calls + #newly-added)</span>" + \
-            "</span></div>"
         html_string = html_string.replace(anchor,
             "<div id='csi-output-targets'></div>\n" + \
             "<div id='csi-output-neighbors-outer'>" + \
             "  <div id='csi-output-menu' class='menu-words'>" + \
-            "<span style='margin-right:4px;'>More Methods </span>\n" + \
-            "  " + create_show_hide_toggle("onoffswitch", "moremethodscb", "return toggle_show_invequal();") + \
-            "<span style='margin: 0px 4px 0 80px;'>Tests </span>" + \
-            "  " + create_show_hide_toggle("onoffswitch", "moretestscb", "return toggle_show_tests();") + \
-            legends + \
+            "<span style='margin-right:4px;'>Methods without invariant changes </span>\n" + \
+            "  " + create_show_hide_toggle("onoffswitch", "moremethodscb", "return toggle_show_invequal();") + "\n" + \
+            "<span style='margin: 0px 4px 0 80px;'>Test cases </span>" + \
+            "  " + create_show_hide_toggle("onoffswitch", "moretestscb", "return toggle_show_tests();") + "\n" + \
+            "  " + create_legends_tooltip() + "\n" + \
             "  </div>\n" + \
             "  <div id='csi-output-neighbors' style='margin:8px;'>" + \
             "    <div style='text-align: center;'>" + \
@@ -69,11 +61,15 @@ def __set_all_with_tests(new_all, map_of_map):
             new_all.add(m)
 
 
-def __link_to_show_neighbors(t, common_package, style_class=None):
+def __link_to_show_neighbors(t, common_package, all_codec_to_check=None, all_invc_to_check=None):
     aid = "target-link-" + fsformat(t)
     cls = "target-linkstyle" + " class-" + aid
-    if style_class is not None:
-        cls += (" " + style_class)
+    if all_codec_to_check is not None:
+        if t not in all_codec_to_check:
+            cls += (" " + "dehighlight-code-change")
+    if all_invc_to_check is not None:
+        if t in all_invc_to_check:
+            cls += (" " + "highlight-inv-change")
     js_cmd = "return activateNeighbors(\"" + t + "\");"
     tname = t
     if common_package != '':
@@ -216,43 +212,57 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash, common_package,
     replace_header = \
         "<div id='csi-output-targets'>" + cpkg_disclaimer + compare_commit_msgs + \
         "<div class='menu-words entry-header'><b>Updated Source:</b></div>"
+    
+    all_method_changes = set(new_modified_src) | set(all_changed_tests)
+    all_class_changes = set()
+    for cm in all_method_changes:
+        colon_pos = cm.find(":")
+        if colon_pos != -1:
+            all_class_changes.add(cm[:colon_pos])
+        else:
+            all_class_changes.add(cm)
+    
     if new_modified_src:
         replacement = "<div class='target-sep'>,</div>".join(
-                            [__link_to_show_neighbors(t, common_package)
+                            [__link_to_show_neighbors(t, common_package,
+                                                      all_invc_to_check=all_whose_inv_changed)
                                 for t in sorted(list(new_modified_src))])
     else:
         replacement = "<span>None</span>"
     embed_test_update = "<br><div class='menu-words entry-header'><b>Updated Tests:</b></div>"
     if all_changed_tests:
         tests_replacement = "<div class='target-sep'>,</div>".join(
-                                [__link_to_show_neighbors(t, common_package)
+                                [__link_to_show_neighbors(t, common_package,
+                                                          all_invc_to_check=all_whose_inv_changed)
                                     for t in sorted(list(all_changed_tests))])
     else:
         tests_replacement = "<span>None</span>"
     inv_change_update = \
         "<div class='menu-words entry-header'><b>Methods & Classes with Possible Invariant Changes </b></div>" + \
         create_show_hide_toggle("onoffswitch", "inv-change-list-sh",
-            "$(\"div#invariant-change-list-divs\").toggle();return false;", checked=False,
+            "$(\"div#invariant-change-list-divs\").toggle();return false;", checked=True,
             extra_style="margin-top:8px;")
     if all_whose_inv_changed or all_whose_clsobj_inv_changed:
         if all_whose_inv_changed:
             invch_mtd_replacement = "<span class='menu-words'>Methods: </span>" + \
                 "<div class='target-sep'>,</div>".join(
-                    [__link_to_show_neighbors(t, common_package, "output-invc-highlight")
+                    [__link_to_show_neighbors(t, common_package,
+                                              all_codec_to_check=all_method_changes)
                         for t in sorted(list(all_whose_inv_changed))])
         else:
             invch_mtd_replacement = "<span class='menu-words'>Methods: None</span>"
         if all_whose_clsobj_inv_changed:
             invch_cls_replacement = "<span class='menu-words'>Classes: </span>" + \
                 "<div class='target-sep'>,</div>".join(
-                    [__link_to_show_neighbors(t, common_package, "output-invc-highlight")
+                    [__link_to_show_neighbors(t, common_package,
+                                              all_codec_to_check=all_class_changes)
                         for t in sorted(list(all_whose_clsobj_inv_changed))])
         else:
             invch_cls_replacement = "<span class='menu-words'>Classes: None</span>"
         invch_replacement = invch_mtd_replacement + "<br>" + invch_cls_replacement
     else:
         invch_replacement = "<span>None</span>"
-    invch_replacement = "<div id='invariant-change-list-divs' style='display:none;'>" + invch_replacement + "</div>"
+    invch_replacement = "<div id='invariant-change-list-divs'>" + invch_replacement + "</div>"
     replace_footer = "</div>"
     html_string = html_string.replace(targets_place_holder,
                                       replace_header + replacement + \

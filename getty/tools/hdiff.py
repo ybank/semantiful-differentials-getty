@@ -40,7 +40,7 @@ import sys, re, htmlentitydefs, getopt, StringIO, codecs, datetime, difflib, jso
 import config
 # from analysis import solver
 from tools.daikon import fsformat
-from tools.html import inv_to_html, create_show_hide_toggle
+from tools.html import inv_to_html, create_show_hide_toggle, legends
 from tools.os import from_sys_call_enforce, remove_many_files
 from tools.diffutil import diff
 
@@ -1072,7 +1072,8 @@ def _getty_install_invtips(html_string, commit_msgs, github_link,
     
     install_line = \
         "<script>\n" + \
-        "    install_msg_tips(" + js_commit_msgs + ", " + js_github_link + ");" + \
+        "    install_msg_tips(" + js_commit_msgs + ", " + js_github_link + ");\n" + \
+        "    install_legend_tips(\"" + legends + "\");\n" + \
         "    window.onbeforeunload = function() { return true; };\n" + \
         iso_setup + extra_tooltips_installation + \
         "    $(\"tr.diff-ignore\").hide();\n" + \

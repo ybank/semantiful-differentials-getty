@@ -41,6 +41,22 @@ function install_msg_tips(cmsg, glink) {
 	$('a#commit-msg-link').simpletip(config_obj);
 }
 
+function install_legend_tips(legends_html) {
+	config_obj = {
+		fixed: true, position: ["-450", "-200"],
+		persistent: true, focus: true,
+		showTime: 200, hideTime: 0, hideEffect: 'none',
+		onBeforeShow: function() {
+			html_to_show = "<div>" + legends_html + "</div>";
+			this.update(html_to_show);
+		},
+		onHide: function() {
+			this.update("");
+		}
+	};
+	$('a#legends-tooltip').simpletip(config_obj);
+}
+
 function fsname_to_inv_path(mtd_fsformat_name, commit_hash) {
 	return "./_getty_inv__" + mtd_fsformat_name + "__" + commit_hash + "_.inv.out.html";
 }

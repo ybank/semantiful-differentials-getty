@@ -31,7 +31,12 @@ tr.invheader > td { background: #B8B8B8; color: lightyellow; }
 div.scrollable-table { max-height: 320px; overflow: auto; }
 a.special-neighbor-link { color: red }
 a.hidable-mtd-equal-inv { color: darkgray }
-a.output-invc-highlight { color: red! important; text-decoration: none }
+
+div#legends { display:inline-block; position:relative; width:100% }
+
+div#csi-output-targets a#commit-msg-link { color: blue !important }
+div#csi-output-targets a.highlight-inv-change { color: red !important }
+div#csi-output-targets a.dehighlight-code-change { text-decoration: none !important }
 a.csi-iso-ctrl-group {
     -webkit-appearance: button;
     -moz-appearance: button;
@@ -70,7 +75,8 @@ div#csi-output-targets {
     margin: 8px 0 0 0;
     border-radius: 4px;
 }
-div#csi-output-targets a { color: blue }
+div#csi-output-targets a { color: darkgray; }
+div#csi-output-targets div#invariant-change-list-divs a { color: red !important }
 div.target-sep { margin: 0px 8px 0px 0px; display: inline-block; }
 .menu-words {
 	font-family:sans-serif;
