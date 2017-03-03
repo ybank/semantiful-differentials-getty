@@ -2,13 +2,14 @@
 
 import re
 import sys
+import time
 from functools import partial
 from multiprocessing import Pool
 from os import path, makedirs
 
 import agency
 import config
-from tools import daikon, git, html, mvn, os, profiler
+from tools import daikon, ex, git, html, mvn, os, profiler
 
 
 SHOW_DEBUG_INFO = config.show_debug_info
@@ -44,11 +45,43 @@ def sort_txt_inv(out_file):
         if lines != [''] and len(inv_map):
             for title in sorted(inv_map):
                 f.write("\n================\n")
-                f.write(title + "\n")
+                if title.endswith(":::EXIT"):
+                    f.write(os.rreplace(title, ":::EXIT", ":::EXITSCOMBINED", 1) + "\n")
+                else:
+                    f.write(title + "\n")
                 for inv in sorted(inv_map[title]):
                     f.write(inv + "\n")
         else:
             f.write('<NO INVARIANTS INFERRED>')
+
+
+# get class-level expanded target set
+def all_methods_expansion(go, index, java_cmd, inv_gz):
+    exp_tmp = go + "expansion_temp." + str(index) + ".allinvs"
+    run_print_allinvs = " ".join([java_cmd, "daikon.PrintInvariants", "--output", exp_tmp, inv_gz])
+    os.sys_call(run_print_allinvs, ignore_bad_exit=True)
+    candidates = set()
+    regex_header = "(.*):::(ENTER|EXIT|CLASS|OBJECT|THROW).*"
+    with open(exp_tmp, 'r') as rf:
+        alllines = rf.read().split("\n")
+        for line in alllines:
+            m = re.match(regex_header, line.strip())
+            if m:
+                full_method = m.group(1)
+                right_bound = full_method.find("(")
+                if right_bound != -1:
+                    all_dots_mtdname = full_method[:right_bound]
+                    last_dot_index = all_dots_mtdname.rfind(".")
+                    if last_dot_index != -1:
+                        raw_method_name = all_dots_mtdname[last_dot_index+1:]
+                        further_last_dot_index = all_dots_mtdname[:last_dot_index].rfind(".")
+                        if all_dots_mtdname[further_last_dot_index+1:last_dot_index] == raw_method_name:
+                            raw_method_name = "<init>"
+                        candidates.add(all_dots_mtdname[:last_dot_index] + ":" + raw_method_name)
+    os.remove_file(exp_tmp)
+    ex.save_list_to(go + config.expansion_tmp_files + "." + str(index) + "." + str(int(time.time())),
+                    candidates)
+    return candidates
 
 
 # v4. flexible to be run in parallel, in daikon-online mode
@@ -92,11 +125,18 @@ def seq_get_invs(target_set_index_pair, java_cmd, junit_torun, go, this_hash):
     if SHOW_DEBUG_INFO:
         print "\n=== Daikon:Chicory+Daikon(online) command to run: \n" + run_chicory_daikon
     os.sys_call(run_chicory_daikon, ignore_bad_exit=True)
+    
+    class_level_expanded_targets = set()
+    if config.class_level_expansion:
+        try:
+            class_level_expanded_targets = all_methods_expansion(go, index, java_cmd, inv_gz)
+        except:
+            pass
         
     if SHOW_DEBUG_INFO:
         current_count = 0
         total_count = len(target_set)
-    for tgt in target_set:
+    for tgt in (set(target_set) | class_level_expanded_targets):
         target_ff = daikon.fsformat(tgt)
         out_file = go+"_getty_inv__"+target_ff+"__"+this_hash+"_.inv.out"
         run_printinv = \
@@ -348,7 +388,25 @@ def mixed_passes(go, refined_target_set, prev_hash, post_hash,
                  post_hash + "_" + prev_hash,
                  refined_target_set, analysis_only=True)
     git.clear_temp_checkout(prev_hash)
-    
+
+
+def target_set_expansion(go, targets):
+    try:
+        files = os.from_sys_call(
+            " ".join(["ls", go, "|", "grep", config.expansion_tmp_files])).strip().split("\n")
+        expansion = set([])
+        for fl in files:
+            fl = fl.strip()
+            ep = set([])
+            try:
+                ep = ep | set(ex.read_str_from(go + fl))
+            except:
+                pass
+            expansion = expansion | ep
+        return targets | expansion
+    except:
+        return targets
+
 
 # the main entrance
 def visit(junit_path, sys_classpath, agent_path, cust_mvn_repo, separate_go, prev_hash, post_hash, targets, iso,
@@ -383,9 +441,6 @@ def visit(junit_path, sys_classpath, agent_path, cust_mvn_repo, separate_go, pre
     '''
     refined_target_set = old_refined_target_set | new_refined_target_set
     
-    html.src_to_html(refined_target_set, go, prev_hash, install_line_numbers=config.jump_to_method)
-    html.src_to_html(refined_target_set, go, post_hash, install_line_numbers=config.jump_to_method)
-    
     '''
         3-rd pass: checkout prev_commit as detached head, and get invariants for all interesting targets
     '''
@@ -404,6 +459,16 @@ def visit(junit_path, sys_classpath, agent_path, cust_mvn_repo, separate_go, pre
     if iso:
         mixed_passes(go, refined_target_set, prev_hash, post_hash,
                      old_cp, new_cp, old_junit_torun, new_junit_torun)
+    
+    '''
+        last pass: set common interests
+    '''
+    if config.class_level_expansion:
+        refined_target_set = target_set_expansion(go, refined_target_set)
+        os.remove_many_files(go, config.expansion_tmp_files + "*")
+    
+    html.src_to_html(refined_target_set, go, prev_hash, install_line_numbers=config.jump_to_method)
+    html.src_to_html(refined_target_set, go, post_hash, install_line_numbers=config.jump_to_method)
     
     '''
         prepare to return

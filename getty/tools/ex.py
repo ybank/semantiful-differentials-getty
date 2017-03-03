@@ -12,3 +12,12 @@ def read_str_from(file_path):
 def save_to(afile, data):
     with open(afile, 'w') as f:
         f.write(data)
+
+
+def save_list_to(afile, list_or_set):
+    with open(afile, 'w') as f:
+        list_str = "["
+        for item in list_or_set:
+            list_str += ("\"" + str(item) + "\", ")
+        list_str += "]"
+        f.write(list_str)

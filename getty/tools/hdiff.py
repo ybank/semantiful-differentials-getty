@@ -474,7 +474,6 @@ def add_line(s1, s2, output_file, with_ln=True):
     
     if (orig1 is not None and orig1.startswith(PRSV_LEFT)) or \
             (orig2 is not None and orig2.startswith(PRSV_RIGHT)):
-        # output_file.write(('<tr class="invheader diff%s">' % type_name).encode(encoding))
         cached_header = ('<tr class="invheader diff%s">' % type_name).encode(encoding)
         caching_stage = True
     else:

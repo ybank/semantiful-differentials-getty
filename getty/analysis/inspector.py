@@ -171,7 +171,7 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash, common_package,
                            old_caller_of, old_callee_of, old_pred_of, old_succ_of,
                            new_caller_of, new_callee_of, new_pred_of, new_succ_of,
                            old_refined_target_set, new_refined_target_set, refined_target_set,
-                           all_classes_set, iso):
+                           all_classes_set, iso, expansion_set=None):
     # TODO: 
     #   Consider to use new_refined_target_set, old_refined_target_set for better results
     
@@ -182,6 +182,8 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash, common_package,
         all_considered = refined_target_set
     else:
         all_considered = set(new_all_src)
+    if config.class_level_expansion:
+        all_considered = all_considered | expansion_set
     for mtd in all_considered:
         if iso:
             if is_possibly_different(mtd, go, prev_hash, post_hash, preprocessed=True):

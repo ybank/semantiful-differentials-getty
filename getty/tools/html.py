@@ -19,12 +19,12 @@ inv_html_footer = """
 
 legends = "<div id='legends'><div style='float:right;'><br>" + \
     "<span class='program-words'>" + \
-    "<span><u>method_name</u>: source code was changed</span><br>" + \
+    "<span><u>method_name</u>: underline, source code was changed</span><br>" + \
     "<span>" + \
-    "  <span style='color:red;'>method_name</span>: invariants were changed" + \
+    "  <span style='color:red;'>method_name</span>: red color, invariants were changed" + \
     "</span><br>" + \
     "<span>" + \
-    "  <span style='color:darkgray;'>method_name</span>: invariants were NOT changed" + \
+    "  <span style='color:darkgray;'>method_name</span>: gray color, invariants were NOT changed" + \
     "</span><br>" + \
     "<span>method_name <b>(x + y)</b>: <br>" + \
     "&nbsp;&nbsp;before the commit, this method is called x times;<br>" + \

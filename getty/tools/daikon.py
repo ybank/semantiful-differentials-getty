@@ -1,5 +1,6 @@
 # misc: utils for analysis, algorithms, prefix processings, etc.
 
+import config
 
 # Recognize constructor and reformat it
 # pachage.class:method -> package.class:method
@@ -210,10 +211,13 @@ def dfformat_full_ordered(target_set):
             # includes class and class.*
             parent_interest_set.add("^" + target.replace(":", ".").replace(".", "\.").replace("$", "\$") + ":")
         else:
-            possible_parents = target[:colon_index].replace(":", ".")
-            itself = target.replace(":", ".")
-            parent_interest_set.add(("^" + possible_parents + ":").replace(".", "\.").replace("$", "\$"))
-            method_interest_set.add(("^" + itself + "\(").replace(".", "\.").replace("$", "\$"))
+            possible_parent = target[:colon_index].replace(":", ".")
+            parent_interest_set.add(("^" + possible_parent + ":").replace(".", "\.").replace("$", "\$"))
+            if config.class_level_expansion:
+                method_interest_set.add(("^" + possible_parent + ".*").replace(".", "\.").replace("$", "\$"))
+            else:
+                itself = target.replace(":", ".")
+                method_interest_set.add(("^" + itself + "\(").replace(".", "\.").replace("$", "\$"))
     parent_pattern = "|".join(parent_interest_set)
     method_pattern = "|".join(method_interest_set)
     if parent_pattern == '' and method_pattern == '':

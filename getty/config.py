@@ -13,6 +13,8 @@ analyze_less_tests = True
 # whether to limit interested into a relatively smaller set
 limit_interest = True
 limit_distance = 3
+class_level_expansion = True
+expansion_tmp_files = "_getty_temp_expansion_targets_"
 
 # scale parameters
 num_master_workers = 1
