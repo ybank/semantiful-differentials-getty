@@ -92,10 +92,10 @@ public class ASTInspector implements IMethodRecognizer {
 			String resultClassName = visited.getClass().getName();
 			if (resultClassName.equals("com.github.javaparser.ast.body.ConstructorDeclaration")) {
 				ConstructorDeclaration decl = (ConstructorDeclaration) visited;
-				qualifiedMethodName = getQualifiedConstructorName(decl);
+				qualifiedMethodName = getQualifiedConstructorName(decl) + "-" + decl.getBeginLine();
 			} else if (resultClassName.equals("com.github.javaparser.ast.body.MethodDeclaration")) {
 				MethodDeclaration decl = (MethodDeclaration) visited;
-				qualifiedMethodName = getQualifiedMethodName(decl);
+				qualifiedMethodName = getQualifiedMethodName(decl) + "-" + decl.getBeginLine();
 			} else {
 				System.out.println("unprocesed method type: " + resultClassName);
 			}

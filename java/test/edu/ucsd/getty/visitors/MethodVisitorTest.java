@@ -81,16 +81,16 @@ public class MethodVisitorTest {
 			MethodDeclarationVisitor visitor = new MethodDeclarationVisitor();
 			visitor.visit(cu, results);
 			
-			assertEquals(19, results.keySet().size());
-			assertEquals(48, (int) results.get("org.apache.hadoop.hdfs.util.EnumCounters:<init>"));
-			assertEquals(64, (int) results.get("org.apache.hadoop.hdfs.util.EnumCounters:get"));
-			assertEquals(93, (int) results.get("org.apache.hadoop.hdfs.util.EnumCounters:reset"));
-			assertEquals(98, (int) results.get("org.apache.hadoop.hdfs.util.EnumCounters:add"));
-			assertEquals(142, (int) results.get("org.apache.hadoop.hdfs.util.EnumCounters:hashCode"));
-			assertEquals(191, (int) results.get("org.apache.hadoop.hdfs.util.EnumCounters$Factory:newInstance"));
-			assertEquals(209, (int) results.get("org.apache.hadoop.hdfs.util.EnumCounters$Map:<init>"));
-			assertEquals(214, (int) results.get("org.apache.hadoop.hdfs.util.EnumCounters$Map:getCounts"));
-			assertEquals(224, (int) results.get("org.apache.hadoop.hdfs.util.EnumCounters$Map:sum"));
+			assertEquals(25, results.keySet().size());
+			assertEquals(48, (int) results.get("org.apache.hadoop.hdfs.util.EnumCounters:<init>-48"));
+			assertEquals(64, (int) results.get("org.apache.hadoop.hdfs.util.EnumCounters:get-64"));
+			assertEquals(93, (int) results.get("org.apache.hadoop.hdfs.util.EnumCounters:reset-93"));
+			assertEquals(98, (int) results.get("org.apache.hadoop.hdfs.util.EnumCounters:add-98"));
+			assertEquals(142, (int) results.get("org.apache.hadoop.hdfs.util.EnumCounters:hashCode-142"));
+			assertEquals(191, (int) results.get("org.apache.hadoop.hdfs.util.EnumCounters$Factory:newInstance-191"));
+			assertEquals(209, (int) results.get("org.apache.hadoop.hdfs.util.EnumCounters$Map:<init>-209"));
+			assertEquals(214, (int) results.get("org.apache.hadoop.hdfs.util.EnumCounters$Map:getCounts-214"));
+			assertEquals(224, (int) results.get("org.apache.hadoop.hdfs.util.EnumCounters$Map:sum-224"));
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -114,9 +114,9 @@ public class MethodVisitorTest {
 			visitor.visit(cu, results);
 			
 			assertEquals(3, results.keySet().size());
-			assertEquals(15, (int) results.get("com.crunchify.tutorials.CrunchifyEnumExample:<init>"));
-			assertEquals(19, (int) results.get("com.crunchify.tutorials.CrunchifyEnumExample:companyDetails"));
-			assertEquals(40, (int) results.get("com.crunchify.tutorials.CrunchifyEnumExample:main"));
+			assertEquals(15, (int) results.get("com.crunchify.tutorials.CrunchifyEnumExample:<init>-15"));
+			assertEquals(19, (int) results.get("com.crunchify.tutorials.CrunchifyEnumExample:companyDetails-19"));
+			assertEquals(40, (int) results.get("com.crunchify.tutorials.CrunchifyEnumExample:main-40"));
 			
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -44,15 +44,15 @@ def config_env():
     if this_script_path[-1] == "/":
         this_script_path = this_script_path[:-1]
     this_script_dir = this_script_path[:this_script_path.rfind("/")+1]
-    villa_path = this_script_dir + "lib/villa.jar"  # jar is at the same dir
+    villa_path = this_script_dir + "lib/villa-2.0.jar"  # jar is at the same dir
     junit_path = this_script_dir + "lib/junit-" + config.default_junit_version + ".jar"  # jar (junit) is at the same dir
-    agent_path = this_script_dir + "lib/jdyncg-0.4-getty-dycg-agent.jar"  # jar is at the same dir
+    agent_path = this_script_dir + "lib/jdyncg-0.5-getty-dycg-agent.jar"  # jar is at the same dir
     if os.path.exists(villa_path) and os.path.exists(junit_path) and os.path.exists(agent_path):
-        print "\nvilla.jar path: " + villa_path
+        print "\nvilla-x.x.jar path: " + villa_path
         print "\njunit-x-getty.jar path: " + junit_path
-        print "\njdyncg-0.1-getty-dycg-agent.jar path: " + agent_path
+        print "\njdyncg-0.x-getty-dycg-agent.jar path: " + agent_path
     elif not os.path.exists(villa_path):
-        raise EnvironmentError("could not find villa.jar in script dir " + this_script_dir)
+        raise EnvironmentError("could not find villa-x.x.jar in script dir " + this_script_dir)
     elif not os.path.exists(junit_path):
         raise EnvironmentError("could not find junit-x.jar (for getty) in script dir " + this_script_dir)
     elif not os.path.exists(agent_path):
@@ -244,15 +244,9 @@ if __name__ == "__main__":
 #     # DEBUG ONLY
 #     print "Debug info: "
 #     print old_changed_methods
-#     print "size of old_all_callers: {0}".format(len(old_all_callers))
-#     print "number of keys in old_all_cccs: {0}".format(len(old_all_cccs))
-#     print "size of old_all_methods: {0}".format(len(old_all_methods))
 #     print new_changed_methods
 #     print new_improved_changed_methods
 #     print new_removed_changed_methods
-#     print "size of new_all_callers: {0}".format(len(new_all_callers))
-#     print "number of keys in new_all_cccs: {0}".format(len(new_all_cccs))
-#     print "size of new_all_methods: {0}".format(len(new_all_methods))
     
     targets = agency.investigate(go, agent_path, old_all_methods, new_all_methods, prev_hash, post_hash)
     

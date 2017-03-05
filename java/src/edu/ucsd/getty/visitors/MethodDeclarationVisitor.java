@@ -31,7 +31,8 @@ public class MethodDeclarationVisitor extends VoidVisitorAdapter<Map<String, Int
 			for (BodyDeclaration bd : decl.getMembers()) {
 				if (bd instanceof MethodDeclaration) {
 					String method_name = 
-							ASTInspector.getQualifiedMethodName((MethodDeclaration) bd);
+							ASTInspector.getQualifiedMethodName((MethodDeclaration) bd)
+							+ "-" + bd.getBeginLine();
 					int begin_line = bd.getBeginLine();
 					if (targets_map.containsKey(method_name)) {
 						int existed_ln = targets_map.get(method_name);
@@ -42,7 +43,8 @@ public class MethodDeclarationVisitor extends VoidVisitorAdapter<Map<String, Int
 					}
 				} else if (bd instanceof ConstructorDeclaration) {
 					String constructor_name = 
-							ASTInspector.getQualifiedConstructorName((ConstructorDeclaration) bd);
+							ASTInspector.getQualifiedConstructorName((ConstructorDeclaration) bd)
+							+ "-" + bd.getBeginLine();
 					int begin_line = bd.getBeginLine();
 					if (targets_map.containsKey(constructor_name)) {
 						int existed_ln = targets_map.get(constructor_name);
