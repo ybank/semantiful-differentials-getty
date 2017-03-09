@@ -222,9 +222,21 @@ public class Villa {
 			output_to(apm_out_path, all_project_methods);
 			
 			// modified tests, inaccurate
-			Set<String> revised_tests = SetOperations.difference(
-					get_all_changed_methods(file_revision_lines, this_commit, output_dir),
-					all_project_methods);
+//			Set<String> revised_tests = SetOperations.difference(
+//					get_all_changed_methods(file_revision_lines, this_commit, output_dir),
+//					all_project_methods);
+			
+			Set<String> all_that_changed = get_all_changed_methods(file_revision_lines, this_commit, output_dir);
+			Set<String> revised_tests = new HashSet<String>();
+			for (String one_changed : all_that_changed) {
+				int last_dash_pos = one_changed.lastIndexOf("-");
+				if (last_dash_pos != -1) {					
+					String check_part = one_changed.substring(0, last_dash_pos);
+					if (!all_project_methods.contains(check_part))
+						revised_tests.add(check_part);
+				}
+			}
+			
 //			System.out.println("changed tests: " + revised_tests + "\n");
 			String indicator = "";
 			if (this_commit.equals(prev_commit))
@@ -329,9 +341,21 @@ public class Villa {
 			output_to(removed_chgmtd_out_path, removed_methods);
 			
 			// modified tests, inaccurate
-			Set<String> revised_tests = SetOperations.difference(
-					get_all_changed_methods(file_revision_lines_fullbak, curr_commit, output_dir),
-					all_project_methods);
+//			Set<String> revised_tests = SetOperations.difference(
+//					get_all_changed_methods(file_revision_lines_fullbak, curr_commit, output_dir),
+//					all_project_methods);
+			
+			Set<String> all_that_changed = get_all_changed_methods(file_revision_lines_fullbak, curr_commit, output_dir);
+			Set<String> revised_tests = new HashSet<String>();
+			for (String one_changed : all_that_changed) {
+				int last_dash_pos = one_changed.lastIndexOf("-");
+				if (last_dash_pos != -1) {					
+					String check_part = one_changed.substring(0, last_dash_pos);
+					if (!all_project_methods.contains(check_part))
+						revised_tests.add(check_part);
+				}
+			}
+			
 //			System.out.println("changed tests: " + revised_tests + "\n");
 			String chgtests_out_path = output_dir + "_getty_chgmtd_test_" + "new" + "_" + curr_commit + "_.ex";
 			System.out.println(

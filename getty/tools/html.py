@@ -35,7 +35,6 @@ legends = "<div id='legends'><div style='float:right;'><br>" + \
     "</span></div></div>"
 
 def inv_to_html(targets, go, commit_hash):
-#     filtered_targets = [t for t in targets if not t.endswith(":<clinit>")]
     for target in targets:
         tfs = fsformat_with_sigs(target)
         invs_file = go + "_getty_inv__" + tfs + "__" + commit_hash + "_.inv.out"
@@ -81,7 +80,7 @@ def _install_anchors_for(original, targets, l4ms):
     l2as = {}
     for target in targets:
         if target in l4ms:
-            l2as[l4ms[target]] = "<a name='" + fsformat(target) + "'></a>"
+            l2as[l4ms[target]] = "<a name='" + fsformat_with_sigs(target) + "'></a>"
     if len(l2as) > 0:
         installed = []
         for line_number, line_content in enumerate(original.split("\n"), start=1):

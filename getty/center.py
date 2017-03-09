@@ -10,7 +10,6 @@ from os import path, makedirs
 import agency
 import config
 from tools import daikon, ex, git, html, mvn, os, profiler
-from config import class_level_expansion
 
 
 SHOW_DEBUG_INFO = config.show_debug_info
@@ -57,8 +56,8 @@ def sort_txt_inv(out_file):
 
 
 # get class-level expanded target set
-def all_methods_expansion(go, index, java_cmd, inv_gz):
-    exp_tmp = go + "expansion_temp." + str(index) + ".allinvs"
+def all_methods_expansion(target_set, go, this_hash, index, java_cmd, inv_gz):
+    exp_tmp = go + "expansion_temp." + this_hash + "." + str(index) + ".allinvs"
     run_print_allinvs = " ".join([java_cmd, "daikon.PrintInvariants", "--output", exp_tmp, inv_gz])
     os.sys_call(run_print_allinvs, ignore_bad_exit=True)
     candidates = set()
@@ -80,9 +79,22 @@ def all_methods_expansion(go, index, java_cmd, inv_gz):
                             raw_method_name = "<init>"
                         candidates.add(all_dots_mtdname[:last_dot_index] + ":" + raw_method_name)
     os.remove_file(exp_tmp)
-    ex.save_list_to(go + config.expansion_tmp_files + "." + str(index) + "." + str(int(time.time())),
+    
+    # yes we should do class-level expansion here still, but we should remove all that has accurate sig info
+    to_exclude_set = set([])
+    for t in target_set:
+        lp_index = t.rfind("(")
+        if lp_index == -1:
+            t_raw = t
+        else:
+            t_raw = t[:lp_index]
+        if t_raw in candidates:
+            to_exclude_set.add(t_raw)
+    candidates = candidates - to_exclude_set
+    
+    ex.save_list_to(go + config.expansion_tmp_files + "." + this_hash + "." + str(index) + "." + str(int(time.time())),
                     candidates)
-    return candidates
+    return candidates, to_exclude_set
 
 
 # v4. flexible to be run in parallel, in daikon-online mode
@@ -130,14 +142,21 @@ def seq_get_invs(target_set_index_pair, java_cmd, junit_torun, go, this_hash):
     class_level_expanded_targets = set()
     if config.class_level_expansion:
         try:
-            class_level_expanded_targets = all_methods_expansion(go, index, java_cmd, inv_gz)
+            class_level_expanded_targets, existed_raw = \
+                all_methods_expansion(target_set, go, this_hash, index, java_cmd, inv_gz)
         except:
             pass
-        
+    
     if SHOW_DEBUG_INFO:
         current_count = 0
         total_count = len(target_set)
-    for tgt in (set(target_set) | class_level_expanded_targets):
+    
+    if config.further_expansion_analysis:
+        all_to_consider = (set(target_set) | class_level_expanded_targets | existed_raw)
+    else:
+        all_to_consider = (set(target_set) | class_level_expanded_targets)
+    
+    for tgt in all_to_consider:
         target_ff = daikon.fsformat_with_sigs(tgt)
         out_file = go+"_getty_inv__"+target_ff+"__"+this_hash+"_.inv.out"
         run_printinv = \
@@ -148,7 +167,7 @@ def seq_get_invs(target_set_index_pair, java_cmd, junit_torun, go, this_hash):
         if SHOW_DEBUG_INFO:
             current_count += 1
             if config.show_regex_debug:
-                print "\n\tthe regex for: " + tgt + "\n\t\t" + daikon.dpformat_with_sigs(tgt) + "\n\n"
+                print "\n\tthe regex for: " + tgt + "\n\t\t" + daikon.dpformat_with_sigs(tgt) + "\n"
             os.print_progress(current_count, total_count, 
                               prefix='Progress('+index+'):', 
                               suffix='('+str(current_count)+'/'+str(total_count)+': '+tgt+')'+' '*20, 
@@ -263,7 +282,8 @@ def one_info_pass(
     
     git.clear_temp_checkout(this_hash)
     
-    return common_package, test_set, refined_target_set, changed_methods, changed_tests, cp, junit_torun
+    return common_package, test_set, refined_target_set, changed_methods, changed_tests, \
+        cp, junit_torun, full_method_info_map
 
 
 # one pass template
@@ -425,6 +445,51 @@ def target_set_expansion(go, targets):
         return targets
 
 
+def __build_mtd2ln(infomap):
+    result = {}
+    for k in infomap:
+        fullinfo = infomap[k]
+        last_dash = fullinfo.rfind("-")
+        result[fullinfo[:last_dash]] = fullinfo[last_dash+1:]
+    return result
+
+
+def __purify_targets(targets):
+    result = set()
+    for t in targets:
+        last_dash_pos = t.rfind("-")
+        if last_dash_pos == -1:
+            result.add(t)
+        else:
+            result.add(t[:last_dash_pos])
+    return result
+
+
+def _merge_target_sets(old_rts, new_rts, old_mtd_info_map, new_mtd_info_map):
+    result = set()
+    old_mtd2ln = __build_mtd2ln(old_mtd_info_map)
+    old_rts_purified = __purify_targets(old_rts)
+    new_mtd2ln = __build_mtd2ln(new_mtd_info_map)
+    new_rts_purified = __purify_targets(new_rts)
+    for old_and_new in (old_rts_purified & new_rts_purified):
+        mtd_full_info = old_and_new + "-" + old_mtd2ln[old_and_new] + "," + new_mtd2ln[old_and_new]
+        result.add(mtd_full_info)
+    for old_but_new in (old_rts_purified - new_rts_purified):
+        mtd_full_info = old_but_new + "-" + old_mtd2ln[old_but_new] + ",0"
+        result.add(mtd_full_info)
+    for new_but_old in (new_rts_purified - old_rts_purified):
+        mtd_full_info = new_but_old + "-0," + new_mtd2ln[new_but_old]
+        result.add(mtd_full_info)
+    return result
+
+
+def _append_class_ln(class_set):
+    result = set()
+    for c in class_set:
+        result.add(c + "-0,0")
+    return result
+
+
 # the main entrance
 def visit(junit_path, sys_classpath, agent_path, cust_mvn_repo, separate_go, prev_hash, post_hash, targets, iso,
           old_changed_methods, old_changed_tests, old_inner_dataflow_methods, old_outer_dataflow_methods,
@@ -441,7 +506,7 @@ def visit(junit_path, sys_classpath, agent_path, cust_mvn_repo, separate_go, pre
         1-st pass: checkout prev_commit as detached head, and get new interested targets
     '''
     (old_common_package, old_test_set, old_refined_target_set,
-     old_changed_methods, old_changed_tests, old_cp, old_junit_torun) = \
+     old_changed_methods, old_changed_tests, old_cp, old_junit_torun, old_method_info_map) = \
         one_info_pass(
             junit_path, sys_classpath, agent_path, cust_mvn_repo, dyng_go, go, prev_hash, targets,
             old_changed_methods, old_changed_tests, old_inner_dataflow_methods, old_outer_dataflow_methods)
@@ -450,7 +515,7 @@ def visit(junit_path, sys_classpath, agent_path, cust_mvn_repo, separate_go, pre
         2-nd pass: checkout post_commit as detached head, and get new interested targets
     '''
     (new_common_package, new_test_set, new_refined_target_set,
-     new_changed_methods, new_changed_tests, new_cp, new_junit_torun) = \
+     new_changed_methods, new_changed_tests, new_cp, new_junit_torun, new_method_info_map) = \
         one_info_pass(
             junit_path, sys_classpath, agent_path, cust_mvn_repo, dyng_go, go, post_hash, targets,
             new_changed_methods, new_changed_tests, new_inner_dataflow_methods, new_outer_dataflow_methods)
@@ -458,19 +523,26 @@ def visit(junit_path, sys_classpath, agent_path, cust_mvn_repo, separate_go, pre
     '''
         middle pass: set common interests
     '''
-    refined_target_set = old_refined_target_set | new_refined_target_set
+#     refined_target_set = old_refined_target_set | new_refined_target_set
+    refined_target_set, all_changed_methods, all_changed_tests = \
+        _merge_target_sets(
+            old_refined_target_set, new_refined_target_set, old_method_info_map, new_method_info_map), \
+        _merge_target_sets(
+            old_changed_methods, new_changed_methods, old_method_info_map, new_method_info_map), \
+        _merge_target_sets(
+            old_changed_tests, new_changed_tests, old_method_info_map, new_method_info_map)
     
     '''
         3-rd pass: checkout prev_commit as detached head, and get invariants for all interesting targets
     '''
     old_all_classes = one_inv_pass(go,
-        old_cp, old_junit_torun, prev_hash, old_refined_target_set)
+        old_cp, old_junit_torun, prev_hash, refined_target_set)
     
     '''
         4-th pass: checkout post_commit as detached head, and get invariants for all interesting targets
     '''
     new_all_classes = one_inv_pass(go,
-        new_cp, new_junit_torun, post_hash, new_refined_target_set)
+        new_cp, new_junit_torun, post_hash, refined_target_set)
     
     '''
         more passes: checkout mixed commits as detached head, and get invariants for all interesting targets
@@ -483,21 +555,11 @@ def visit(junit_path, sys_classpath, agent_path, cust_mvn_repo, separate_go, pre
     '''
         last pass: set common interests
     '''
-    print refined_target_set
-    
-    
-    # persist target_set expansion earlier, later
-#     if config.class_level_expansion:
-#         refined_target_set = target_set_expansion(go, refined_target_set)
-#         os.remove_many_files(go, config.expansion_tmp_files + "*")
-
-    
-    print '\n\n\ndebug: exit here.'
-#     print refined_target_set
-    print old_changed_methods
-    print new_changed_methods
-    print old_changed_tests
-    print new_changed_tests
+    # TODO: improve this for better UI elements
+    # TODO: persist target_set expansion earlier, later - already done, partially, some might be in to_exclude
+    if config.class_level_expansion and config.further_expansion_analysis:
+        refined_target_set = target_set_expansion(go, refined_target_set)
+        os.remove_many_files(go, config.expansion_tmp_files + "*")
     
     html.src_to_html_ln_anchor(old_refined_target_set, go, prev_hash)
     html.src_to_html_ln_anchor(new_refined_target_set, go, post_hash)
@@ -506,6 +568,7 @@ def visit(junit_path, sys_classpath, agent_path, cust_mvn_repo, separate_go, pre
         prepare to return
     '''
     all_classes_set = set(old_all_classes + new_all_classes)
+    all_classes_set = _append_class_ln(all_classes_set)
     common_package = ''
     if old_common_package != '' and new_common_package != '':
         if (len(old_common_package) < len(new_common_package) and 
@@ -518,5 +581,6 @@ def visit(junit_path, sys_classpath, agent_path, cust_mvn_repo, separate_go, pre
     print 'Center analysis is completed.'
     return common_package, all_classes_set, refined_target_set, \
         old_test_set, old_refined_target_set, new_test_set, new_refined_target_set, \
-        old_changed_methods, new_changed_methods, old_changed_tests, new_changed_tests
+        old_changed_methods, new_changed_methods, old_changed_tests, new_changed_tests, \
+        all_changed_methods, all_changed_tests
 

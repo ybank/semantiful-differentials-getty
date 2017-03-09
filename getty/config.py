@@ -15,6 +15,7 @@ limit_interest = True
 limit_distance = 3
 class_level_expansion = True
 expansion_tmp_files = "_getty_temp_expansion_targets_"
+further_expansion_analysis = False  # if true, consider to improve UI elements
 
 # scale parameters
 num_master_workers = 1
@@ -45,7 +46,7 @@ compress_inv = False
 # development options
 show_debug_info = True
 show_debug_details = False
-show_regex_debug = True
+show_regex_debug = True  ############################################################### turn it off after dev!
 
 # effortless mvn setup
 no_mvn_customization = True  # BETA

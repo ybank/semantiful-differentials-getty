@@ -2,7 +2,7 @@
 
 import os
 
-from tools.daikon import fsformat
+from tools.daikon import fsformat_with_sigs
 from tools.os import from_sys_call_enforce
 
 
@@ -11,7 +11,7 @@ def can_imply(invs_a, invs_b):
 
 
 def is_different(target, go, prev_hash, post_hash):
-    tfs = fsformat(target)
+    tfs = fsformat_with_sigs(target)
     prev_invs_file = go + "_getty_inv__" + tfs + "__" + prev_hash + "_.inv.out"
     post_invs_file = go + "_getty_inv__" + tfs + "__" + post_hash + "_.inv.out"
     if (not os.path.exists(prev_invs_file)) or (not os.path.exists(post_invs_file)):
@@ -23,7 +23,7 @@ def is_different(target, go, prev_hash, post_hash):
         return True
 
 def __possible_diff_with_preprocessed_diff_html(target, go):
-    tfs = fsformat(target)
+    tfs = fsformat_with_sigs(target)
     ni_hdiff = go + "_getty_inv__" + tfs + "__.inv.diff.html"
     si_hdiff = go + "_getty_inv__" + tfs + "__.inv.si.diff.html"
     ti4o_hdiff = go + "_getty_inv__" + tfs + "__.inv.ti4o.diff.html"
@@ -46,7 +46,7 @@ def is_possibly_different(target, go, prev_hash, post_hash, preprocessed=False):
     if preprocessed:
         return __possible_diff_with_preprocessed_diff_html(target, go)
     else:
-        tfs = fsformat(target)
+        tfs = fsformat_with_sigs(target)
         osot_invf = go + "_getty_inv__" + tfs + "__" + prev_hash + "_.inv.out"
         nsnt_invf = go + "_getty_inv__" + tfs + "__" + post_hash + "_.inv.out"
         osnt_invf = go + "_getty_inv__" + tfs + "__" + prev_hash + "_" + post_hash + "_.inv.out"

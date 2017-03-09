@@ -95,6 +95,9 @@ def _correct_offset(rough_targets, exact_target_map):
                     print 'VERY RARE: no method name matches in all possible targets'
         else:
             print 'The method comes without line number information (-(\d)*): ' + t
+            for anyone in potential_target_keys:
+                if anyone.startswith(t + "-"):
+                    result.add(anyone)
     return result
 
 
