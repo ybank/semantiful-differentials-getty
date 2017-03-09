@@ -240,6 +240,19 @@ if __name__ == "__main__":
             new_l2m, new_m2l, \
             old_changed_tests, new_changed_tests = \
                 villa.visit(villa_path, pwd, proj_dir, go, prev_hash, post_hash)
+    
+    
+
+
+    
+    #FIXME:
+#     print old_changed_tests
+#     print new_changed_tests
+#     exit(1)
+
+
+
+
 
 #     # DEBUG ONLY
 #     print "Debug info: "
@@ -249,6 +262,7 @@ if __name__ == "__main__":
 #     print new_removed_changed_methods
     
     targets = agency.investigate(go, agent_path, old_all_methods, new_all_methods, prev_hash, post_hash)
+    # up to this point, "allmtd"'s still contain the methods without parameters and line numbers, but all others do
     
     common_package = ''
     all_classes_set = set()
@@ -259,13 +273,15 @@ if __name__ == "__main__":
     
     if config.profile_performance:
         profiler.run_and_report(
-            "common_package, all_classes_set, all_refined_target_set, old_test_set, old_refined_target_set, new_test_set, new_refined_target_set = \
+            "common_package, all_classes_set, all_refined_target_set, old_test_set, old_refined_target_set, new_test_set, new_refined_target_set, \
+                 old_changed_methods, new_changed_methods, old_changed_tests, new_changed_tests = \
                  center.visit(junit_path, sys_classpath, agent_path, cust_mvn_repo, separate_go, prev_hash, post_hash, targets, iso, \
                  old_improved_changed_methods, old_changed_tests, old_inner_dataflow_methods, old_outer_dataflow_methods, \
                  new_improved_changed_methods, new_changed_tests, new_inner_dataflow_methods, new_outer_dataflow_methods)",
             go + "_getty_x_profile_center.profile")
     else:
-        common_package, all_classes_set, all_refined_target_set, old_test_set, old_refined_target_set, new_test_set, new_refined_target_set = \
+        common_package, all_classes_set, all_refined_target_set, old_test_set, old_refined_target_set, new_test_set, new_refined_target_set, \
+            old_changed_methods, new_changed_methods, old_changed_tests, new_changed_tests = \
             center.visit(junit_path, sys_classpath, agent_path, cust_mvn_repo, separate_go, prev_hash, post_hash, targets, iso,
                          old_improved_changed_methods, old_changed_tests, old_inner_dataflow_methods, old_outer_dataflow_methods, 
                          new_improved_changed_methods, new_changed_tests, new_inner_dataflow_methods, new_outer_dataflow_methods)
@@ -285,6 +301,10 @@ if __name__ == "__main__":
 #     print new_callee_of
 #     print new_pred_of
 #     print new_succ_of
+    for aset in [old_changed_methods, new_changed_methods,
+                 old_changed_tests, new_changed_tests]:
+        print aset
+#     exit(1)
     
     '''
         before last: restore original branch and all its pending work
@@ -294,7 +314,7 @@ if __name__ == "__main__":
     '''
         optional: csi view results
     '''
-    all_changed_tests = list(set(old_changed_tests + new_changed_tests))
+    all_changed_tests = old_changed_tests | new_changed_tests
     if config.profile_performance:
         profiler.run_and_report(
             "gallery.exam(iso, pwd, go, fe_path, common_package, all_classes_set, \

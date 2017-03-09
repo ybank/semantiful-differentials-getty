@@ -45,6 +45,7 @@ compress_inv = False
 # development options
 show_debug_info = True
 show_debug_details = False
+show_regex_debug = True
 
 # effortless mvn setup
 no_mvn_customization = True  # BETA
@@ -69,6 +70,10 @@ max_diff_line_size = 1000
 inv_diff_context_lines = 0
 change_alignment = True
 similarity_bar = 0.8
+
+# method information file line prefix
+method_info_line_prefix = "[GETTY-JAVACG-METHOD-INFO] "
+max_method_decl_span = 5
 
 # misc
 version_time = str(int(time.time()))

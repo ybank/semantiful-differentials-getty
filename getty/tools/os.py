@@ -31,6 +31,14 @@ def from_sys_call_enforce(cmd):
             return ex.output
 
 
+# get result from sys_call even if the exit code is not zero
+def from_sys_call_enforce_all(cmd):
+    try:
+        return subprocess.check_output(cmd, shell=True)
+    except subprocess.CalledProcessError as ex:
+        return ex.output
+
+
 # copy
 def copy_file(from_path, to_path):
     sys_call(" ".join(["cp", from_path, to_path]))
@@ -58,7 +66,7 @@ def update_file_hash(f, hs):
     sys_call(" ".join(["mv", f, nf]), ignore_bad_exit=True)
     
 
-# merge all dyn info files, create a new one and remote all others
+# merge all dyn info files, create a new one and remove all others
 def merge_dyn_files(dyng_go, go, file_part_name, hs):
     related = from_sys_call(" ".join(["ls", dyng_go, "|", "grep", file_part_name]))
     all_files = [dyng_go + t.strip() for t in related.strip().split("\n")]

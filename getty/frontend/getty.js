@@ -205,9 +205,37 @@ function real_name_ff(s) {
 	}
 }
 
+function real_name_ff_ws(s) {
+	colon_index = s.lastIndexOf(":");
+	leftp_index = s.lastIndexOf("(");
+	rightp_index = s.lastIndexOf(")");
+	if (colon_index == -1)
+		return s;
+	else if (s.substring(colon_index+1) == "<init>") {
+		last_prd_index = s.lastIndexOf(".");
+		last_dlr_index = s.lastIndexOf("$");
+		chop_index = (last_prd_index > last_dlr_index ? last_prd_index : last_dlr_index);
+		mtd_name = s.substring(chop_index+1, colon_index);
+		return s.substring(0, colon_index+1) + mtd_name + s.substring(lefp_index, rightp_index + 1);
+	} else if (s.substring(colon_index+1) == "<clinit>") {
+		return s.substring(0, colon_index) + ".class.init";
+	} else {
+		return s;
+	}
+}
+
 function fsformat(s) {
 	s = real_name_ff(s);
 	return s.replace(/:/g, "_").replace(/\$/g, "_").replace(/\./g, '_');
+}
+
+function fsformat_ws(s) {
+	s = real_name_ff_ws(s);
+	last_dash_index = s.lastIndexOf("-");
+	if (last_dash_index == -1)
+		return s.replace(/:/g, "_").replace(/\$/g, "_").replace(/\./g, '_').replace(/\(/g, '--').replace(/\)/g, '--').replace(/,/g, '-').replace(/\ /g, '');
+	else
+		return s.substring(0, last_dash_index).replace(/:/g, "_").replace(/\$/g, "_").replace(/\./g, '_').replace(/\(/g, '--').replace(/\)/g, '--').replace(/,/g, '-').replace(/\ /g, '');
 }
 
 function name_to_path(m, hash_value) {
@@ -237,7 +265,7 @@ function show_src_or_inv(which) {
 	$('div#csi-output-invcomp .addition-invdiff-output-options').hide();
 	$('a.src-inv-button-link').css(inactive_lbtn_style);
 	if (which == "inv") {
-		tfs = fsformat(current_method_name)
+		tfs = fsformat_ws(current_method_name)
 		switch (iso_type) {
 			case "ni":
 				$('iframe#iinvprev').attr('src', fsname_to_inv_path(tfs, prev_hash));
@@ -261,7 +289,7 @@ function show_src_or_inv(which) {
 		$('iframe.invtip').css("display", "inline-block");
 		$('a#src_inv_btn_4inv').css(active_lbtn_style);
 	} else if (which == "src") {
-		anchor_name = fsformat(current_method_name);
+		anchor_name = fsformat_ws(current_method_name);
 		// reset link with anchor for better display
 		$('iframe#i-left-src').attr('src', name_to_path(current_method_name, prev_hash));
 		$('iframe#i-right-src').attr('src', name_to_path(current_method_name, post_hash));
@@ -279,7 +307,7 @@ function show_src_or_inv(which) {
 		}, load_timeout);
 	} else if (which == "srcdiff") {
 		if (all_modified_targets.contains(current_method_name)) {
-			srcdiff_anchor_name = target_anchor_prefix + fsformat(current_method_name);
+			srcdiff_anchor_name = target_anchor_prefix + fsformat_ws(current_method_name);
 			$('iframe#i-mid-srcdiff').attr('src', './src.diff.html');
 			$('iframe.srcdifftip').css("display", "inline-block");
 			window.setTimeout(function() {
@@ -322,7 +350,7 @@ function create_src_or_inv_button_link(thetype, theid) {
 }
 
 function methodInvsCompareDiv(method_name) {
-	theMtd = fsformat(method_name);
+	theMtd = fsformat_ws(method_name);
 	targetInvComp = $("div#getty-full-inv-diff div#vsinvs-" + iso_type + "-" + theMtd)[0]
 	
 	if (targetInvComp == undefined)
@@ -334,7 +362,7 @@ function methodInvsCompareDiv(method_name) {
 	
 	var preInvs = "", postInvs = "";
 	var preSrcs = "", postSrcs = "";
-	var anchor_name = fsformat(current_method_name);
+	var anchor_name = fsformat_ws(current_method_name);
 	
 	ileft =
 		"width:49%;height:400px;background-color:#000;" +
@@ -555,6 +583,14 @@ function structure_neighbors(method_name) {
 function activateNeighbors(method_name) {
 	$('a.target-linkstyle').css("border", "none");
 	$("a.class-target-link-" + fsformat(method_name)).css("border", "solid green");
+	structure_neighbors(method_name);
+	output_inv_diff(method_name);
+	return false;
+}
+
+function activateNeighbors_ws(method_name) {
+	$('a.target-linkstyle').css("border", "none");
+	$("a.class-target-link-" + fsformat_ws(method_name)).css("border", "solid green");
 	structure_neighbors(method_name);
 	output_inv_diff(method_name);
 	return false;

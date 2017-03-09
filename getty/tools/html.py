@@ -1,7 +1,7 @@
 # html transformation and manipulation
 
 import config
-from tools.daikon import fsformat
+from tools.daikon import fsformat, fsformat_with_sigs
 from tools.ex import read_str_from
 
 
@@ -37,7 +37,7 @@ legends = "<div id='legends'><div style='float:right;'><br>" + \
 def inv_to_html(targets, go, commit_hash):
 #     filtered_targets = [t for t in targets if not t.endswith(":<clinit>")]
     for target in targets:
-        tfs = fsformat(target)
+        tfs = fsformat_with_sigs(target)
         invs_file = go + "_getty_inv__" + tfs + "__" + commit_hash + "_.inv.out"
         try:
             with open(invs_file, 'r') as invf:
@@ -127,6 +127,41 @@ def src_to_html(targets, go, commit_hash, install_line_numbers=False):
         except:
             pass
 
+
+def _install_ln_anchors_for(original):
+    anchored = []
+    for index, line in enumerate(original.split("\n"), start=1):
+        anchored.append("<a name='l" + str(index) + "'></a>" + line)
+    return '\n'.join(anchored)
+
+
+def src_to_html_ln_anchor(targets, go, commit_hash):
+    filehash = {}
+    file_set = set([])
+    for target in targets:
+        tp, lv = _target_to_path(target)
+        real_path = go + "_getty_allcode_" + commit_hash + "_/" + tp
+        if real_path not in filehash:
+            filehash[real_path] = lv
+        file_set.add(real_path)
+    for jp in filehash:
+        try:
+            print "preprocessing: " + jp
+            with open(jp, "r") as javaf:
+                allsrc = javaf.read()
+                print "  -- installing line number anchors ..."
+                allsrc = _install_ln_anchors_for(allsrc)
+                print "  -- syntax highlighting ..."
+                lvs = filehash[jp]
+                newsrchtml = \
+                    src_html_header.format("../" * (lvs + 1), config.version_time) + \
+                    allsrc + src_html_footer.format("../" * lvs)
+            with open(jp + ".html", 'w') as wf:
+                wf.write(newsrchtml)
+        except:
+            pass
+
+
 def create_show_hide_toggle(btn_name, btn_id, cb_fn_str, checked=True, extra_style=None):
     cm = " checked" if checked else ""
     es = "" if extra_style is None else " style='" + extra_style + "'"
@@ -139,3 +174,4 @@ def create_show_hide_toggle(btn_name, btn_id, cb_fn_str, checked=True, extra_sty
 
 def create_legends_tooltip():
     return "<div style='float:right;'><a id='legends-tooltip' href='#'>Legends</a></div>"
+

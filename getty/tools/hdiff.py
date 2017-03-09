@@ -39,7 +39,7 @@ import sys, re, htmlentitydefs, getopt, StringIO, codecs, datetime, difflib, jso
 
 import config
 # from analysis import solver
-from tools.daikon import fsformat
+from tools.daikon import fsformat, fsformat_with_sigs
 from tools.html import inv_to_html, create_show_hide_toggle, legends
 from tools.os import from_sys_call_enforce, remove_many_files
 from tools.diffutil import diff
@@ -973,7 +973,7 @@ def __generate_append_diff(target, diff_type, prev_invf, post_invf, diff_htmlf):
         "<div class='inv-cmp-title'><span class='menu-words'>Compare Invariants for</span> " + \
         "{ <span class='program-words'><b>" + __escape(target) + "</b></span> }</div>"
     invdiffhtml = \
-        "<div id='vsinvs-" + diff_type + "-" + fsformat(target) + "'>" + \
+        "<div id='vsinvs-" + diff_type + "-" + fsformat_with_sigs(target) + "'>" + \
         inv_title + "\n" + \
         ("NO DIFFERENCE" if is_empty(dtable) else dtable) + \
         "\n</div>\n"
@@ -989,7 +989,7 @@ def _getty_append_invdiff(html_string, targets, go, prev_hash, curr_hash, iso):
     for target in sorted(targets, reverse=True):
         if config.install_diffinv_only:
             print '  -- processing inv diff for ' + target
-            tfs = fsformat(target)
+            tfs = fsformat_with_sigs(target)
             osot_invf = go + "_getty_inv__" + tfs + "__" + prev_hash + "_.inv.out"
             nsnt_invf = go + "_getty_inv__" + tfs + "__" + curr_hash + "_.inv.out"
             invdiff_outft = go + "_getty_inv__" + tfs + "__" + ".inv.diff.html"

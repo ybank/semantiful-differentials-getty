@@ -24,6 +24,30 @@ def real_name_ff(target):
         return target
 
 
+# Recognize constructor and reformat it, with signature info
+# pachage.class:method(String, int) -> package.class:method(String, int)
+# package.class:<init>(String, int) -> pachage.class:class(String, int)
+# package.class:<clinit> -> package.class
+# package.outerclass$innerclass:<init>(String, int) -> package.outerclass$innerclass:innerclass(String, int)
+def real_name_ff_with_sigs(target):
+    colon_index = target.rfind(":")
+    leftp_index = target.rfind("(")
+    rightp_index = target.rfind(")")
+    if colon_index == -1:
+        # not a target, but a class name, for example
+        return target
+    elif target[colon_index+1:] == "<init>":
+        prd_i = target[:leftp_index].rfind(".")
+        dlr_i = target[:leftp_index].rfind("$")
+        chop_i = max(prd_i, dlr_i)
+        methodname = target[chop_i+1:colon_index]
+        return target[:colon_index+1] + methodname + target[leftp_index:rightp_index+1]
+    elif target[colon_index+1:] == "<clinit>":
+        return target[:colon_index] + ".class.init"
+    else:
+        return target
+
+
 # Recognize constructor and reformat it
 # pachage.class:method -> package.class:method
 # package.class:<init> -> pachage.class:class
@@ -40,6 +64,30 @@ def real_name_pi(target):
         chop_i = max(prd_i, dlr_i)
         methodname = target[chop_i+1:colon_index]
         return target[:colon_index+1] + methodname
+    elif target[colon_index+1:] == "<clinit>":
+        return target[:colon_index] + ":::CLASS"
+    else:
+        return target
+
+
+# Recognize constructor and reformat it
+# pachage.class:method() -> package.class:method()
+# package.class:<init>() -> pachage.class:class()
+# package.class:<clinit>() -> package.class
+# package.outerclass$innerclass:<init> -> package.outerclass$innerclass:innerclass
+def real_name_pi_with_sigs(target):
+    colon_index = target.rfind(":")
+    leftp_index = target.rfind("(")
+    rightp_index = target.rfind(")")
+    if colon_index == -1:
+        # not a target, but a class name, for example
+        return target
+    elif target[colon_index+1:] == "<init>":
+        prd_i = target.rfind(".")
+        dlr_i = target.rfind("$")
+        chop_i = max(prd_i, dlr_i)
+        methodname = target[chop_i+1:colon_index]
+        return target[:colon_index+1] + methodname + target[leftp_index:rightp_index+1]
     elif target[colon_index+1:] == "<clinit>":
         return target[:colon_index] + ":::CLASS"
     else:
@@ -159,7 +207,7 @@ def reformat_all(targets, more_ppts=False):
 
 # reformat one method (etc.) so it is recognizable by Daikon.PrintInvariants filter
 # filter pattern example:
-#     --ppt-select-pattern="^org\.apache\.commons\.csv\.QuoteMode.QuoteMode\(.*String, .*int\):::EXIT"
+#     --ppt-select-pattern="^org\.apache\.commons\.csv\.QuoteMode.QuoteMode\("
 def dpformat(target, more_ppts=False):
     target = real_name_pi(target)
     tci = target.rfind(":::")
@@ -180,6 +228,35 @@ def dpformat(target, more_ppts=False):
             return ("^" + possible_parents + ":|^" + itself + "\(").replace(".", "\.").replace("$", "\$")
         else:
             return "^" + target.replace(":", ".").replace(".", "\.").replace("$", "\$") + "\("
+
+
+# reformat one method (etc.) so it is recognizable by Daikon.PrintInvariants filter
+# filter pattern example:
+#     --ppt-select-pattern="^org\.apache\.commons\.csv\.QuoteMode.QuoteMode\(java\.lang\.String, int\):::EXIT"
+def dpformat_with_sigs(target, more_ppts=False):
+    target = real_name_pi_with_sigs(target)
+    tci = target.rfind(":::")
+    if tci != -1:
+        return "^" + target[:tci].replace(":", ".").replace(".", "\.").replace("$", "\$") + target[tci:]
+    colon_index = target.rfind(":")
+    if colon_index == -1:
+        if more_ppts:
+            # includes class and class.*
+            return "^" + target.replace(":", ".").replace(".", "\.").replace("$", "\$") + "(:|\.)"
+        else:
+            return "^" + target.replace(":", ".").replace(".", "\.").replace("$", "\$") + ":"
+    else:
+        if more_ppts:
+            # include possible parents and the method itself (and overloaded methods)
+            possible_parents = target[:colon_index].replace(":", ".")
+            itself = target.replace(":", ".")
+            return ("^" + possible_parents + ":|^" + itself + "\(").replace(".", "\.").replace("$", "\$")
+        else:
+            rightp_index = target.rfind(")")
+            if rightp_index != -1:
+                return "^" + target[:rightp_index+1].replace(":", ".").replace(".", "\.").replace("$", "\$").replace("(", "\(").replace(")", "\)").replace(",", ",(\ )*")
+            else:
+                return "^" + target.replace(":", ".").replace(".", "\.").replace("$", "\$") + "\("
 
 
 # reformat all methods together so it is recognizable by Daikon filter
@@ -301,3 +378,14 @@ def fsformat(target, for_daikon=True):
     if for_daikon:
         target = real_name_ff(target)
     return target.replace(":", "_").replace("$", "_").replace(".", "_")
+
+
+# reformat one target so it is recognizable by Daikon filter - with signature info
+def fsformat_with_sigs(target, for_daikon=True):
+    if for_daikon:
+        target = real_name_ff_with_sigs(target)
+    last_dash_pos = target.rfind("-")
+    if last_dash_pos == -1:
+        return target.replace(":", "_").replace("$", "_").replace(".", "_").replace("(", "--").replace(")", "--").replace(",", "-").replace(" ", "")
+    else:
+        return target[:last_dash_pos].replace(":", "_").replace("$", "_").replace(".", "_").replace("(", "--").replace(")", "--").replace(",", "-").replace(" ", "")

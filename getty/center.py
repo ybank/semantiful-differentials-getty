@@ -10,6 +10,7 @@ from os import path, makedirs
 import agency
 import config
 from tools import daikon, ex, git, html, mvn, os, profiler
+from config import class_level_expansion
 
 
 SHOW_DEBUG_INFO = config.show_debug_info
@@ -137,15 +138,17 @@ def seq_get_invs(target_set_index_pair, java_cmd, junit_torun, go, this_hash):
         current_count = 0
         total_count = len(target_set)
     for tgt in (set(target_set) | class_level_expanded_targets):
-        target_ff = daikon.fsformat(tgt)
+        target_ff = daikon.fsformat_with_sigs(tgt)
         out_file = go+"_getty_inv__"+target_ff+"__"+this_hash+"_.inv.out"
         run_printinv = \
             " ".join([java_cmd, "daikon.PrintInvariants",
                       "--format", config.output_inv_format,
-                      "--ppt-select-pattern=\'"+daikon.dpformat(tgt)+"\'",
+                      "--ppt-select-pattern=\'"+daikon.dpformat_with_sigs(tgt)+"\'",
                       "--output", out_file, inv_gz])
         if SHOW_DEBUG_INFO:
             current_count += 1
+            if config.show_regex_debug:
+                print "\n\tthe regex for: " + tgt + "\n\t\t" + daikon.dpformat_with_sigs(tgt) + "\n\n"
             os.print_progress(current_count, total_count, 
                               prefix='Progress('+index+'):', 
                               suffix='('+str(current_count)+'/'+str(total_count)+': '+tgt+')'+' '*20, 
@@ -224,7 +227,19 @@ def one_info_pass(
     
     if not path.exists(dyng_go):
         makedirs(dyng_go)
-    os.sys_call(run_instrumented_tests, ignore_bad_exit=True)
+    
+    full_info_exfile = go + "_getty_binary_info_" + this_hash + "_.ex"
+    os.sys_call(run_instrumented_tests + " > " + full_info_exfile, ignore_bad_exit=True)
+    full_method_info_map = {}
+    ext_start_index = len(config.method_info_line_prefix)
+    with open(full_info_exfile, 'r') as f:
+        contents = f.read().split("\n")
+        for line in contents:
+            line = line.strip()
+            if line.startswith(config.method_info_line_prefix):
+                rawdata = line[ext_start_index:]
+                k, v = rawdata.split(" : ")
+                full_method_info_map[k.strip()] = v.strip()
 
     os.merge_dyn_files(dyng_go, go, "_getty_dyncg_-hash-_.ex", this_hash)
     os.merge_dyn_files(dyng_go, go, "_getty_dynfg_-hash-_.ex", this_hash)
@@ -235,9 +250,9 @@ def one_info_pass(
     # add test methods into target set
     test_set = agency.get_test_set_dyn(target_set, callee_of, junit_torun)
     
-    # set target set here
-    refined_target_set = \
-        agency.refine_targets(target_set, test_set,
+    # reset target set here
+    refined_target_set, changed_methods, changed_tests = \
+        agency.refine_targets(full_method_info_map, target_set, test_set,
                               caller_of, callee_of, pred_of, succ_of,
                               changed_methods, changed_tests, 
                               inner_dataflow_methods, outer_dataflow_methods)
@@ -248,11 +263,12 @@ def one_info_pass(
     
     git.clear_temp_checkout(this_hash)
     
-    return common_package, test_set, refined_target_set, cp, junit_torun
+    return common_package, test_set, refined_target_set, changed_methods, changed_tests, cp, junit_torun
 
 
 # one pass template
 def one_inv_pass(go, cp, junit_torun, this_hash, refined_target_set, analysis_only=False):
+    
     if not analysis_only:
         os.sys_call("git checkout " + this_hash)
     
@@ -365,7 +381,8 @@ def one_inv_pass(go, cp, junit_torun, this_hash, refined_target_set, analysis_on
     return all_classes
 
 
-def mixed_passes(go, refined_target_set, prev_hash, post_hash,
+def mixed_passes(go, prev_hash, post_hash,
+                 refined_target_set, old_refined_target_set, new_refined_target_set,
                  old_cp, new_cp, old_junit_torun, new_junit_torun):
     # checkout old commit, then checkout new tests
     os.sys_call("git checkout " + prev_hash)
@@ -375,7 +392,7 @@ def mixed_passes(go, refined_target_set, prev_hash, post_hash,
 #     os.sys_call("mvn clean test-compile")
     one_inv_pass(go, new_cp, new_junit_torun,
                  prev_hash + "_" + post_hash,
-                 refined_target_set, analysis_only=True)
+                 old_refined_target_set, analysis_only=True)
     git.clear_temp_checkout(prev_hash)
     
     # checkout old commit, then checkout new src
@@ -386,7 +403,7 @@ def mixed_passes(go, refined_target_set, prev_hash, post_hash,
 #     os.sys_call("mvn clean test-compile")
     one_inv_pass(go, new_cp, old_junit_torun,
                  post_hash + "_" + prev_hash,
-                 refined_target_set, analysis_only=True)
+                 new_refined_target_set, analysis_only=True)
     git.clear_temp_checkout(prev_hash)
 
 
@@ -423,7 +440,8 @@ def visit(junit_path, sys_classpath, agent_path, cust_mvn_repo, separate_go, pre
     '''
         1-st pass: checkout prev_commit as detached head, and get new interested targets
     '''
-    old_common_package, old_test_set, old_refined_target_set, old_cp, old_junit_torun = \
+    (old_common_package, old_test_set, old_refined_target_set,
+     old_changed_methods, old_changed_tests, old_cp, old_junit_torun) = \
         one_info_pass(
             junit_path, sys_classpath, agent_path, cust_mvn_repo, dyng_go, go, prev_hash, targets,
             old_changed_methods, old_changed_tests, old_inner_dataflow_methods, old_outer_dataflow_methods)
@@ -431,7 +449,8 @@ def visit(junit_path, sys_classpath, agent_path, cust_mvn_repo, separate_go, pre
     '''
         2-nd pass: checkout post_commit as detached head, and get new interested targets
     '''
-    new_common_package, new_test_set, new_refined_target_set, new_cp, new_junit_torun = \
+    (new_common_package, new_test_set, new_refined_target_set,
+     new_changed_methods, new_changed_tests, new_cp, new_junit_torun) = \
         one_info_pass(
             junit_path, sys_classpath, agent_path, cust_mvn_repo, dyng_go, go, post_hash, targets,
             new_changed_methods, new_changed_tests, new_inner_dataflow_methods, new_outer_dataflow_methods)
@@ -445,30 +464,43 @@ def visit(junit_path, sys_classpath, agent_path, cust_mvn_repo, separate_go, pre
         3-rd pass: checkout prev_commit as detached head, and get invariants for all interesting targets
     '''
     old_all_classes = one_inv_pass(go,
-        old_cp, old_junit_torun, prev_hash, refined_target_set)
+        old_cp, old_junit_torun, prev_hash, old_refined_target_set)
     
     '''
         4-th pass: checkout post_commit as detached head, and get invariants for all interesting targets
     '''
     new_all_classes = one_inv_pass(go,
-        new_cp, new_junit_torun, post_hash, refined_target_set)
-
+        new_cp, new_junit_torun, post_hash, new_refined_target_set)
+    
     '''
         more passes: checkout mixed commits as detached head, and get invariants for all interesting targets
     '''
     if iso:
-        mixed_passes(go, refined_target_set, prev_hash, post_hash,
+        mixed_passes(go, prev_hash, post_hash,
+                     refined_target_set, old_refined_target_set, new_refined_target_set,
                      old_cp, new_cp, old_junit_torun, new_junit_torun)
     
     '''
         last pass: set common interests
     '''
-    if config.class_level_expansion:
-        refined_target_set = target_set_expansion(go, refined_target_set)
-        os.remove_many_files(go, config.expansion_tmp_files + "*")
+    print refined_target_set
     
-    html.src_to_html(refined_target_set, go, prev_hash, install_line_numbers=config.jump_to_method)
-    html.src_to_html(refined_target_set, go, post_hash, install_line_numbers=config.jump_to_method)
+    
+    # persist target_set expansion earlier, later
+#     if config.class_level_expansion:
+#         refined_target_set = target_set_expansion(go, refined_target_set)
+#         os.remove_many_files(go, config.expansion_tmp_files + "*")
+
+    
+    print '\n\n\ndebug: exit here.'
+#     print refined_target_set
+    print old_changed_methods
+    print new_changed_methods
+    print old_changed_tests
+    print new_changed_tests
+    
+    html.src_to_html_ln_anchor(old_refined_target_set, go, prev_hash)
+    html.src_to_html_ln_anchor(new_refined_target_set, go, post_hash)
     
     '''
         prepare to return
@@ -485,4 +517,6 @@ def visit(junit_path, sys_classpath, agent_path, cust_mvn_repo, separate_go, pre
     
     print 'Center analysis is completed.'
     return common_package, all_classes_set, refined_target_set, \
-        old_test_set, old_refined_target_set, new_test_set, new_refined_target_set
+        old_test_set, old_refined_target_set, new_test_set, new_refined_target_set, \
+        old_changed_methods, new_changed_methods, old_changed_tests, new_changed_tests
+

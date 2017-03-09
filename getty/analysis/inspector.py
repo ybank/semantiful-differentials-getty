@@ -2,7 +2,7 @@
 
 import config
 from analysis.solver import is_different, is_possibly_different
-from tools.daikon import fsformat
+from tools.daikon import fsformat_with_sigs
 from tools.html import create_show_hide_toggle, create_legends_tooltip
 
 
@@ -62,7 +62,7 @@ def __set_all_with_tests(new_all, map_of_map):
 
 
 def __link_to_show_neighbors(t, common_package, all_codec_to_check=None, all_invc_to_check=None):
-    aid = "target-link-" + fsformat(t)
+    aid = "target-link-" + fsformat_with_sigs(t)
     cls = "target-linkstyle" + " class-" + aid
     if all_codec_to_check is not None:
         if t not in all_codec_to_check:
@@ -70,7 +70,7 @@ def __link_to_show_neighbors(t, common_package, all_codec_to_check=None, all_inv
     if all_invc_to_check is not None:
         if t in all_invc_to_check:
             cls += (" " + "highlight-inv-change")
-    js_cmd = "return activateNeighbors(\"" + t + "\");"
+    js_cmd = "return activateNeighbors_ws(\"" + t + "\");"
     tname = t
     if common_package != '':
         tname = t[len(common_package)+1:]
