@@ -6,7 +6,7 @@ var prev_hash = "";
 var post_hash = "";
 
 var isolation = false;
-var iso_type = "ni";
+var iso_type = "si";
 var invdiff_display_with = "none";
 
 var current_method_name = "";

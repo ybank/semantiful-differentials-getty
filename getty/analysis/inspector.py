@@ -16,8 +16,8 @@ def getty_csi_init(html_file, iso):
             active_style = "color:blue;background:whitesmoke;"
             inactive_style = "color:gray;background:linear-gradient(whitesmoke, lightgray);"
             for iso_type, iso_text, link_style, tiptext in [
-                    ("ni", "Source & Test Change", active_style, "old src & tests\nvs.\nnew src & tests"),
-                    ("si", "Source Change Only", inactive_style, "old vs. new src\n(with same tests)"),
+                    ("ni", "Source & Test Change", inactive_style, "old src & tests\nvs.\nnew src & tests"),
+                    ("si", "Source Change Only", active_style, "old vs. new src\n(with same tests)"),
                     ("ti4o", "Test Change (for OLD Source)", inactive_style, "old tests vs. new tests\n(both for old src)"),
                     ("ti4n", "Test Change (for NEW Source)", inactive_style, "old tests vs. new tests\n(both for new src)")]:
                 iso_links += \

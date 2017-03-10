@@ -389,9 +389,15 @@ def fsformat_with_sigs(target, for_daikon=True):
         target = real_name_ff_with_sigs(target)
     last_dash_pos = target.rfind("-")
     if last_dash_pos == -1:
-        return target.replace(":", "_").replace("$", "_").replace(".", "_").replace("(", "--").replace(")", "--").replace(",", "-").replace(" ", "")
+        return target.replace(":", "_").replace("$", "_").replace(".", "_") \
+                     .replace("(", "--").replace(")", "--") \
+                     .replace("<", "--").replace(">", "--") \
+                     .replace(",", "-").replace(" ", "")
     else:
-        return target[:last_dash_pos].replace(":", "_").replace("$", "_").replace(".", "_").replace("(", "--").replace(")", "--").replace(",", "-").replace(" ", "")
+        return target[:last_dash_pos].replace(":", "_").replace("$", "_").replace(".", "_") \
+                                     .replace("(", "--").replace(")", "--") \
+                                     .replace("<", "--").replace(">", "--") \
+                                     .replace(",", "-").replace(" ", "")
 
 
 def purify_target_name(t):
