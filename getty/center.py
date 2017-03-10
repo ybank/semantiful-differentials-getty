@@ -469,16 +469,24 @@ def _merge_target_sets(old_rts, new_rts, old_mtd_info_map, new_mtd_info_map):
     result = set()
     old_mtd2ln = __build_mtd2ln(old_mtd_info_map)
     old_rts_purified = __purify_targets(old_rts)
+    old_keyset = set(old_mtd2ln.keys())
     new_mtd2ln = __build_mtd2ln(new_mtd_info_map)
     new_rts_purified = __purify_targets(new_rts)
+    new_keyset = set(new_mtd2ln.keys())
     for old_and_new in (old_rts_purified & new_rts_purified):
         mtd_full_info = old_and_new + "-" + old_mtd2ln[old_and_new] + "," + new_mtd2ln[old_and_new]
         result.add(mtd_full_info)
     for old_but_new in (old_rts_purified - new_rts_purified):
-        mtd_full_info = old_but_new + "-" + old_mtd2ln[old_but_new] + ",0"
+        if old_but_new in new_keyset:
+            mtd_full_info = old_but_new + "-" + old_mtd2ln[old_but_new] + "," + new_mtd2ln[old_but_new]
+        else:
+            mtd_full_info = old_but_new + "-" + old_mtd2ln[old_but_new] + ",0"
         result.add(mtd_full_info)
     for new_but_old in (new_rts_purified - old_rts_purified):
-        mtd_full_info = new_but_old + "-0," + new_mtd2ln[new_but_old]
+        if new_but_old in old_keyset:
+            mtd_full_info = new_but_old + "-" + old_mtd2ln[new_but_old] + "," + new_mtd2ln[new_but_old]
+        else:
+            mtd_full_info = new_but_old + "-0," + new_mtd2ln[new_but_old]
         result.add(mtd_full_info)
     return result
 
@@ -561,8 +569,10 @@ def visit(junit_path, sys_classpath, agent_path, cust_mvn_repo, separate_go, pre
         refined_target_set = target_set_expansion(go, refined_target_set)
         os.remove_many_files(go, config.expansion_tmp_files + "*")
     
-    html.src_to_html_ln_anchor(old_refined_target_set, go, prev_hash)
-    html.src_to_html_ln_anchor(new_refined_target_set, go, post_hash)
+    html.src_to_html_ln_anchor(refined_target_set, go, prev_hash, for_old=True)
+    html.src_to_html_ln_anchor(refined_target_set, go, post_hash)
+    
+    # should not need line number information anymore from this point on
     
     '''
         prepare to return

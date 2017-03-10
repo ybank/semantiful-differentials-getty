@@ -39,7 +39,7 @@ import sys, re, htmlentitydefs, getopt, StringIO, codecs, datetime, difflib, jso
 
 import config
 # from analysis import solver
-from tools.daikon import fsformat, fsformat_with_sigs
+from tools.daikon import fsformat_with_sigs
 from tools.html import inv_to_html, create_show_hide_toggle, legends
 from tools.os import from_sys_call_enforce, remove_many_files
 from tools.diffutil import diff
@@ -466,11 +466,11 @@ def add_line(s1, s2, output_file, with_ln=True):
         if line2_active_flag:
             possible_nk = (postfile, int(line2))
             if possible_nk in newl2m:
-                extra_anchor_names.add(TARGET_ANCHOR_PREFIX + fsformat(newl2m[possible_nk]))
+                extra_anchor_names.add(TARGET_ANCHOR_PREFIX + fsformat_with_sigs(newl2m[possible_nk]))
         if line1_active_flag:
             possible_ok = (prefile, int(line1))
             if possible_ok in oldl2m:
-                extra_anchor_names.add(TARGET_ANCHOR_PREFIX + fsformat(oldl2m[possible_ok]))
+                extra_anchor_names.add(TARGET_ANCHOR_PREFIX + fsformat_with_sigs(oldl2m[possible_ok]))
     
     if (orig1 is not None and orig1.startswith(PRSV_LEFT)) or \
             (orig2 is not None and orig2.startswith(PRSV_RIGHT)):
@@ -903,7 +903,12 @@ def __denoise(dstring):
 
 
 def __escape(target):
-    return target.replace("<", "&lt;").replace(">", "&gt;")
+    result = target.replace("<", "&lt;").replace(">", "&gt;")
+    last_dash_pos = result.rfind("-")
+    if last_dash_pos == -1:
+        return result
+    else:
+        return result[:last_dash_pos]
 
 
 def __prediff_process(file_name, preserve_tag, postfix):
@@ -1046,7 +1051,7 @@ def _getty_install_invtips(html_string, commit_msgs, github_link,
             for pair in newl2m:
                 newarray.append("\"" + __path_to_image(pair[0]) + "\"")
                 newarray.append("\"" + str(pair[1]) + "\"")
-                newarray.append("\"" + fsformat(newl2m[pair]) + "\"")
+                newarray.append("\"" + fsformat_with_sigs(newl2m[pair]) + "\"")
         newarray_str = "[" + ", ".join(t for t in newarray) + "]"
         
         oldarray = ["\"" + prev_hash + "\""]
@@ -1054,7 +1059,7 @@ def _getty_install_invtips(html_string, commit_msgs, github_link,
             for pair in oldl2m:
                 oldarray.append("\"" + __path_to_image(pair[0]) + "\"")
                 oldarray.append("\"" + str(pair[1]) + "\"")
-                oldarray.append("\"" + fsformat(oldl2m[pair]) + "\"")
+                oldarray.append("\"" + fsformat_with_sigs(oldl2m[pair]) + "\"")
         oldarray_str = "[" + ", ".join(t for t in oldarray) + "]"
         
         extra_tooltips_installation = \

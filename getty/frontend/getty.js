@@ -172,7 +172,7 @@ var all_modified_targets;  // = new buckets.Set();
 var all_changed_tests;  // = new buckets.Set();
 var old_changed_tests;  // = new buckets.Set();
 var new_changed_tests;  // = new buckets.Set();
-var all_test_and_else;  // = new buckets.Set();
+//var all_test_and_else;  // = new buckets.Set();
 var all_whose_inv_changed;  // = new buckets.Set();
 var all_whose_clsobj_inv_changed;  // = new buckets.Set();
 var prev_affected_caller_of;  // = new buckets.Dictionary();
@@ -422,12 +422,35 @@ var neighborhood_table =
 //		(2) it is long enough with at least one period
 var common_package = '';
 var common_prefix_length = 0;
+var hidden_packages = [];
 
-function bolden_for_modified(method_name) {
-	display_name =
-		method_name.substring(common_prefix_length)
-			.replace(/</g, "&lt;").replace(/>g/, "&gt;")
-			.replace(/:/g, ":&#8203;").replace(/\$/g, "&#8203;$$");
+// extreme simple mode display all types as simple as possible
+var extreme_simple_mode = true;
+
+function reformat_display_for(method_name) {
+	display_name = method_name.substring(common_prefix_length);
+	name_parts = display_name.split(/(,|\(|\)|<|>|\$|:)/);
+	if (extreme_simple_mode) {
+		for (j = 0; j < name_parts.length; j ++) {
+			part_value = name_parts[j];
+			last_dot_pos = part_value.lastIndexOf(".");
+			if (last_dot_pos != -1)
+				name_parts[j] = part_value.substring(last_dot_pos + 1);
+		}
+	} else {  // a browser disabled the following loop, so we have to use extreme simple mode now
+		for (i = 0; i < hidden_packages.length; i ++) {
+			pkg_name = hidden_packages[i];
+			opt_start_index = pkg_name.length + 1;
+			for (j = 0; j < name_parts.length; j ++) {
+				part_value = name_parts[j];
+				if (part_value.startsWith(pkg_name))
+					name_parts[j] = part_value.substring(opt_start_index);
+			}
+		}
+	}
+	display_name = name_parts.join("")
+						.replace(/</g, "&lt;").replace(/>g/, "&gt;")
+						.replace(/:/g, ":&#8203;").replace(/\$/g, "&#8203;$$");
 	if (all_modified_targets.contains(method_name))
 		return "<u>" + display_name + "</u>";
 	else
@@ -485,26 +508,30 @@ function toggle_show_tests() {
 
 function active_link_for(method_name, count) {
 	js_cmd = "return structure_neighbors(\"" + method_name + "\");";
-	return "<a href='#' class='special-neighbor-link' onclick='" + js_cmd + "'>" + bolden_for_modified(method_name) + " (" + count + ")" + "</a>";
+	return "<a href='#' class='special-neighbor-link' onclick='" + js_cmd + "'>" +
+		reformat_display_for(method_name) + " (" + count + ")" + "</a>";
 }
 
 function active_hidable_link_for(method_name, count) {
 	js_cmd = "return structure_neighbors(\"" + method_name + "\");";
-	return "<a href='#' class='hidable-mtd-equal-inv' onclick='" + js_cmd + "'>" + bolden_for_modified(method_name) + " (" + count + ")" + "</a>";
+	return "<a href='#' class='hidable-mtd-equal-inv' onclick='" + js_cmd + "'>" +
+		reformat_display_for(method_name) + " (" + count + ")" + "</a>";
 }
 
 function active_hidable_test_link_for(method_name, count) {
 	js_cmd = "return structure_neighbors(\"" + method_name + "\");";
-	return "<a href='#' class='hidable-test-mtd-neighbor special-neighbor-link' onclick='" + js_cmd + "'>" + bolden_for_modified(method_name) + " (" + count + ")" + "</a>";
+	return "<a href='#' class='hidable-test-mtd-neighbor special-neighbor-link' onclick='" + js_cmd + "'>" +
+		reformat_display_for(method_name) + " (" + count + ")" + "</a>";
 }
 
 function span_for_test(method_name, count) {
 	js_cmd = "return structure_neighbors(\"" + method_name + "\");";
-	return "<a href='#' class='hidable-test-mtd-neighbor hidable-mtd-equal-inv' onclick='" + js_cmd + "'>" + bolden_for_modified(method_name) + " (" + count + ")" + "</a>";
+	return "<a href='#' class='hidable-test-mtd-neighbor hidable-mtd-equal-inv' onclick='" + js_cmd + "'>" +
+		reformat_display_for(method_name) + " (" + count + ")" + "</a>";
 }
 
-function update_neighbor(method_name, direction, ref_var, ref_prev_var) {	
-	html_content = ""
+function update_neighbor(method_name, direction, ref_var, ref_prev_var) {
+	html_content = "";
 	map_result = ref_var.get(method_name);
 	var map_prev_result;
 	if (ref_prev_var == undefined)
@@ -520,7 +547,8 @@ function update_neighbor(method_name, direction, ref_var, ref_prev_var) {
 		for (i = 0; i < all_keys.length; i ++) {
 			affected_method = all_keys[i];
 			if (all_project_methods.contains(affected_method) 
-					&& !all_test_and_else.contains(affected_method)) {
+//					&& !all_test_and_else.contains(affected_method)
+					) {
 				affected_count = relative_count_format(map_result, map_prev_result, affected_method);
 				if (all_whose_inv_changed.contains(affected_method)) {
 					all_link_elements.unshift(active_link_for(affected_method, affected_count));
@@ -563,7 +591,7 @@ function selected_show_hide() {
 
 function structure_neighbors(method_name) {
 	$('div#csi-output-neighbors').html(neighborhood_table);
-	center_show = "[&nbsp;" + bolden_for_modified(method_name) + "&nbsp;]";
+	center_show = "[&nbsp;" + reformat_display_for(method_name) + "&nbsp;]";
 	if (all_whose_inv_changed.contains(method_name) ||
 			all_whose_clsobj_inv_changed.contains(method_name))
 		center_show = "<span style='color:red;'>" + center_show + "</span>";
@@ -580,6 +608,7 @@ function structure_neighbors(method_name) {
 	return false;
 }
 
+// Deprecated
 function activateNeighbors(method_name) {
 	$('a.target-linkstyle').css("border", "none");
 	$("a.class-target-link-" + fsformat(method_name)).css("border", "solid green");

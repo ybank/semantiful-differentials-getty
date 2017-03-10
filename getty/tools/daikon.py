@@ -1,5 +1,8 @@
 # misc: utils for analysis, algorithms, prefix processings, etc.
 
+import re
+from copy import deepcopy
+
 import config
 
 # Recognize constructor and reformat it
@@ -389,3 +392,43 @@ def fsformat_with_sigs(target, for_daikon=True):
         return target.replace(":", "_").replace("$", "_").replace(".", "_").replace("(", "--").replace(")", "--").replace(",", "-").replace(" ", "")
     else:
         return target[:last_dash_pos].replace(":", "_").replace("$", "_").replace(".", "_").replace("(", "--").replace(")", "--").replace(",", "-").replace(" ", "")
+
+
+def purify_target_name(t):
+    dash_pos = t.find("-")
+    if dash_pos == -1:
+        return t
+    else:
+        return t[:dash_pos]
+
+
+def simiplify_target_name(t, common_package=""):
+    last_dash_pos = t.rfind("-")
+    ln_info = t[last_dash_pos+1:]
+    [prev_ln, post_ln] = ln_info.split(",")
+    if prev_ln is None:
+        prev_ln = "0"
+    if post_ln is None:
+        post_ln = "0"    
+    tname = t[:last_dash_pos]
+    full_name = tname
+    hidden_packages = deepcopy(config.hidden_package_names)
+    if common_package != '':
+        tname = tname[len(common_package)+1:]
+        hidden_packages.append(common_package)
+    if hidden_packages:
+        leftp = tname.find("(")
+        rightp = tname.find(")")
+        params = [p.strip() for p in re.split("(,|<|>)", tname[leftp+1:rightp])]
+        lparams = len(params)
+        for pkg in hidden_packages:
+            lpkg = len(pkg)
+            for i in range(lparams):
+                if params[i].startswith(pkg):
+                    params[i] = params[i][lpkg+1:]
+        params_str = re.sub(",", ", ", "".join(params))
+        if leftp != -1:
+            tname = tname[:leftp] + "(" + params_str + ")"
+    short_name = tname
+    short_display_name = tname.replace("<", "&lt;").replace(">", "&gt;")
+    return short_name, short_display_name, prev_ln, post_ln, full_name

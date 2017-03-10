@@ -46,7 +46,7 @@ compress_inv = False
 # development options
 show_debug_info = True
 show_debug_details = False
-show_regex_debug = True  ############################################################### turn it off after dev!
+show_regex_debug = False
 
 # effortless mvn setup
 no_mvn_customization = True  # BETA
@@ -71,6 +71,7 @@ max_diff_line_size = 1000
 inv_diff_context_lines = 0
 change_alignment = True
 similarity_bar = 0.8
+hidden_package_names = ["java.lang"]
 
 # method information file line prefix
 method_info_line_prefix = "[GETTY-JAVACG-METHOD-INFO] "

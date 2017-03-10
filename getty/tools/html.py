@@ -1,7 +1,7 @@
 # html transformation and manipulation
 
 import config
-from tools.daikon import fsformat, fsformat_with_sigs
+from tools.daikon import fsformat_with_sigs
 from tools.ex import read_str_from
 
 
@@ -127,19 +127,46 @@ def src_to_html(targets, go, commit_hash, install_line_numbers=False):
             pass
 
 
-def _install_ln_anchors_for(original):
-    anchored = []
-    for index, line in enumerate(original.split("\n"), start=1):
-        anchored.append("<a name='l" + str(index) + "'></a>" + line)
-    return '\n'.join(anchored)
+def _install_ln_anchors_for(original, targets, class_name_check=None, for_old=False):
+#     anchored = []
+#     for index, line in enumerate(original.split("\n"), start=1):
+#         anchored.append("<a name='l" + str(index) + "'></a>" + line)
+#     return '\n'.join(anchored)
+    l2as = {}
+    for target in targets:
+        colon_pos = target.find(":")
+        dolar_pos = target.find("$")
+        if class_name_check is not None:
+            if (dolar_pos == -1 and target[:colon_pos] == class_name_check) or \
+                (dolar_pos < colon_pos and target[:dolar_pos] == class_name_check):
+                last_dash = target.rfind("-")
+                ln_info_str = target[last_dash+1:].strip()
+                [oldln, newln] = [int(lnstr) for lnstr in ln_info_str.split(",")]
+                if for_old:
+                    ln = oldln
+                else:
+                    ln = newln
+                l2as[ln - config.max_method_decl_span] = \
+                    "<a name='" + fsformat_with_sigs(target) + "'></a>"
+    if len(l2as) > 0:
+        installed = []
+        for line_number, line_content in enumerate(original.split("\n"), start=1):
+            if line_number in l2as:
+                installed.append(l2as[line_number] + line_content)
+            else:
+                installed.append(line_content)
+        return '\n'.join(installed)
+    else:
+        return original
 
 
-def src_to_html_ln_anchor(targets, go, commit_hash):
+def src_to_html_ln_anchor(targets, go, commit_hash, for_old=False):
     filehash = {}
     file_set = set([])
+    path_prefix = go + "_getty_allcode_" + commit_hash + "_/"
     for target in targets:
         tp, lv = _target_to_path(target)
-        real_path = go + "_getty_allcode_" + commit_hash + "_/" + tp
+        real_path = path_prefix + tp
         if real_path not in filehash:
             filehash[real_path] = lv
         file_set.add(real_path)
@@ -149,7 +176,9 @@ def src_to_html_ln_anchor(targets, go, commit_hash):
             with open(jp, "r") as javaf:
                 allsrc = javaf.read()
                 print "  -- installing line number anchors ..."
-                allsrc = _install_ln_anchors_for(allsrc)
+                possible_class_name = ".".join(jp[len(path_prefix):-5].strip().split("/"))
+                allsrc = _install_ln_anchors_for(allsrc, targets,
+                            class_name_check=possible_class_name, for_old=for_old)
                 print "  -- syntax highlighting ..."
                 lvs = filehash[jp]
                 newsrchtml = \
@@ -170,6 +199,7 @@ def create_show_hide_toggle(btn_name, btn_id, cb_fn_str, checked=True, extra_sty
         "<label class='onoffswitch-label' for='" + btn_id + "'>" + \
         "<span class='onoffswitch-inner'></span><span class='onoffswitch-switch'></span>" + \
         "</label></div>"
+
 
 def create_legends_tooltip():
     return "<div style='float:right;'><a id='legends-tooltip' href='#'>Legends</a></div>"

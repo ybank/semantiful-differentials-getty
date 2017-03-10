@@ -2,7 +2,7 @@
 
 import config
 from analysis.solver import is_different, is_possibly_different
-from tools.daikon import fsformat_with_sigs
+from tools.daikon import fsformat_with_sigs, purify_target_name, simiplify_target_name
 from tools.html import create_show_hide_toggle, create_legends_tooltip
 
 
@@ -70,12 +70,9 @@ def __link_to_show_neighbors(t, common_package, all_codec_to_check=None, all_inv
     if all_invc_to_check is not None:
         if t in all_invc_to_check:
             cls += (" " + "highlight-inv-change")
-    js_cmd = "return activateNeighbors_ws(\"" + t + "\");"
-    tname = t
-    if common_package != '':
-        tname = t[len(common_package)+1:]
-    tname = tname.replace("<", "&lt;").replace(">", "&gt;")
-    return "<a href='#' id='" + aid + "' class='" + cls + "' onclick='" + js_cmd + "'>" + tname + "</a>"
+    _, displayname, _, _, fullname = simiplify_target_name(t, common_package=common_package)
+    js_cmd = "return activateNeighbors_ws(" + "\"" + fullname + "\"" + ");"
+    return "<a href='#' id='" + aid + "' class='" + cls + "' onclick='" + js_cmd + "'>" + displayname + "</a>"
 
 
 def __append_script_l2s(html_string, lst, for_whom):
@@ -117,15 +114,47 @@ def __append_script_common_package(html_string, common_package):
         return html_string
 
 
+def __append_script_hidden_packages(html_string):
+    hidden_pkgs = config.hidden_package_names
+    hidden_pkgs_str = ", ".join([("\"" + pkg + "\"") for pkg in hidden_pkgs])
+    pass_hidden_pkgs = "    " + "hidden_packages = [" + hidden_pkgs_str + "];\n"
+    place_holder = "</script>\n</body>"
+    to_replace = pass_hidden_pkgs + place_holder
+    return html_string.replace(place_holder, to_replace)
+
+
+def __purify_set_elements(aset):
+    result = set()
+    for ele in aset:
+        result.add(purify_target_name(ele))
+    return result
+
+
+def __purify_map_map_elements(map_of_maps):
+    result = {}
+    for outer_key in map_of_maps:
+        purified_outer_key = purify_target_name(outer_key)
+        map_value = map_of_maps[outer_key]
+        inner_map = {}
+        for inner_key in map_value:
+            purified_inner_key = purify_target_name(inner_key)
+            inner_map[purified_inner_key] = map_value[inner_key]
+        result[purified_outer_key] = inner_map
+    return result
+
+
 def _getty_csi_setvars(html_string, go, prev_hash, post_hash, common_package,
                        all_changed_tests, old_changed_tests, new_changed_tests,
-                       new_modified_src, new_all_src,
+                       all_changed_methods, new_all_src,
                        old_test_set, new_test_set,
                        old_caller_of, old_callee_of, old_pred_of, old_succ_of,
                        new_caller_of, new_callee_of, new_pred_of, new_succ_of,
                        all_whose_inv_changed, all_whose_clsobj_inv_changed):
+    all_changed_tests = __purify_set_elements(all_changed_tests)
     html_string = __append_script_l2s(html_string, all_changed_tests, "all_changed_tests")
+    old_changed_tests = __purify_set_elements(old_changed_tests)
     html_string = __append_script_l2s(html_string, old_changed_tests, "old_changed_tests")
+    new_changed_tests = __purify_set_elements(new_changed_tests)
     html_string = __append_script_l2s(html_string, new_changed_tests, "new_changed_tests")
     
     new_all = set()
@@ -133,15 +162,20 @@ def _getty_csi_setvars(html_string, go, prev_hash, post_hash, common_package,
     __set_all_with_tests(new_all, new_callee_of)
     __set_all_with_tests(new_all, new_pred_of)
     __set_all_with_tests(new_all, new_succ_of)
+    new_all = __purify_set_elements(new_all)
     html_string = __append_script_l2s(html_string, new_all, "all_project_methods")
     
-    all_modified = set(all_changed_tests) | set(new_modified_src)
+    all_modified = set(all_changed_tests) | set(all_changed_methods)
+    all_modified = __purify_set_elements(all_modified)
     html_string = __append_script_l2s(html_string, all_modified, "all_modified_targets")
 
-    new_all_test_and_else = new_all - set(new_all_src)
-    html_string = __append_script_l2s(html_string, new_all_test_and_else, "all_test_and_else")
+#     new_all_test_and_else = new_all - set(new_all_src)
+#     new_all_test_and_else = __purify_set_elements(new_all_test_and_else)
+#     html_string = __append_script_l2s(html_string, new_all_test_and_else, "all_test_and_else")
     
+    all_whose_inv_changed = __purify_set_elements(all_whose_inv_changed)
     html_string = __append_script_l2s(html_string, all_whose_inv_changed, "all_whose_inv_changed")
+    all_whose_clsobj_inv_changed = __purify_set_elements(all_whose_clsobj_inv_changed)
     html_string = __append_script_l2s(html_string, all_whose_clsobj_inv_changed, "all_whose_clsobj_inv_changed")
     
 #     # DEBUG ONLY
@@ -150,31 +184,37 @@ def _getty_csi_setvars(html_string, go, prev_hash, post_hash, common_package,
 #     print new_pred_of
 #     print new_succ_of
     
+    old_caller_of = __purify_map_map_elements(old_caller_of)
     html_string = __append_script_mm2d(html_string, old_caller_of, "prev_affected_caller_of")
+    old_callee_of = __purify_map_map_elements(old_callee_of)
     html_string = __append_script_mm2d(html_string, old_callee_of, "prev_affected_callee_of")
+    old_pred_of = __purify_map_map_elements(old_pred_of)
     html_string = __append_script_mm2d(html_string, old_pred_of, "prev_affected_pred_of")
+    old_succ_of = __purify_map_map_elements(old_succ_of)
     html_string = __append_script_mm2d(html_string, old_succ_of, "prev_affected_succ_of")
+    new_caller_of = __purify_map_map_elements(new_caller_of)
     html_string = __append_script_mm2d(html_string, new_caller_of, "post_affected_caller_of")
+    new_callee_of = __purify_map_map_elements(new_callee_of)
     html_string = __append_script_mm2d(html_string, new_callee_of, "post_affected_callee_of")
+    new_pred_of = __purify_map_map_elements(new_pred_of)
     html_string = __append_script_mm2d(html_string, new_pred_of, "post_affected_pred_of")
+    new_succ_of = __purify_map_map_elements(new_succ_of)
     html_string = __append_script_mm2d(html_string, new_succ_of, "post_affected_succ_of")
     
     html_string = __append_script_common_package(html_string, common_package)
+    html_string = __append_script_hidden_packages(html_string)
     
     return html_string
     
 
 def getty_csi_targets_prep(html_file, go, prev_hash, post_hash, common_package,
                            all_changed_tests, old_changed_tests, new_changed_tests,
-                           new_modified_src, new_all_src,
+                           all_changed_methods, new_modified_src, new_all_src,
                            old_test_set, new_test_set,
                            old_caller_of, old_callee_of, old_pred_of, old_succ_of,
                            new_caller_of, new_callee_of, new_pred_of, new_succ_of,
                            old_refined_target_set, new_refined_target_set, refined_target_set,
-                           all_classes_set, iso, expansion_set=None):
-    # TODO: 
-    #   Consider to use new_refined_target_set, old_refined_target_set for better results
-    
+                           all_classes_set, iso, expansion_set=None):    
     all_whose_inv_changed = set()
     if config.analyze_tests and not config.limit_interest:
         all_considered = (set(new_all_src) | set(new_test_set))
@@ -215,7 +255,7 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash, common_package,
         "<div id='csi-output-targets'>" + cpkg_disclaimer + compare_commit_msgs + \
         "<div class='menu-words entry-header'><b>Updated Source:</b></div>"
     
-    all_method_changes = set(new_modified_src) | set(all_changed_tests)
+    all_method_changes = set(all_changed_methods) | set(all_changed_tests)
     all_class_changes = set()
     for cm in all_method_changes:
         colon_pos = cm.find(":")
@@ -224,11 +264,11 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash, common_package,
         else:
             all_class_changes.add(cm)
     
-    if new_modified_src:
+    if all_changed_methods:
         replacement = "<div class='target-sep'>,</div>".join(
                             [__link_to_show_neighbors(t, common_package,
                                                       all_invc_to_check=all_whose_inv_changed)
-                                for t in sorted(list(new_modified_src))])
+                                for t in sorted(list(all_changed_methods))])
     else:
         replacement = "<span>None</span>"
     embed_test_update = "<br><div class='menu-words entry-header'><b>Updated Tests:</b></div>"
@@ -274,7 +314,7 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash, common_package,
 
     html_string = _getty_csi_setvars(html_string, go, prev_hash, post_hash, common_package,
                                      all_changed_tests, old_changed_tests, new_changed_tests,
-                                     new_modified_src, new_all_src,
+                                     all_changed_methods, new_all_src,
                                      old_test_set, new_test_set,
                                      old_caller_of, old_callee_of, old_pred_of, old_succ_of,
                                      new_caller_of, new_callee_of, new_pred_of, new_succ_of,

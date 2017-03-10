@@ -34,7 +34,7 @@ a.hidable-mtd-equal-inv { color: darkgray }
 
 div#legends { display:inline-block; position:relative; width:100% }
 
-div#csi-output-targets a#commit-msg-link { color: blue !important }
+div#csi-output-targets a#commit-msg-link { color: black !important; text-decoration: none !important }
 div#csi-output-targets a.highlight-inv-change { color: red !important }
 div#csi-output-targets a.dehighlight-code-change { text-decoration: none !important }
 a.csi-iso-ctrl-group {
