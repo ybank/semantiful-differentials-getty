@@ -431,7 +431,7 @@ function reformat_display_for(method_name) {
 	display_name = method_name.substring(common_prefix_length);
 	name_parts = display_name.split(/(,|\(|\)|<|>|\$|:)/);
 	if (extreme_simple_mode) {
-		for (j = 0; j < name_parts.length; j ++) {
+		for (j = 1; j < name_parts.length; j ++) {  // do not consider the first one (with class name)
 			part_value = name_parts[j];
 			last_dot_pos = part_value.lastIndexOf(".");
 			if (last_dot_pos != -1)
