@@ -5,6 +5,62 @@ from copy import deepcopy
 
 import config
 
+
+def simplify_target_name(t, common_package=""):
+    last_dash_pos = t.rfind("-")
+    ln_info = (t[last_dash_pos+1:].split(",")
+                    if last_dash_pos != -1
+                    else [None, None])
+    if len(ln_info) == 1:
+        curr_ln = int(ln_info[0])
+        prev_ln = None
+        post_ln = None
+    elif len(ln_info) == 2:
+        [prev_ln, post_ln] = ln_info
+        if prev_ln is not None:
+            prev_ln = int(prev_ln)
+        if post_ln is not None:
+            post_ln = int(post_ln)
+        curr_ln = None
+    if last_dash_pos != -1:
+        tname = t[:last_dash_pos]
+    else:
+        tname = t
+    full_name = tname
+    if config.extreme_simple_mode:
+        if common_package != '':
+            tname = tname[len(common_package)+1:]
+        params = [p.strip() for p in re.split("(,|\(|\)|<|>|\[|\]|\$|:)", tname)]
+        for i in range(len(params) - 1):
+            j = i + 1
+            part_value = params[j]
+            last_dot_pos = part_value.rfind(".")
+            if last_dot_pos != -1:
+                params[j] = part_value[last_dot_pos+1:]
+        tname = "".join(params)
+    else:
+        hidden_packages = deepcopy(config.hidden_package_names)
+        if common_package != '':
+            tname = tname[len(common_package)+1:]
+            hidden_packages.append(common_package)
+        if hidden_packages:
+            leftp = tname.find("(")
+            rightp = tname.find(")")
+            params = [p.strip() for p in re.split("(,|\(|\)|<|>|\[|\]|\$|:)", tname[leftp+1:rightp])]
+            lparams = len(params)
+            for pkg in hidden_packages:
+                lpkg = len(pkg)
+                for i in range(lparams):
+                    if params[i].startswith(pkg):
+                        params[i] = params[i][lpkg+1:]
+            params_str = re.sub(",", ", ", "".join(params))
+            if leftp != -1:
+                tname = tname[:leftp] + "(" + params_str + ")"
+    short_name = tname
+    short_display_name = tname.replace("<", "&lt;").replace(">", "&gt;")
+    return short_name, short_display_name, prev_ln, post_ln, curr_ln, full_name
+
+
 # Recognize constructor and reformat it
 # pachage.class:method -> package.class:method
 # package.class:<init> -> pachage.class:class
@@ -240,26 +296,55 @@ def dpformat_with_sigs(target, more_ppts=False):
     target = real_name_pi_with_sigs(target)
     tci = target.rfind(":::")
     if tci != -1:
-        return "^" + target[:tci].replace(":", ".").replace(".", "\.").replace("$", "\$") + target[tci:]
+        return ("^" +
+            target[:tci].replace(":", ".").replace(".", "\.").replace("$", "\$")
+                .replace("[", "\[").replace("]", "\]")
+                .replace("<", "\<").replace(">", "\>")
+                .replace("(", "\(").replace(")", "\)") +
+            target[tci:])
     colon_index = target.rfind(":")
     if colon_index == -1:
         if more_ppts:
             # includes class and class.*
-            return "^" + target.replace(":", ".").replace(".", "\.").replace("$", "\$") + "(:|\.)"
+            return ("^" +
+                target.replace(":", ".").replace(".", "\.").replace("$", "\$")
+                    .replace("[", "\[").replace("]", "\]")
+                    .replace("<", "\<").replace(">", "\>")
+                    .replace("(", "\(").replace(")", "\)") +
+                "(:|\.)")
         else:
-            return "^" + target.replace(":", ".").replace(".", "\.").replace("$", "\$") + ":"
+            return ("^" +
+                target.replace(":", ".").replace(".", "\.").replace("$", "\$")
+                    .replace("[", "\[").replace("]", "\]")
+                    .replace("<", "\<").replace(">", "\>")
+                    .replace("(", "\(").replace(")", "\)") +
+                ":")
     else:
         if more_ppts:
             # include possible parents and the method itself (and overloaded methods)
             possible_parents = target[:colon_index].replace(":", ".")
             itself = target.replace(":", ".")
-            return ("^" + possible_parents + ":|^" + itself + "\(").replace(".", "\.").replace("$", "\$")
+            return ("^" + possible_parents + ":|^" + itself + "\(") \
+                        .replace(".", "\.").replace("$", "\$") \
+                        .replace("[", "\[").replace("]", "\]") \
+                        .replace("<", "\<").replace(">", "\>") \
+                        .replace("(", "\(").replace(")", "\)")
         else:
             rightp_index = target.rfind(")")
             if rightp_index != -1:
-                return "^" + target[:rightp_index+1].replace(":", ".").replace(".", "\.").replace("$", "\$").replace("(", "\(").replace(")", "\)").replace(",", ",(\ )*")
+                return ("^" +
+                    target[:rightp_index+1].replace(":", ".").replace(".", "\.").replace("$", "\$")
+                        .replace("(", "\(").replace(")", "\)")
+                        .replace("[", "\[").replace("]", "\]")
+                        .replace("<", "\<").replace(">", "\>")
+                        .replace(",", ",(\ )*"))
             else:
-                return "^" + target.replace(":", ".").replace(".", "\.").replace("$", "\$") + "\("
+                return ("^" +
+                    target.replace(":", ".").replace(".", "\.").replace("$", "\$")
+                        .replace("[", "\[").replace("]", "\]")
+                        .replace("<", "\<").replace(">", "\>")
+                        .replace("(", "\(").replace(")", "\)") +
+                    "\(")
 
 
 # reformat all methods together so it is recognizable by Daikon filter
@@ -289,15 +374,25 @@ def dfformat_full_ordered(target_set):
         colon_index = target.rfind(":")
         if colon_index == -1:
             # includes class and class.*
-            parent_interest_set.add("^" + target.replace(":", ".").replace(".", "\.").replace("$", "\$") + ":")
+            parent_interest_set.add(
+                "^" +
+                target.replace(":", ".").replace(".", "\.").replace("$", "\$")
+                    .replace("[", "\[").replace("]", "\]").replace("<", "\<").replace(">", "\>") +
+                ":")
         else:
             possible_parent = target[:colon_index].replace(":", ".")
-            parent_interest_set.add(("^" + possible_parent + ":").replace(".", "\.").replace("$", "\$"))
+            parent_interest_set.add(
+                ("^" + possible_parent + ":").replace(".", "\.").replace("$", "\$")
+                    .replace("[", "\[").replace("]", "\]").replace("<", "\<").replace(">", "\>"))
             if config.class_level_expansion:
-                method_interest_set.add(("^" + possible_parent + ".*").replace(".", "\.").replace("$", "\$"))
+                method_interest_set.add(
+                    ("^" + possible_parent + ".*").replace(".", "\.").replace("$", "\$")
+                        .replace("[", "\[").replace("]", "\]").replace("<", "\<").replace(">", "\>"))
             else:
                 itself = target.replace(":", ".")
-                method_interest_set.add(("^" + itself + "\(").replace(".", "\.").replace("$", "\$"))
+                method_interest_set.add(
+                    ("^" + itself + "\(").replace(".", "\.").replace("$", "\$")
+                        .replace("[", "\[").replace("]", "\]").replace("<", "\<").replace(">", "\>"))
     parent_pattern = "|".join(parent_interest_set)
     method_pattern = "|".join(method_interest_set)
     if parent_pattern == '' and method_pattern == '':
@@ -386,17 +481,22 @@ def fsformat(target, for_daikon=True):
 # reformat one target so it is recognizable by Daikon filter - with signature info
 def fsformat_with_sigs(target, for_daikon=True):
     if for_daikon:
-        target = real_name_ff_with_sigs(target)
+        target_name = real_name_ff_with_sigs(target)
+    tcp = config.the_common_package[0]
+    target, _, _, _, _, _ = simplify_target_name(
+        target_name, common_package=tcp)
     last_dash_pos = target.rfind("-")
     if last_dash_pos == -1:
         return target.replace(":", "_").replace("$", "_").replace(".", "_") \
                      .replace("(", "--").replace(")", "--") \
                      .replace("<", "--").replace(">", "--") \
+                     .replace("[", "--").replace("]", "--") \
                      .replace(",", "-").replace(" ", "")
     else:
         return target[:last_dash_pos].replace(":", "_").replace("$", "_").replace(".", "_") \
                                      .replace("(", "--").replace(")", "--") \
                                      .replace("<", "--").replace(">", "--") \
+                                     .replace("[", "--").replace("]", "--") \
                                      .replace(",", "-").replace(" ", "")
 
 
@@ -406,35 +506,3 @@ def purify_target_name(t):
         return t
     else:
         return t[:dash_pos]
-
-
-def simiplify_target_name(t, common_package=""):
-    last_dash_pos = t.rfind("-")
-    ln_info = t[last_dash_pos+1:]
-    [prev_ln, post_ln] = ln_info.split(",")
-    if prev_ln is None:
-        prev_ln = "0"
-    if post_ln is None:
-        post_ln = "0"    
-    tname = t[:last_dash_pos]
-    full_name = tname
-    hidden_packages = deepcopy(config.hidden_package_names)
-    if common_package != '':
-        tname = tname[len(common_package)+1:]
-        hidden_packages.append(common_package)
-    if hidden_packages:
-        leftp = tname.find("(")
-        rightp = tname.find(")")
-        params = [p.strip() for p in re.split("(,|<|>)", tname[leftp+1:rightp])]
-        lparams = len(params)
-        for pkg in hidden_packages:
-            lpkg = len(pkg)
-            for i in range(lparams):
-                if params[i].startswith(pkg):
-                    params[i] = params[i][lpkg+1:]
-        params_str = re.sub(",", ", ", "".join(params))
-        if leftp != -1:
-            tname = tname[:leftp] + "(" + params_str + ")"
-    short_name = tname
-    short_display_name = tname.replace("<", "&lt;").replace(">", "&gt;")
-    return short_name, short_display_name, prev_ln, post_ln, full_name

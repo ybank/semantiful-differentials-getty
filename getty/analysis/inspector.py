@@ -2,7 +2,7 @@
 
 import config
 from analysis.solver import is_different, is_possibly_different
-from tools.daikon import fsformat_with_sigs, purify_target_name, simiplify_target_name
+from tools.daikon import fsformat_with_sigs, purify_target_name, simplify_target_name
 from tools.html import create_show_hide_toggle, create_legends_tooltip
 
 
@@ -70,7 +70,7 @@ def __link_to_show_neighbors(t, common_package, all_codec_to_check=None, all_inv
     if all_invc_to_check is not None:
         if t in all_invc_to_check:
             cls += (" " + "highlight-inv-change")
-    _, displayname, _, _, fullname = simiplify_target_name(t, common_package=common_package)
+    _, displayname, _, _, _, fullname = simplify_target_name(t, common_package=common_package)
     js_cmd = "return activateNeighbors_ws(" + "\"" + fullname + "\"" + ");"
     return "<a href='#' id='" + aid + "' class='" + cls + "' onclick='" + js_cmd + "'>" + displayname + "</a>"
 
@@ -115,12 +115,25 @@ def __append_script_common_package(html_string, common_package):
 
 
 def __append_script_hidden_packages(html_string):
-    hidden_pkgs = config.hidden_package_names
-    hidden_pkgs_str = ", ".join([("\"" + pkg + "\"") for pkg in hidden_pkgs])
-    pass_hidden_pkgs = "    " + "hidden_packages = [" + hidden_pkgs_str + "];\n"
+    if config.extreme_simple_mode:
+        extra_script = "    " + "extreme_simple_mode = true;\n"
+    else:
+        hidden_pkgs = config.hidden_package_names
+        hidden_pkgs_str = ", ".join([("\"" + pkg + "\"") for pkg in hidden_pkgs])
+        extra_script = "    " + "hidden_packages = [" + hidden_pkgs_str + "];\n"
     place_holder = "</script>\n</body>"
-    to_replace = pass_hidden_pkgs + place_holder
+    to_replace = extra_script + place_holder
     return html_string.replace(place_holder, to_replace)
+
+
+def __append_script_isotype_reset(html_string, iso):
+    if iso:
+        place_holder = "</script>\n</body>"
+        reset_iso_script = "    " + "iso_type = \"si\";\n"
+        to_replace = reset_iso_script + place_holder
+        return html_string.replace(place_holder, to_replace)
+    else:
+        return html_string
 
 
 def __purify_set_elements(aset):
@@ -149,7 +162,7 @@ def _getty_csi_setvars(html_string, go, prev_hash, post_hash, common_package,
                        old_test_set, new_test_set,
                        old_caller_of, old_callee_of, old_pred_of, old_succ_of,
                        new_caller_of, new_callee_of, new_pred_of, new_succ_of,
-                       all_whose_inv_changed, all_whose_clsobj_inv_changed):
+                       all_whose_inv_changed, all_whose_clsobj_inv_changed, iso):
     all_changed_tests = __purify_set_elements(all_changed_tests)
     html_string = __append_script_l2s(html_string, all_changed_tests, "all_changed_tests")
     old_changed_tests = __purify_set_elements(old_changed_tests)
@@ -203,6 +216,7 @@ def _getty_csi_setvars(html_string, go, prev_hash, post_hash, common_package,
     
     html_string = __append_script_common_package(html_string, common_package)
     html_string = __append_script_hidden_packages(html_string)
+    html_string = __append_script_isotype_reset(html_string, iso)
     
     return html_string
     
@@ -215,7 +229,7 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash, common_package,
                            new_caller_of, new_callee_of, new_pred_of, new_succ_of,
                            old_refined_target_set, new_refined_target_set, refined_target_set,
                            all_classes_set, iso, expansion_set=None):    
-    all_whose_inv_changed = set()
+    all_whose_inv_changed_candidates = set()
     if config.analyze_tests and not config.limit_interest:
         all_considered = (set(new_all_src) | set(new_test_set))
     elif config.limit_interest:
@@ -224,13 +238,19 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash, common_package,
         all_considered = set(new_all_src)
     if config.class_level_expansion:
         all_considered = all_considered | expansion_set
+    
     for mtd in all_considered:
         if iso:
             if is_possibly_different(mtd, go, prev_hash, post_hash, preprocessed=True):
-                all_whose_inv_changed.add(mtd);
+                all_whose_inv_changed_candidates.add(mtd);
         else:
             if is_different(mtd, go, prev_hash, post_hash):
-                all_whose_inv_changed.add(mtd);
+                all_whose_inv_changed_candidates.add(mtd);
+    
+    all_whose_inv_changed = set()
+    for one_target in all_whose_inv_changed_candidates:
+        if one_target.find(":") != -1:
+            all_whose_inv_changed.add(one_target) 
     
     all_whose_clsobj_inv_changed = set()
     for cls in all_classes_set:
@@ -318,7 +338,7 @@ def getty_csi_targets_prep(html_file, go, prev_hash, post_hash, common_package,
                                      old_test_set, new_test_set,
                                      old_caller_of, old_callee_of, old_pred_of, old_succ_of,
                                      new_caller_of, new_callee_of, new_pred_of, new_succ_of,
-                                     all_whose_inv_changed, all_whose_clsobj_inv_changed)
+                                     all_whose_inv_changed, all_whose_clsobj_inv_changed, iso)
     
     with open(html_file, 'w') as wf:
         wf.write(html_string)

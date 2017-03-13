@@ -22,7 +22,7 @@ num_master_workers = 1
 auto_fork = True
 num_slave_workers = multiprocessing.cpu_count()
 classes_per_fork = 1
-min_heap = "2048m"
+min_heap = "4096m"
 max_heap = "16384m"
 
 # options to control Daikon analysis
@@ -46,7 +46,8 @@ compress_inv = False
 # development options
 show_debug_info = True
 show_debug_details = False
-show_regex_debug = False
+show_regex_debug = True
+show_stack_trace_info = False
 
 # effortless mvn setup
 no_mvn_customization = True  # BETA
@@ -71,7 +72,9 @@ max_diff_line_size = 1000
 inv_diff_context_lines = 0
 change_alignment = True
 similarity_bar = 0.8
+the_common_package = []  # NOT read-only: change after info path
 hidden_package_names = ["java.lang"]
+extreme_simple_mode = True
 
 # method information file line prefix
 method_info_line_prefix = "[GETTY-JAVACG-METHOD-INFO] "

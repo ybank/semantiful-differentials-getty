@@ -208,7 +208,7 @@ def one_info_pass(
     else:
         infocp = cp
     java_cmd = " ".join(["java", "-cp", infocp, 
-#                          "-Xms"+config.min_heap, 
+#                         "-Xms"+config.min_heap, 
                          "-Xmx"+config.max_heap, 
                          "-XX:+UseConcMarkSweepGC", 
 #                          "-XX:-UseGCOverheadLimit",
@@ -238,7 +238,7 @@ def one_info_pass(
         print "\n===instrumentation pattern===\n" + instrument_regex + "\n"
     # run tests with instrumentation
     run_instrumented_tests = \
-        " ".join([java_cmd,
+        " ".join([java_cmd, "-ea",
                   "-javaagent:" + agent_path + "=\"" + instrument_regex + "\"",
                   junit_torun])
     if SHOW_DEBUG_INFO:
@@ -248,7 +248,10 @@ def one_info_pass(
         makedirs(dyng_go)
     
     full_info_exfile = go + "_getty_binary_info_" + this_hash + "_.ex"
-    os.sys_call(run_instrumented_tests + " > " + full_info_exfile, ignore_bad_exit=True)
+    os.sys_call(run_instrumented_tests +
+                    " > " + full_info_exfile +
+                    ("" if config.show_stack_trace_info else " 2> /dev/null"),
+                ignore_bad_exit=True)
     full_method_info_map = {}
     ext_start_index = len(config.method_info_line_prefix)
     with open(full_info_exfile, 'r') as f:
@@ -531,6 +534,15 @@ def visit(junit_path, sys_classpath, agent_path, cust_mvn_repo, separate_go, pre
     '''
         middle pass: set common interests
     '''
+    common_package = ''
+    if old_common_package != '' and new_common_package != '':
+        if (len(old_common_package) < len(new_common_package) and 
+                (new_common_package+'.').find(old_common_package+'.') == 0):
+            common_package = old_common_package
+        elif (len(old_common_package) >= len(new_common_package) and 
+                (old_common_package+'.').find(new_common_package+'.') == 0):
+            common_package = old_common_package
+    config.the_common_package.append(common_package)
 #     refined_target_set = old_refined_target_set | new_refined_target_set
     refined_target_set, all_changed_methods, all_changed_tests = \
         _merge_target_sets(
@@ -579,14 +591,6 @@ def visit(junit_path, sys_classpath, agent_path, cust_mvn_repo, separate_go, pre
     '''
     all_classes_set = set(old_all_classes + new_all_classes)
     all_classes_set = _append_class_ln(all_classes_set)
-    common_package = ''
-    if old_common_package != '' and new_common_package != '':
-        if (len(old_common_package) < len(new_common_package) and 
-                (new_common_package+'.').find(old_common_package+'.') == 0):
-            common_package = old_common_package
-        elif (len(old_common_package) >= len(new_common_package) and 
-                (old_common_package+'.').find(new_common_package+'.') == 0):
-            common_package = old_common_package
     
     print 'Center analysis is completed.'
     return common_package, all_classes_set, refined_target_set, \

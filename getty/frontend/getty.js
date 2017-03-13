@@ -6,7 +6,7 @@ var prev_hash = "";
 var post_hash = "";
 
 var isolation = false;
-var iso_type = "si";
+var iso_type = "ni";
 var invdiff_display_with = "none";
 
 var current_method_name = "";
@@ -14,6 +14,17 @@ var current_method_name = "";
 var target_anchor_prefix = "-getty-ta-";
 
 var load_timeout = 200;  // 0.2s
+
+// common_package discovered and set by getty
+// it exists only if 
+//		(1) there is only one non-zero length common prefix, and 
+//		(2) it is long enough with at least one period
+var common_package = '';
+var common_prefix_length = 0;
+var hidden_packages = [];
+
+// extreme simple mode display all types as simple as possible
+var extreme_simple_mode = false;
 
 function set_commit_hashes(prev, post) {
 	prev_hash = prev;
@@ -224,6 +235,30 @@ function real_name_ff_ws(s) {
 	}
 }
 
+function simplify_target_name(full_method_name) {
+	truncated = full_method_name.substring(common_prefix_length);
+	name_parts = truncated.split(/(,|\(|\)|<|>|\[|\]|\$|:)/);
+	if (extreme_simple_mode) {
+		for (j = 1; j < name_parts.length; j ++) {  // do not consider the first one (with class name)
+			part_value = name_parts[j];
+			last_dot_pos = part_value.lastIndexOf(".");
+			if (last_dot_pos != -1)
+				name_parts[j] = part_value.substring(last_dot_pos + 1);
+		}
+	} else {  // a browser disabled the following loop, so we have to use extreme simple mode now
+		for (i = 0; i < hidden_packages.length; i ++) {
+			pkg_name = hidden_packages[i];
+			opt_start_index = pkg_name.length + 1;
+			for (j = 0; j < name_parts.length; j ++) {
+				part_value = name_parts[j];
+				if (part_value.startsWith(pkg_name))
+					name_parts[j] = part_value.substring(opt_start_index);
+			}
+		}
+	}
+	return name_parts.join("");
+}
+
 function fsformat(s) {
 	s = real_name_ff(s);
 	return s.replace(/:/g, "_").replace(/\$/g, "_").replace(/\./g, '_');
@@ -231,11 +266,12 @@ function fsformat(s) {
 
 function fsformat_ws(s) {
 	s = real_name_ff_ws(s);
-	last_dash_index = s.lastIndexOf("-");
-	if (last_dash_index == -1)
-		return s.replace(/:/g, "_").replace(/\$/g, "_").replace(/\./g, '_').replace(/\(/g, '--').replace(/\)/g, '--').replace(/,/g, '-').replace(/\ /g, '');
-	else
-		return s.substring(0, last_dash_index).replace(/:/g, "_").replace(/\$/g, "_").replace(/\./g, '_').replace(/\(/g, '--').replace(/\)/g, '--').replace(/,/g, '-').replace(/\ /g, '');
+	s = simplify_target_name(s);
+	return s.replace(/:/g, "_").replace(/\$/g, "_").replace(/\./g, '_')
+			.replace(/\(/g, '--').replace(/\)/g, '--')
+			.replace(/</g, '--').replace(/>/g, '--')
+			.replace(/\[/g, '--').replace(/\]/g, '--')
+			.replace(/,/g, '-').replace(/\ /g, '');
 }
 
 function name_to_path(m, hash_value) {
@@ -416,41 +452,13 @@ var neighborhood_table =
 	"<tr><td></td><td id='neighbor-south' class='exist-neighbor'>south</td><td></td></tr>\n" +
 	"</table>\n";
 
-// common_package discovered and set by getty
-// it exists only if 
-//		(1) there is only one non-zero length common prefix, and 
-//		(2) it is long enough with at least one period
-var common_package = '';
-var common_prefix_length = 0;
-var hidden_packages = [];
-
-// extreme simple mode display all types as simple as possible
-var extreme_simple_mode = true;
 
 function reformat_display_for(method_name) {
-	display_name = method_name.substring(common_prefix_length);
-	name_parts = display_name.split(/(,|\(|\)|<|>|\$|:)/);
-	if (extreme_simple_mode) {
-		for (j = 1; j < name_parts.length; j ++) {  // do not consider the first one (with class name)
-			part_value = name_parts[j];
-			last_dot_pos = part_value.lastIndexOf(".");
-			if (last_dot_pos != -1)
-				name_parts[j] = part_value.substring(last_dot_pos + 1);
-		}
-	} else {  // a browser disabled the following loop, so we have to use extreme simple mode now
-		for (i = 0; i < hidden_packages.length; i ++) {
-			pkg_name = hidden_packages[i];
-			opt_start_index = pkg_name.length + 1;
-			for (j = 0; j < name_parts.length; j ++) {
-				part_value = name_parts[j];
-				if (part_value.startsWith(pkg_name))
-					name_parts[j] = part_value.substring(opt_start_index);
-			}
-		}
-	}
-	display_name = name_parts.join("")
-						.replace(/</g, "&lt;").replace(/>g/, "&gt;")
-						.replace(/:/g, ":&#8203;").replace(/\$/g, "&#8203;$$");
+	short_name = simplify_target_name(method_name);
+	
+	display_name = short_name
+					.replace(/</g, "&lt;").replace(/>g/, "&gt;")
+					.replace(/:/g, ":&#8203;").replace(/\$/g, "&#8203;$$");
 	if (all_modified_targets.contains(method_name))
 		return "<u>" + display_name + "</u>";
 	else
