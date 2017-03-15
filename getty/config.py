@@ -14,9 +14,7 @@ analyze_less_tests = True
 limit_interest = True
 limit_distance = 3
 class_level_expansion = True
-### consider to deprecate the following two
 expansion_tmp_files = "_getty_temp_expansion_targets_"
-further_expansion_analysis = False  # if true, consider to improve UI elements
 
 # scale parameters
 num_master_workers = 1
