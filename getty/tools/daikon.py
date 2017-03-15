@@ -141,12 +141,12 @@ def real_name_pi_with_sigs(target):
     if colon_index == -1:
         # not a target, but a class name, for example
         return target
-    elif target[colon_index+1:] == "<init>":
-        prd_i = target.rfind(".")
-        dlr_i = target.rfind("$")
+    elif target[colon_index+1:].startswith("<init>"):
+        prd_i = target[:leftp_index].rfind(".")
+        dlr_i = target[:leftp_index].rfind("$")
         chop_i = max(prd_i, dlr_i)
         methodname = target[chop_i+1:colon_index]
-        return target[:colon_index+1] + methodname + target[leftp_index:rightp_index+1]
+        return target[:colon_index+1] + methodname + target[leftp_index:rightp_index+1].replace(" ", "")
     elif target[colon_index+1:] == "<clinit>":
         return target[:colon_index] + ":::CLASS"
     else:

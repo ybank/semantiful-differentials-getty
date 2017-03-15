@@ -56,11 +56,10 @@ def sort_txt_inv(out_file):
 
 
 # get class-level expanded target set
-def all_methods_expansion(target_set, go, this_hash, index, java_cmd, inv_gz):
+def all_methods_expansion(candidates, target_set, go, this_hash, index, java_cmd, inv_gz):
     exp_tmp = go + "expansion_temp." + this_hash + "." + str(index) + ".allinvs"
     run_print_allinvs = " ".join([java_cmd, "daikon.PrintInvariants", "--output", exp_tmp, inv_gz])
     os.sys_call(run_print_allinvs, ignore_bad_exit=True)
-    candidates = set()
     regex_header = "(.*):::(ENTER|EXIT|CLASS|OBJECT|THROW).*"
     with open(exp_tmp, 'r') as rf:
         alllines = rf.read().split("\n")
@@ -68,44 +67,35 @@ def all_methods_expansion(target_set, go, this_hash, index, java_cmd, inv_gz):
             m = re.match(regex_header, line.strip())
             if m:
                 full_method = m.group(1)
-                right_bound = full_method.find("(")
-                if right_bound != -1:
-                    all_dots_mtdname = full_method[:right_bound]
+                leftp_bound = full_method.find("(")
+                rightp_bound = full_method.find(")")
+                if leftp_bound != -1:
+                    all_dots_mtdname = full_method[:leftp_bound]
                     last_dot_index = all_dots_mtdname.rfind(".")
                     if last_dot_index != -1:
                         raw_method_name = all_dots_mtdname[last_dot_index+1:]
                         further_last_dot_index = all_dots_mtdname[:last_dot_index].rfind(".")
                         if all_dots_mtdname[further_last_dot_index+1:last_dot_index] == raw_method_name:
                             raw_method_name = "<init>"
-                        candidates.add(all_dots_mtdname[:last_dot_index] + ":" + raw_method_name)
+                        candidates.add(
+                            all_dots_mtdname[:last_dot_index] + ":" + raw_method_name +
+                            full_method[leftp_bound:rightp_bound+1].replace(" ", ""))
     os.remove_file(exp_tmp)
-    
-    # yes we should do class-level expansion here still, but we should remove all that has accurate sig info
-    to_exclude_set = set([])
-    for t in target_set:
-        lp_index = t.rfind("(")
-        if lp_index == -1:
-            t_raw = t
-        else:
-            t_raw = t[:lp_index]
-        if t_raw in candidates:
-            to_exclude_set.add(t_raw)
-    candidates = candidates - to_exclude_set
-    
-    ex.save_list_to(go + config.expansion_tmp_files + "." + this_hash + "." + str(index) + "." + str(int(time.time())),
+    ex.save_list_to(go + config.expansion_tmp_files + "." + this_hash +
+                        "." + str(index) + "." + str(int(time.time())),
                     candidates)
-    return candidates, to_exclude_set
 
 
 # v4. flexible to be run in parallel, in daikon-online mode
-def seq_get_invs(target_set_index_pair, java_cmd, junit_torun, go, this_hash):
+def seq_get_invs(target_set_index_pair, java_cmd, junit_torun, go, this_hash, consider_expansion):
+    
     index = target_set_index_pair[1]
     target_set = target_set_index_pair[0]
     print "\n\t****\n" + "  forked: " + index + "\n\t****\n"
     
 #     select_pattern = daikon.select_full(target_set)
     select_pattern = daikon.dfformat_full_ordered(target_set)
-    print "\n===select pattern===\n" + select_pattern + "\n"
+    print "\n=== select pattern ===\n" + select_pattern + "\n"
     
     inv_gz = go + "_getty_inv_" + this_hash + "_." + index
     if config.compress_inv:
@@ -139,11 +129,10 @@ def seq_get_invs(target_set_index_pair, java_cmd, junit_torun, go, this_hash):
         print "\n=== Daikon:Chicory+Daikon(online) command to run: \n" + run_chicory_daikon
     os.sys_call(run_chicory_daikon, ignore_bad_exit=True)
     
-    class_level_expanded_targets = set()
-    if config.class_level_expansion:
+    expansion = set()
+    if consider_expansion and config.class_level_expansion:
         try:
-            class_level_expanded_targets, existed_raw = \
-                all_methods_expansion(target_set, go, this_hash, index, java_cmd, inv_gz)
+            all_methods_expansion(expansion, target_set, go, this_hash, index, java_cmd, inv_gz)
         except:
             pass
     
@@ -151,10 +140,9 @@ def seq_get_invs(target_set_index_pair, java_cmd, junit_torun, go, this_hash):
         current_count = 0
         total_count = len(target_set)
     
-    if config.further_expansion_analysis:
-        all_to_consider = (set(target_set) | class_level_expanded_targets | existed_raw)
-    else:
-        all_to_consider = (set(target_set) | class_level_expanded_targets)
+    all_to_consider = set(target_set)
+    if config.class_level_expansion:
+        all_to_consider = (all_to_consider | expansion)
     
     for tgt in all_to_consider:
         target_ff = daikon.fsformat_with_sigs(tgt)
@@ -177,6 +165,24 @@ def seq_get_invs(target_set_index_pair, java_cmd, junit_torun, go, this_hash):
         os.sys_call(run_printinv, ignore_bad_exit=True)
         sort_txt_inv(out_file)
     os.remove_file(inv_gz)
+
+
+def get_expansion_set(go):
+    expansion = set([])
+    try:
+        files = os.from_sys_call(
+            " ".join(["ls", go, "|", "grep", config.expansion_tmp_files])).strip().split("\n")
+        for fl in files:
+            fl = fl.strip()
+            ep = set([])
+            try:
+                ep = ep | set(ex.read_str_from(go + fl))
+            except:
+                pass
+            expansion = expansion | ep
+        return expansion
+    except:
+        return expansion
 
 
 # one pass template
@@ -322,16 +328,19 @@ def one_inv_pass(go, cp, junit_torun, this_hash, refined_target_set, analysis_on
     target_map = daikon.target_s2m(refined_target_set)
     all_classes = target_map.keys()
     
+    consider_expansion = (not analysis_only)
+    
     if len(refined_target_set) <= num_primary_workers or (num_primary_workers == 1 and not auto_parallel_targets):
         single_set_tuple = (refined_target_set, "0")
-        seq_get_invs(single_set_tuple, java_cmd, junit_torun, go, this_hash)
+        seq_get_invs(single_set_tuple, java_cmd, junit_torun, go, this_hash, consider_expansion)
     elif num_primary_workers > 1:  # FIXME: this distributation is buggy
         target_set_inputs = []
         all_target_set_list = list(refined_target_set)
         each_bulk_size = int(len(refined_target_set) / num_primary_workers)
         
         seq_func = partial(seq_get_invs, 
-                           java_cmd=java_cmd, junit_torun=junit_torun, go=go, this_hash=this_hash)
+                           java_cmd=java_cmd, junit_torun=junit_torun, go=go, this_hash=this_hash,
+                           consider_expansion=consider_expansion)
         for i in range(num_primary_workers):
             if not(i == num_primary_workers - 1):
                 sub_list_tuple = (all_target_set_list[each_bulk_size*i:each_bulk_size*(i+1)], str(i))                
@@ -353,7 +362,8 @@ def one_inv_pass(go, cp, junit_torun, this_hash, refined_target_set, analysis_on
         # all_classes = target_map.keys()
         num_keys = len(all_classes)
         seq_func = partial(seq_get_invs, 
-                           java_cmd=java_cmd, junit_torun=junit_torun, go=go, this_hash=this_hash)
+                           java_cmd=java_cmd, junit_torun=junit_torun, go=go, this_hash=this_hash,
+                           consider_expansion=consider_expansion)
         
         for i in range(0, num_keys, slave_load):
             # (inclusive) lower bound is i
@@ -401,12 +411,24 @@ def one_inv_pass(go, cp, junit_torun, this_hash, refined_target_set, analysis_on
     if not analysis_only:
         git.clear_temp_checkout(this_hash)
     
-    return all_classes
+    
+    if config.class_level_expansion:
+        extra_expansion = get_expansion_set(go)
+        os.remove_many_files(go, config.expansion_tmp_files + "*")
+    else:
+        extra_expansion = None
+    
+    return all_classes, extra_expansion
 
 
-def mixed_passes(go, prev_hash, post_hash,
+def mixed_passes(go, prev_hash, post_hash, refined_expansion_set,
                  refined_target_set, old_refined_target_set, new_refined_target_set,
                  old_cp, new_cp, old_junit_torun, new_junit_torun):
+    if config.class_level_expansion:
+        impact_set = refined_target_set | refined_expansion_set
+    else:
+        impact_set = refined_target_set
+    
     # checkout old commit, then checkout new tests
     os.sys_call("git checkout " + prev_hash)
     new_test_path = mvn.path_from_mvn_call("testSourceDirectory")
@@ -415,7 +437,7 @@ def mixed_passes(go, prev_hash, post_hash,
 #     os.sys_call("mvn clean test-compile")
     one_inv_pass(go, new_cp, new_junit_torun,
                  prev_hash + "_" + post_hash,
-                 old_refined_target_set, analysis_only=True)
+                 impact_set, analysis_only=True)
     git.clear_temp_checkout(prev_hash)
     
     # checkout old commit, then checkout new src
@@ -426,34 +448,26 @@ def mixed_passes(go, prev_hash, post_hash,
 #     os.sys_call("mvn clean test-compile")
     one_inv_pass(go, new_cp, old_junit_torun,
                  post_hash + "_" + prev_hash,
-                 new_refined_target_set, analysis_only=True)
+                 impact_set, analysis_only=True)
     git.clear_temp_checkout(prev_hash)
 
 
-def target_set_expansion(go, targets):
-    try:
-        files = os.from_sys_call(
-            " ".join(["ls", go, "|", "grep", config.expansion_tmp_files])).strip().split("\n")
-        expansion = set([])
-        for fl in files:
-            fl = fl.strip()
-            ep = set([])
-            try:
-                ep = ep | set(ex.read_str_from(go + fl))
-            except:
-                pass
-            expansion = expansion | ep
-        return targets | expansion
-    except:
-        return targets
-
-
-def __build_mtd2ln(infomap):
+def __build_target2ln(infomap):
     result = {}
     for k in infomap:
         fullinfo = infomap[k]
         last_dash = fullinfo.rfind("-")
         result[fullinfo[:last_dash]] = fullinfo[last_dash+1:]
+    return result
+
+
+def __build_method2line(method_info_map):
+    result = {}
+    for k in method_info_map:
+        full_method = method_info_map[k]
+        last_dash = full_method.rfind("-")
+        if last_dash != -1:
+            result[full_method[:last_dash]] = full_method[last_dash+1:]
     return result
 
 
@@ -470,10 +484,10 @@ def __purify_targets(targets):
 
 def _merge_target_sets(old_rts, new_rts, old_mtd_info_map, new_mtd_info_map):
     result = set()
-    old_mtd2ln = __build_mtd2ln(old_mtd_info_map)
+    old_mtd2ln = __build_target2ln(old_mtd_info_map)
     old_rts_purified = __purify_targets(old_rts)
     old_keyset = set(old_mtd2ln.keys())
-    new_mtd2ln = __build_mtd2ln(new_mtd_info_map)
+    new_mtd2ln = __build_target2ln(new_mtd_info_map)
     new_rts_purified = __purify_targets(new_rts)
     new_keyset = set(new_mtd2ln.keys())
     for old_and_new in (old_rts_purified & new_rts_purified):
@@ -498,6 +512,18 @@ def _append_class_ln(class_set):
     result = set()
     for c in class_set:
         result.add(c + "-0,0")
+    return result
+
+
+def _common_specific_expansion(expansion, old_method_info_map, new_method_info_map):
+    old_m2l = __build_method2line(old_method_info_map)
+    new_m2l = __build_method2line(new_method_info_map)
+    common_keys = set(old_m2l.keys()) & set(new_m2l.keys())
+    result = set()
+    for candidate in expansion:
+        if candidate in common_keys:
+            complete_info_name = candidate + "-" + old_m2l[candidate] + "," + new_m2l[candidate]
+            result.add(complete_info_name)
     return result
 
 
@@ -554,33 +580,34 @@ def visit(junit_path, sys_classpath, agent_path, cust_mvn_repo, separate_go, pre
     
     '''
         3-rd pass: checkout prev_commit as detached head, and get invariants for all interesting targets
-    '''
-    old_all_classes = one_inv_pass(go,
+    '''    
+    old_all_classes, old_expansion = one_inv_pass(go,
         old_cp, old_junit_torun, prev_hash, refined_target_set)
     
     '''
         4-th pass: checkout post_commit as detached head, and get invariants for all interesting targets
     '''
-    new_all_classes = one_inv_pass(go,
+    new_all_classes, new_expansion = one_inv_pass(go,
         new_cp, new_junit_torun, post_hash, refined_target_set)
+    
+    common_expansion = set()
+    refined_expansion_set = set()
+    if config.class_level_expansion:
+        common_expansion = old_expansion & new_expansion
+        refined_expansion_set = _common_specific_expansion(
+            common_expansion, old_method_info_map, new_method_info_map)
     
     '''
         more passes: checkout mixed commits as detached head, and get invariants for all interesting targets
     '''
     if iso:
-        mixed_passes(go, prev_hash, post_hash,
+        mixed_passes(go, prev_hash, post_hash, refined_expansion_set,
                      refined_target_set, old_refined_target_set, new_refined_target_set,
                      old_cp, new_cp, old_junit_torun, new_junit_torun)
     
     '''
         last pass: set common interests
     '''
-    # TODO: improve this for better UI elements
-    # TODO: persist target_set expansion earlier, later - already done, partially, some might be in to_exclude
-    if config.class_level_expansion and config.further_expansion_analysis:
-        refined_target_set = target_set_expansion(go, refined_target_set)
-        os.remove_many_files(go, config.expansion_tmp_files + "*")
-    
     html.src_to_html_ln_anchor(refined_target_set, go, prev_hash, for_old=True)
     html.src_to_html_ln_anchor(refined_target_set, go, post_hash)
     
