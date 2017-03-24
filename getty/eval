@@ -4,7 +4,7 @@ import re, sys
 from os import getcwd, listdir
 from os.path import isfile
 
-from tools.daikon import fsformat
+from tools.daikon import fsformat_with_sigs
 from tools.ex import read_str_from
 from tools.hdiff import is_empty
 

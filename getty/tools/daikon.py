@@ -390,6 +390,9 @@ def dfformat_full_ordered(target_set):
                         .replace("[", "\[").replace("]", "\]").replace("<", "\<").replace(">", "\>"))
             else:
                 itself = target.replace(":", ".")
+                first_leftp = itself.find("(")
+                if first_leftp != -1:
+                    itself = itself[:first_leftp]
                 method_interest_set.add(
                     ("^" + itself + "\(").replace(".", "\.").replace("$", "\$")
                         .replace("[", "\[").replace("]", "\]").replace("<", "\<").replace(">", "\>"))
