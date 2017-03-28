@@ -485,7 +485,10 @@ def fsformat(target, for_daikon=True):
 def fsformat_with_sigs(target, for_daikon=True):
     if for_daikon:
         target_name = real_name_ff_with_sigs(target)
-    tcp = config.the_common_package[0]
+    if config.the_common_package:
+        tcp = config.the_common_package[0]
+    else:
+        tcp = ""
     target, _, _, _, _, _ = simplify_target_name(
         target_name, common_package=tcp)
     last_dash_pos = target.rfind("-")

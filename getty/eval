@@ -1,10 +1,14 @@
 #!/usr/bin/env python
 
-import re, sys
+import os, re, sys
 from os import getcwd, listdir
-from os.path import isfile
+from os.path import isfile, abspath
+from inspect import getsourcefile
 
-from tools.daikon import fsformat_with_sigs
+import config
+from tools import mvn
+from tools.os import cwd
+from tools import daikon
 from tools.ex import read_str_from
 from tools.hdiff import is_empty
 
@@ -85,13 +89,84 @@ def count_diff_lines(diff_table):
     return all_trs - all_headers - all_ignored - all_misc
 
 
-def main(path=None, flag=None, prev=None, post=None):
+def config_env():
+    # Villa's jar path
+    this_script_path = abspath(getsourcefile(lambda:0))
+    if this_script_path[-1] == "/":
+        this_script_path = this_script_path[:-1]
+    this_script_dir = this_script_path[:this_script_path.rfind("/")+1]
+    villa_path = this_script_dir + "lib/villa-2.0.jar"  # jar is at the same dir
+    junit_path = this_script_dir + "lib/junit-" + config.default_junit_version + ".jar"  # jar (junit) is at the same dir
+    agent_path = this_script_dir + "lib/jdyncg-0.5-getty-dycg-agent.jar"  # jar is at the same dir
+    if os.path.exists(villa_path) and os.path.exists(junit_path) and os.path.exists(agent_path):
+        pass
+    elif not os.path.exists(villa_path):
+        raise EnvironmentError("could not find villa-x.x.jar in script dir " + this_script_dir)
+    elif not os.path.exists(junit_path):
+        raise EnvironmentError("could not find junit-x.jar (for getty) in script dir " + this_script_dir)
+    elif not os.path.exists(agent_path):
+        raise EnvironmentError("could not find jdyncg-0.x-getty-dycg-agent.jar in script dir " + this_script_dir)
+    
+    # System classpath
+    hamcrest_path = this_script_dir + "lib/hamcrest-all-1.3.jar"
+    getopt_path = this_script_dir + "lib/java-getopt.jar"
+    plume_path = this_script_dir + "lib/plume.jar"
+    daikon_path = this_script_dir + "lib/daikon.jar"
+    rt_path = this_script_dir + "lib/rt.jar"
+    jce_path = this_script_dir + "lib/jce.jar"
+    tools_path = this_script_dir + "lib/tools.jar"
+    if os.path.exists(hamcrest_path) and os.path.exists(getopt_path) and os.path.exists(plume_path) and \
+        os.path.exists(daikon_path) and \
+        os.path.exists(rt_path) and os.path.exists(jce_path) and os.path.exists(tools_path):
+        print "\nSystem classpath is complete\n"
+    else:
+        raise EnvironmentError(
+                "\nSystem classpath is NOT complete. Check for hamcrest, getopt, plume, daikon, rt, jce, and tools.jar")
+    sys_classpath = ":".join([hamcrest_path, getopt_path, plume_path, daikon_path, rt_path, jce_path, tools_path])
+    # present working directory - it should be the project's root with "/" at the end
+    pwd = cwd()
+    if pwd[-1] != "/":
+        pwd += "/"
+    proj_dir = pwd
+    dyng_go = pwd[:-1] + ".__getty_output__/"
+    # getty output directory - /tmp/__getty_output__/ or ../projectname__getty_output__/
+    if pwd == "/":
+        go = "/tmp/__getty_output__/"
+        dyng_go = go
+    else:
+        curr_dir = pwd
+        middle_path = ""
+        while not (os.path.exists(curr_dir + ".git") and os.path.isdir(curr_dir + ".git")):
+            last_slash = curr_dir[:-1].rindex("/")
+            if last_slash <= 0:
+                raise EnvironmentError("project setting is problematic")
+            else:
+                middle_path = "." + curr_dir[last_slash+1:-1] + middle_path
+                curr_dir = curr_dir[:last_slash+1]
+        proj_dir = curr_dir
+        go = curr_dir[:-1] + middle_path + ".__getty_output__/"
+    if os.path.exists(go):
+        if not os.path.isdir(go):
+            raise EnvironmentError(go + " already exists but is not a directory")
+    else:
+        os.makedirs(go)
+    # javascript path
+    fe_path = this_script_dir + "frontend/"
+    # FIXME: better copy to and use go folder
+    cust_mvn_repo = this_script_dir + "lib/repository"
+    return villa_path, junit_path, sys_classpath, agent_path, \
+        pwd, proj_dir, go, dyng_go, fe_path, cust_mvn_repo
+
+
+def main(path=None, flag=None, prev=None, post=None, target=None):
     if flag is None:
-        flag = sys.argv[0]
-    if prev is None:
-        prev = sys.argv[1]
-    if post is None:
-        post = sys.argv[2]
+        flag = sys.argv[1]
+    if prev is None and flag != '-env':
+        if len(sys.argv) > 2:
+            prev = sys.argv[2]
+    if post is None and flag != '-env':
+        if len(sys.argv) > 3:
+            post = sys.argv[3]
     if path is None:
         path = getcwd()
     if not path.endswith('/'):
@@ -113,9 +188,80 @@ def main(path=None, flag=None, prev=None, post=None):
         pass
     elif flag == '--updated-tests':
         raise NotImplementedError('--updated-tests')
+    elif flag == '-env':
+        try:
+            target = sys.argv[2]
+        except:
+            print 'in -env mode, there must be a target'
+            raise
+        villa_path, junit_path, sys_classpath, agent_path, \
+            pwd, proj_dir, go, dyng_go, fe_path, cust_mvn_repo = config_env()
+        bin_path = mvn.path_from_mvn_call("outputDirectory")
+        test_bin_path = mvn.path_from_mvn_call("testOutputDirectory")
+        cp = mvn.full_classpath(junit_path, sys_classpath, bin_path, test_bin_path)
+        to_run = mvn.junit_torun_str(cust_mvn_repo)
+        print '\n\n================    cp    ================'
+        print cp
+        print '================  target  ================'
+        print target
+        print '================  to_run  ================'
+        print to_run
+        print '================  daikon  ================'
+        daikon_display_args = " ".join(
+            ["--no_show_progress", "--no_text_output", "--omit_from_output 0r",
+             "--format "+config.output_inv_format])
+        select_pattern = daikon.dfformat_full_ordered(set([target]))
+        inv_gz_old = go + "_getty_eval_invs_old_.inv.gz"
+        inv_gz_new = go + "_getty_eval_invs_new_.inv.gz"
+        daikon_cmd_old = " ".join(
+            ["java", "-cp", cp, "daikon.Chicory --daikon-online --exception-handling",
+             "--daikon-args=\""+daikon_display_args,
+             "-o", inv_gz_old+"\"",
+             "--ppt-select-pattern=\""+select_pattern+"\"",
+             to_run])
+        daikon_cmd_new = " ".join(
+            ["java", "-cp", cp, "daikon.Chicory --daikon-online --exception-handling",
+             "--daikon-args=\""+daikon_display_args,
+             "-o", inv_gz_new+"\"",
+             "--ppt-select-pattern=\""+select_pattern+"\"",
+             to_run])
+        print daikon_cmd_old
+        print daikon_cmd_new
+        print '================  PrtInv  ================'
+        target_ff = daikon.fsformat_with_sigs(target)
+        out_file_old = go+"_getty_eval_invs__"+target_ff+"__old_.inv.out"
+        out_file_new = go+"_getty_eval_invs__"+target_ff+"__new_.inv.out"
+        inv_cmd_old = " ".join(
+            ["java", "-cp", cp, "daikon.PrintInvariants",
+             "--format", config.output_inv_format,
+             "--ppt-select-pattern=\'"+daikon.dpformat_with_sigs(target)+"\'",
+             "--output", out_file_old, inv_gz_old])
+        inv_cmd_new = " ".join(
+            ["java", "-cp", cp, "daikon.PrintInvariants",
+             "--format", config.output_inv_format,
+             "--ppt-select-pattern=\'"+daikon.dpformat_with_sigs(target)+"\'",
+             "--output", out_file_new, inv_gz_new])
+        print inv_cmd_old
+        print inv_cmd_new
+        print '================  ------  ================\n\n'
+        print 'Commands successfully composed!'
+        print '\n================  ------  ================\n'
+        
+        print '\n================  output  ================\n'
+        oldout = go+'old.sh'
+        with open(oldout, 'w') as oldf:
+            oldf.write(daikon_cmd_old + "\n" + inv_cmd_old)
+        print oldout
+        newout = go+'new.sh'
+        with open(newout, 'w') as newf:
+            newf.write(daikon_cmd_new + "\n" + inv_cmd_new)
+        print newout
+        print "\nDone!"
+        print '\n================  ------  ================\n'
+        
     else:
         raise ValueError(
-            'flag must be one of {-a, -m, -t, -u, -i, --updated-methods, --updated-tests}')
+            'flag must be one of {-a, -m, -t, -u, -i, --updated-methods, --updated-tests, -env}')
 
 
 if __name__ == "__main__":
