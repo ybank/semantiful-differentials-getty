@@ -2,12 +2,12 @@
 
 Getty is a tool to support Continuous Semantic Inspection (CSI) for Java projects.
 
-###*Continuous Semantic Inspection*
+### *Continuous Semantic Inspection*
 CSI is a process for developers to inspect behavioral changes before patching the system. 
 In addition to source code changes, developers are suggested to review semantic change summaries. 
 Like Continuous Integration (CI) that supports effortless testing, CSI provides change summaries with little effort from developers.
 
-###*System Requirement*
+### *System Requirement*
   *  Operating System:
     *  Unix-like systems (e.g., Mac OS X, 10.10.5+)
     *  Linux family (e.g., Ubuntu 14.04+)
@@ -18,7 +18,7 @@ Like Continuous Integration (CI) that supports effortless testing, CSI provides 
   * Version Control System:
     * [Git 2.2.x](https://git-scm.com/)
 
-###*Applicable Projects*
+### *Applicable Projects*
 The projects Getty can analyze should satisfy the following criteria:
   * Written in Java
   * Built by Maven (single-module\* setting)
@@ -26,7 +26,7 @@ The projects Getty can analyze should satisfy the following criteria:
 
 \*Disclaimer of [Maven multi-module](https://maven.apache.org/guides/mini/guide-multiple-modules.html) project support - The mechanism (reactor) in Maven that handles multi-module projects collects all available modules (sub-projects), sorts and builds all selected ones in their correct build order. The use of multiple modules remains controversal ([discussion in reddit](https://www.reddit.com/r/programming/comments/1ns6ae/maven_is_broken_by_design/?st=itjkarzb&sh=4aee9c04), [discussion in stackoverflow](http://stackoverflow.com/questions/11730791/why-and-when-to-create-a-multi-module-maven-project), etc.). As a more general case, Getty targets single-module Maven projects. Though Getty does not provide direct support towards multi-module projects, however, you can still analyze each of their included single modules separately.
 
-###*Prep*
+### *Prep*
   * Confirm system requirements are met: all executables should be set on your path and you can run them __without specifying full path__. For example:
   
   ```bash
@@ -50,7 +50,7 @@ The projects Getty can analyze should satisfy the following criteria:
   git version 2.2.1
   ```
 
-###*Using Getty*
+### *Using Getty*
   * Clone Getty project, choose your own `/path/to/your/Getty/`. After this step you should see a directory named `semantiful-differentials-getty`
   
   ```bash
@@ -122,12 +122,12 @@ The projects Getty can analyze should satisfy the following criteria:
   
   That's it!
 
-###*Demos & Misc*
+### *Demos & Misc*
 [Here](http://sosa08.ucsd.edu:7999/sema.diff.html) is an *outdated* demo of the source-impact isolated CSI view, for the commit ("#7", the introductory commit) we discussed in our submitted ICSE paper under review. If the reviewers are interested in the case study in the paper, here is [our latest user interface](http://sosa08.ucsd.edu:8000/sema.diff.html) displayed for commit #4, the commit that actually introduced the "equals" bug we discussed in the paper.
 
 Please note that our latest user interface has been changed moderately (a refined UI style, more enriched features and integration of impact-isolated views) with updated Daikon library, but most other part of the UI resembles the past.
 
 We have also updated the textual-diffing algorithm for invariant matching, which gives slightly cleaner diffing results; but ideally, we would like to further enhance it to a real semantic diffing algorithm backed by a theorem prover, which is currently WIP for future applications.
   
-###*Support*
+### *Support*
 Please send email to the authors ({yayan, mmenarini, wgg} 'AT' cs 'dot' ucsd 'dot' edu) to discuss Getty, or to post questions.
