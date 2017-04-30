@@ -8,7 +8,7 @@ In addition to source code changes, developers are suggested to review semantic 
 Like Continuous Integration (CI) that supports effortless testing, CSI provides change summaries with little effort from developers.
 
 ### *System Requirement*
-  *  Operating System:
+  * Operating System:
     *  Unix-like systems (e.g., Mac OS X, 10.10.5+)
     *  Linux family (e.g., Ubuntu 14.04+)
     *  Windows 10 Editions, 64-bit with Bash shell (Windows Subsystem for Linux)
